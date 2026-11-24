@@ -1,3 +1,5 @@
+I am vibecoding a solution for my G903 to allow for fully editing all the buttons and save edits onto mouse memory. If this works, I will try adding tray information, so I don't need to open the app to check for battery levels.
+
 > [!WARNING]
 > **OpenLogi is under active development** and not yet stable — features and config may still change. Give the repo a **Star** ⭐ and **Watch** 👀 it to get notified when a new release lands.
 
