@@ -1,0 +1,86 @@
+# Applies the patch series in patches/ on top of this fork, then builds an
+# unsigned portable Windows zip and runs the test suites the stored-profile
+# and lighting work touches. Runs on GitHub's own
+# Windows machines (the upstream workflows use paid runners and signing
+# secrets a fork doesn't have). Start it from Actions > Fork Windows build >
+# Run workflow.
+name: Fork Windows build
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: fork-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  build:
+    name: Portable zip
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply the patches
+        shell: bash
+        run: |
+          git config user.name "fork build"
+          git config user.email "fork-build@localhost"
+          ls patches/*.patch
+          git am --3way patches/*.patch
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: fork-release
+      - name: Build OpenLogi executables
+        run: cargo build --release -p openlogi-desktop -p openlogi-overlay -p openlogi-agent -p openlogi --target x86_64-pc-windows-msvc
+      - name: Collect the portable zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist, stage, stage\bin | Out-Null
+          $out = "target\x86_64-pc-windows-msvc\release"
+          Copy-Item $out\openlogi-desktop.exe stage\OpenLogi.exe
+          Copy-Item $out\openlogi-overlay.exe stage\openlogi-overlay.exe
+          Copy-Item $out\openlogi-agent.exe stage\openlogi-agent.exe
+          Copy-Item $out\openlogi.exe stage\bin\openlogi.exe
+          Copy-Item packaging\windows\openlogi-installation.json stage\openlogi-installation.json
+          $sha = "${{ github.sha }}".Substring(0, 8)
+          Compress-Archive -Path stage\* -DestinationPath "dist\OpenLogi-fork-$sha-windows-x64.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OpenLogi-fork-windows-x64
+          path: dist/*.zip
+          if-no-files-found: error
+
+  test:
+    name: Tests
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply the patches
+        shell: bash
+        run: |
+          git config user.name "fork build"
+          git config user.email "fork-build@localhost"
+          ls patches/*.patch
+          git am --3way patches/*.patch
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: fork-test
+      - name: Protocol, device, core and agent
+        run: cargo test -p openlogi-hidpp -p openlogi-device -p openlogi-core -p openlogi-agent --lib --bins
+      - name: Wire format
+        run: cargo test -p openlogi-ipc --test wire_format
+      - name: Desktop state
+        run: cargo test -p openlogi-desktop stored_profiles
