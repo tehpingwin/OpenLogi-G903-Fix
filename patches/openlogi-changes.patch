@@ -1,0 +1,4221 @@
+From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Tue, 24 Nov 2026 15:12:39 +0000
+Subject: [PATCH 1/4] feat(hidpp): decode and write stored G-series mouse
+ profiles
+
+Adds sector reads and writes (memoryAddrWrite / memoryWrite /
+memoryWriteEnd) to OnboardProfilesFeature, and a pure codec for the
+stored profile layout (formats 1-5, libratbag's internal profile):
+report rate, DPI levels and shift, both LED zones with their
+power-saving copies, and button bindings in both layers.
+
+Editing is read-modify-write: only fields that differ from the
+decoded original are re-encoded; every other byte (angle snapping,
+power timeouts, the name) is copied through. A changed light keeps a
+dimmed power-saving copy at its previous ratio, or half.
+
+Also: CRC-16/CCITT sector checksums, switching a profile on in the
+directory, and reading stored macros (format 1).
+
+Fixtures are sectors from a G903 LIGHTSPEED HERO (format 4).
+---
+ .../src/feature/onboard_profiles.rs           |  54 ++
+ .../src/feature/onboard_profiles/profile.rs   | 645 ++++++++++++++++++
+ .../onboard_profiles/profile/fixtures.rs      |  79 +++
+ .../feature/onboard_profiles/profile/tests.rs | 322 +++++++++
+ 4 files changed, 1100 insertions(+)
+ create mode 100644 crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
+ create mode 100644 crates/openlogi-hidpp/src/feature/onboard_profiles/profile/fixtures.rs
+ create mode 100644 crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs
+
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
+index cda775bb..89802456 100644
+--- a/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
+@@ -15,16 +15,28 @@ const FN_GET_MODE: u8 = 2;
+ const FN_SET_CURRENT_PROFILE: u8 = 3;
+ const FN_GET_CURRENT_PROFILE: u8 = 4;
+ const FN_MEMORY_READ: u8 = 5;
++const FN_MEMORY_ADDR_WRITE: u8 = 6;
++const FN_MEMORY_WRITE: u8 = 7;
++const FN_MEMORY_WRITE_END: u8 = 8;
+ 
+ const USER_DIRECTORY_SECTOR: u16 = 0x0000;
+ const ROM_DIRECTORY_SECTOR: u16 = 0x0100;
+ const READ_CHUNK: u16 = 16;
++const WRITE_CHUNK: usize = 16;
+ // UTF-16LE name in profile formats 2–5.
+ const NAME_OFFSET: u16 = 0xa0;
+ const NAME_LEN: usize = 48;
+ // What G HUB writes into an unnamed profile.
+ const UNNAMED_PLACEHOLDER: &str = "PROFILE_NAME_DEFAULT";
+ 
++mod profile;
++
++pub use profile::{
++    Binding, DPI_LEVELS, LED_ZONES, LedEffect, MacroError, MacroStep, ProfileError, StoredProfile,
++    crc16, directory_with_enabled, profile_format_supported, read_stored_macro, seal_sector,
++    sector_checksum_ok,
++};
++
+ /// Implements the `OnboardProfiles` / `0x8100` feature.
+ #[derive(Clone, Feature)]
+ #[creatable(id = 0x8100, version = 0)]
+@@ -138,6 +150,48 @@ impl OnboardProfilesFeature {
+             .extend_payload())
+     }
+ 
++    /// Reads a whole sector. The last chunk is read at `sector_size - 16`, so
++    /// a size that isn't a multiple of 16 (a G903's 255) never reads past it.
++    pub async fn read_sector(
++        &self,
++        info: &OnboardProfilesInfo,
++        sector: u16,
++    ) -> Result<Vec<u8>, Hidpp20Error> {
++        let size = info.sector_size;
++        if size < READ_CHUNK {
++            return Err(Hidpp20Error::UnsupportedResponse);
++        }
++        let mut data = vec![0; usize::from(size)];
++        let mut offset = 0;
++        while offset < size {
++            let at = offset.min(size - READ_CHUNK);
++            let chunk = self.read_memory(sector, at).await?;
++            let start = usize::from(at);
++            data[start..start + usize::from(READ_CHUNK)].copy_from_slice(&chunk);
++            offset += READ_CHUNK;
++        }
++        Ok(data)
++    }
++
++    /// Writes `data` to `sector`: start, 16-byte chunks (the last padded with
++    /// `0xff` past `data`), end. The device commits on the end call. This only
++    /// sends the bytes; checking what the device stored is the caller's job.
++    pub async fn write_sector(&self, sector: u16, data: &[u8]) -> Result<(), Hidpp20Error> {
++        let len = u16::try_from(data.len()).map_err(|_| Hidpp20Error::UnsupportedResponse)?;
++        let [sector_hi, sector_lo] = sector.to_be_bytes();
++        let [len_hi, len_lo] = len.to_be_bytes();
++        let mut start = [0; 16];
++        start[..6].copy_from_slice(&[sector_hi, sector_lo, 0, 0, len_hi, len_lo]);
++        self.endpoint.call_long(FN_MEMORY_ADDR_WRITE, start).await?;
++        for chunk in data.chunks(WRITE_CHUNK) {
++            let mut args = [0xff; 16];
++            args[..chunk.len()].copy_from_slice(chunk);
++            self.endpoint.call_long(FN_MEMORY_WRITE, args).await?;
++        }
++        self.endpoint.call(FN_MEMORY_WRITE_END, [0; 3]).await?;
++        Ok(())
++    }
++
+     /// Reads the user directory, or the factory one if blank.
+     pub async fn read_directory(
+         &self,
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
+new file mode 100644
+index 00000000..39eb588c
+--- /dev/null
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
+@@ -0,0 +1,645 @@
++//! The layout of a stored mouse profile (`0x8100` profile formats 1–5).
++//!
++//! The byte layout follows libratbag's `hidpp20_internal_profile`, which reads
++//! and writes it on real G-series mice; a G903 LIGHTSPEED HERO dump (format 4)
++//! matches it byte for byte. Only the fields below are decoded. Editing is
++//! read-modify-write: [`StoredProfile::encode_onto`] replaces only the fields
++//! that differ from the decoded original and copies every other byte through,
++//! so settings this module does not model (angle snapping, power timeouts,
++//! the profile name, …) survive. Rebuilding a sector from scratch, as
++//! libratbag does, drops them.
++
++use std::num::NonZeroU8;
++
++use crate::feature::color_led_effects::{EffectId, Rgb};
++
++/// Number of DPI levels a profile stores.
++pub const DPI_LEVELS: usize = 5;
++/// Number of lighting zones a profile stores.
++pub const LED_ZONES: usize = 2;
++
++const REPORT_RATE: usize = 0x00;
++const DEFAULT_DPI: usize = 0x01;
++const SHIFT_DPI: usize = 0x02;
++const DPI: usize = 0x03;
++const BUTTONS: usize = 0x20;
++const SHIFT_BUTTONS: usize = 0x60;
++const MAX_BUTTONS: usize = 16;
++const LEDS: [usize; LED_ZONES] = [0xd0, 0xdb];
++const POWER_SAVE_LEDS: [usize; LED_ZONES] = [0xe6, 0xf1];
++const LED_LEN: usize = 11;
++/// The last decoded byte is `0xfb`; the sector's last two bytes are its CRC.
++const MIN_SECTOR_LEN: usize = 0xfc + 2;
++const NO_SHIFT_LEVEL: u8 = 0xff;
++/// Half brightness: what G HUB stores for the power-saving copy, used when the
++/// copy's previous ratio to the visible effect is unknown.
++const DEFAULT_POWER_SAVE_PERCENT: u16 = 50;
++
++/// Why a sector can't be read or written as a profile.
++#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
++pub enum ProfileError {
++    /// The device stores profiles in a layout this module does not know.
++    #[error("profile format {0} is not supported")]
++    UnsupportedFormat(u8),
++    /// The sector is too small to hold a profile.
++    #[error("the sector is too small to hold a profile")]
++    TooShort,
++    /// The stored checksum does not match the data.
++    #[error("the sector's checksum does not match")]
++    Checksum,
++    /// A field holds a value the layout does not allow.
++    #[error("{0}")]
++    Implausible(&'static str),
++}
++
++/// Whether profiles in `profile_format` can be decoded and written.
++#[must_use]
++pub const fn profile_format_supported(profile_format: u8) -> bool {
++    matches!(profile_format, 1..=5)
++}
++
++/// What a button does, as stored in its 4-byte binding.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
++#[cfg_attr(feature = "serde", derive(serde::Serialize))]
++pub enum Binding {
++    /// Mouse button `1..=16` (1 left, 2 right, 3 middle, 4 back, 5 forward).
++    MouseButton(u8),
++    /// A keyboard key (HID usage page 7) with a boot-keyboard modifier byte.
++    Key {
++        /// Bit 0 left Ctrl, 1 left Shift, 2 left Alt, 3 left GUI; 4–7 the right ones.
++        modifiers: u8,
++        /// HID usage of the key.
++        usage: u8,
++    },
++    /// A consumer-control usage (media keys).
++    Consumer(u16),
++    /// A firmware function (DPI cycling, profile switching, …).
++    Special {
++        /// The function number.
++        function: u8,
++        /// The function's profile argument, kept as stored.
++        profile: u8,
++    },
++    /// A macro stored in onboard memory at `sector`, `offset`.
++    StoredMacro {
++        /// The macro's sector.
++        sector: u8,
++        /// The macro's byte offset in that sector.
++        offset: u8,
++    },
++    /// The button does nothing.
++    Disabled,
++    /// A binding this module does not decode, written back as it was.
++    Other([u8; 4]),
++}
++
++impl Binding {
++    /// Decodes a stored binding.
++    #[must_use]
++    pub fn decode(raw: [u8; 4]) -> Self {
++        match raw {
++            [0x80, 0x01, hi, lo] => {
++                let mask = u16::from_be_bytes([hi, lo]);
++                if mask.is_power_of_two() {
++                    // trailing_zeros of a non-zero u16 is at most 15
++                    Self::MouseButton(u8::try_from(mask.trailing_zeros()).map_or(0, |bit| bit + 1))
++                } else {
++                    Self::Other(raw)
++                }
++            }
++            [0x80, 0x02, modifiers, usage] => Self::Key { modifiers, usage },
++            [0x80, 0x03, hi, lo] => Self::Consumer(u16::from_be_bytes([hi, lo])),
++            [0x90, function, _, profile] => Self::Special { function, profile },
++            [0x00, sector, _, offset] => Self::StoredMacro { sector, offset },
++            [0xff, ..] => Self::Disabled,
++            _ => Self::Other(raw),
++        }
++    }
++
++    /// Encodes the binding. `StoredMacro`, `Other` and the special form keep
++    /// the layout they were decoded from.
++    #[must_use]
++    pub fn encode(self) -> [u8; 4] {
++        match self {
++            Self::MouseButton(n) => {
++                let [hi, lo] = 1u16
++                    .checked_shl(u32::from(n.saturating_sub(1)))
++                    .unwrap_or(0)
++                    .to_be_bytes();
++                [0x80, 0x01, hi, lo]
++            }
++            Self::Key { modifiers, usage } => [0x80, 0x02, modifiers, usage],
++            Self::Consumer(usage) => {
++                let [hi, lo] = usage.to_be_bytes();
++                [0x80, 0x03, hi, lo]
++            }
++            Self::Special { function, profile } => [0x90, function, 0x00, profile],
++            Self::StoredMacro { sector, offset } => [0x00, sector, 0x00, offset],
++            Self::Disabled => [0xff; 4],
++            Self::Other(raw) => raw,
++        }
++    }
++
++    fn valid(self) -> bool {
++        match self {
++            Self::MouseButton(n) => (1..=16).contains(&n),
++            Self::Key { usage, .. } => (0x04..=0xe7).contains(&usage),
++            _ => true,
++        }
++    }
++}
++
++/// A lighting zone's effect, in the 11-byte layout `0x8070` effects share.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
++#[cfg_attr(feature = "serde", derive(serde::Serialize))]
++pub enum LedEffect {
++    /// The zone is dark.
++    Off,
++    /// A fixed colour.
++    Fixed(Rgb),
++    /// Breathing in one colour.
++    Breathing {
++        /// The colour.
++        color: Rgb,
++        /// One breath, in milliseconds.
++        period_ms: u16,
++        /// `1..=100`.
++        brightness: u8,
++    },
++    /// Cycling through the colour wheel.
++    Cycle {
++        /// One cycle, in milliseconds.
++        period_ms: u16,
++        /// `1..=100`.
++        brightness: u8,
++    },
++    /// An effect this module does not decode, written back as it was.
++    Other([u8; LED_LEN]),
++}
++
++const FIXED: u8 = EffectId::FixedColor as u8;
++const CYCLE: u8 = EffectId::Cycling as u8;
++const BREATHING: u8 = EffectId::PulsingBreathingWaveform as u8;
++const OFF: u8 = EffectId::Disabled as u8;
++
++/// A stored intensity of 0 means full brightness.
++fn brightness_from(stored: u8) -> u8 {
++    if stored == 0 { 100 } else { stored.min(100) }
++}
++fn brightness_to(percent: u8) -> u8 {
++    if percent >= 100 { 0 } else { percent.max(1) }
++}
++
++impl LedEffect {
++    fn decode(raw: &[u8]) -> Self {
++        let mut bytes = [0; LED_LEN];
++        bytes.copy_from_slice(&raw[..LED_LEN]);
++        let p = &bytes[1..];
++        let rgb = |at: usize| Rgb {
++            red: p[at],
++            green: p[at + 1],
++            blue: p[at + 2],
++        };
++        match bytes[0] {
++            OFF => Self::Off,
++            FIXED => Self::Fixed(rgb(0)),
++            BREATHING => Self::Breathing {
++                color: rgb(0),
++                period_ms: u16::from_be_bytes([p[3], p[4]]),
++                brightness: brightness_from(p[6]),
++            },
++            CYCLE => Self::Cycle {
++                period_ms: u16::from_be_bytes([p[5], p[6]]),
++                brightness: brightness_from(p[7]),
++            },
++            _ => Self::Other(bytes),
++        }
++    }
++
++    fn encode(self) -> [u8; LED_LEN] {
++        let mut b = [0; LED_LEN];
++        match self {
++            Self::Off => b[0] = OFF,
++            Self::Fixed(c) => b[..4].copy_from_slice(&[FIXED, c.red, c.green, c.blue]),
++            Self::Breathing {
++                color,
++                period_ms,
++                brightness,
++            } => {
++                let [hi, lo] = period_ms.to_be_bytes();
++                b[..6].copy_from_slice(&[BREATHING, color.red, color.green, color.blue, hi, lo]);
++                b[7] = brightness_to(brightness);
++            }
++            Self::Cycle {
++                period_ms,
++                brightness,
++            } => {
++                let [hi, lo] = period_ms.to_be_bytes();
++                b[0] = CYCLE;
++                b[6] = hi;
++                b[7] = lo;
++                b[8] = brightness_to(brightness);
++            }
++            Self::Other(raw) => b = raw,
++        }
++        b
++    }
++
++    /// The brightness percentage, where the effect has one (a fixed colour's
++    /// brightness lives in the colour itself).
++    #[must_use]
++    pub const fn brightness(self) -> Option<u8> {
++        match self {
++            Self::Breathing { brightness, .. } | Self::Cycle { brightness, .. } => Some(brightness),
++            _ => None,
++        }
++    }
++
++    /// The same effect at `ratio_percent` of its brightness, for the
++    /// power-saving copy. A fixed colour is dimmed in its channels.
++    #[must_use]
++    pub fn dimmed(self, ratio_percent: u16) -> Self {
++        let scale = |v: u8| u8::try_from(u16::from(v) * ratio_percent.min(100) / 100).unwrap_or(v);
++        match self {
++            Self::Fixed(c) => Self::Fixed(Rgb {
++                red: scale(c.red),
++                green: scale(c.green),
++                blue: scale(c.blue),
++            }),
++            Self::Breathing {
++                color,
++                period_ms,
++                brightness,
++            } => Self::Breathing {
++                color,
++                period_ms,
++                brightness: scale(brightness).max(1),
++            },
++            Self::Cycle {
++                period_ms,
++                brightness,
++            } => Self::Cycle {
++                period_ms,
++                brightness: scale(brightness).max(1),
++            },
++            other => other,
++        }
++    }
++}
++
++/// The decoded fields of a stored mouse profile.
++#[derive(Clone, Debug, PartialEq, Eq)]
++#[cfg_attr(feature = "serde", derive(serde::Serialize))]
++pub struct StoredProfile {
++    /// Report interval in milliseconds: 1, 2, 4 or 8 (1000/500/250/125 Hz).
++    pub report_interval_ms: u8,
++    /// Index into `dpi` of the level the profile starts at.
++    pub default_dpi_level: u8,
++    /// Index into `dpi` of the DPI-shift level, if any.
++    pub shift_dpi_level: Option<u8>,
++    /// DPI per level; `0` marks an unused level.
++    pub dpi: [u16; DPI_LEVELS],
++    /// The visible lighting per zone.
++    pub leds: [LedEffect; LED_ZONES],
++    /// The copy the mouse shows while saving power.
++    pub power_save_leds: [LedEffect; LED_ZONES],
++    /// One binding per button.
++    pub buttons: Vec<Binding>,
++    /// The second (G-Shift) layer. Always read and kept, even when the
++    /// layout flags don't announce G-Shift: G HUB fills it anyway.
++    pub shift_buttons: Vec<Binding>,
++}
++
++impl StoredProfile {
++    /// Decodes `sector`, refusing anything that does not look like a profile
++    /// in the documented layout.
++    pub fn decode(
++        sector: &[u8],
++        profile_format: u8,
++        button_count: u8,
++        dpi_range: (u16, u16),
++    ) -> Result<Self, ProfileError> {
++        if !profile_format_supported(profile_format) {
++            return Err(ProfileError::UnsupportedFormat(profile_format));
++        }
++        if sector.len() < MIN_SECTOR_LEN {
++            return Err(ProfileError::TooShort);
++        }
++        if !sector_checksum_ok(sector) {
++            return Err(ProfileError::Checksum);
++        }
++        let report_interval_ms = sector[REPORT_RATE];
++        if !matches!(report_interval_ms, 1 | 2 | 4 | 8) {
++            return Err(ProfileError::Implausible("unexpected report rate"));
++        }
++        let default_dpi_level = sector[DEFAULT_DPI];
++        if usize::from(default_dpi_level) >= DPI_LEVELS {
++            return Err(ProfileError::Implausible("unexpected default DPI level"));
++        }
++        let shift_dpi_level = match sector[SHIFT_DPI] {
++            NO_SHIFT_LEVEL => None,
++            level if usize::from(level) < DPI_LEVELS => Some(level),
++            _ => return Err(ProfileError::Implausible("unexpected DPI shift level")),
++        };
++        let mut dpi = [0; DPI_LEVELS];
++        for (i, level) in dpi.iter_mut().enumerate() {
++            let at = DPI + 2 * i;
++            let value = u16::from_le_bytes([sector[at], sector[at + 1]]);
++            *level = if value == 0xffff { 0 } else { value };
++            if *level != 0 && !(dpi_range.0..=dpi_range.1).contains(level) {
++                return Err(ProfileError::Implausible(
++                    "a DPI level is outside the sensor's range",
++                ));
++            }
++        }
++        if dpi[usize::from(default_dpi_level)] == 0 {
++            return Err(ProfileError::Implausible("the default DPI level is unused"));
++        }
++        let count = usize::from(button_count).min(MAX_BUTTONS);
++        let bindings = |base: usize| -> Vec<Binding> {
++            (0..count)
++                .map(|i| {
++                    let at = base + 4 * i;
++                    Binding::decode([sector[at], sector[at + 1], sector[at + 2], sector[at + 3]])
++                })
++                .collect()
++        };
++        Ok(Self {
++            report_interval_ms,
++            default_dpi_level,
++            shift_dpi_level,
++            dpi,
++            leds: LEDS.map(|at| LedEffect::decode(&sector[at..])),
++            power_save_leds: POWER_SAVE_LEDS.map(|at| LedEffect::decode(&sector[at..])),
++            buttons: bindings(BUTTONS),
++            shift_buttons: bindings(SHIFT_BUTTONS),
++        })
++    }
++
++    /// Checks an edited profile before it is encoded.
++    pub fn validate(&self, dpi_range: (u16, u16), dpi_step: u16) -> Result<(), ProfileError> {
++        if !matches!(self.report_interval_ms, 1 | 2 | 4 | 8) {
++            return Err(ProfileError::Implausible("unsupported report rate"));
++        }
++        let mut used = 0;
++        for &level in &self.dpi {
++            if level == 0 {
++                continue;
++            }
++            if !(dpi_range.0..=dpi_range.1).contains(&level) {
++                return Err(ProfileError::Implausible(
++                    "a DPI level is outside the sensor's range",
++                ));
++            }
++            if dpi_step > 0 && !(level - dpi_range.0).is_multiple_of(dpi_step) {
++                return Err(ProfileError::Implausible(
++                    "a DPI level is not a multiple of the sensor's step",
++                ));
++            }
++            used += 1;
++        }
++        if used == 0 {
++            return Err(ProfileError::Implausible("no DPI level is used"));
++        }
++        let level_used = |level: u8| self.dpi.get(usize::from(level)).is_some_and(|&v| v != 0);
++        if !level_used(self.default_dpi_level) {
++            return Err(ProfileError::Implausible("the default DPI level is unused"));
++        }
++        if self.shift_dpi_level.is_some_and(|level| !level_used(level)) {
++            return Err(ProfileError::Implausible("the DPI shift level is unused"));
++        }
++        if !self.buttons.is_empty() && !self.buttons.contains(&Binding::MouseButton(1)) {
++            return Err(ProfileError::Implausible("no button is left click"));
++        }
++        if !self
++            .buttons
++            .iter()
++            .chain(&self.shift_buttons)
++            .all(|b| b.valid())
++        {
++            return Err(ProfileError::Implausible(
++                "a button has an invalid assignment",
++            ));
++        }
++        for led in &self.leds {
++            if let LedEffect::Breathing {
++                period_ms,
++                brightness,
++                ..
++            }
++            | LedEffect::Cycle {
++                period_ms,
++                brightness,
++            } = *led
++                && (!(500..=20_000).contains(&period_ms) || !(1..=100).contains(&brightness))
++            {
++                return Err(ProfileError::Implausible(
++                    "an effect's speed or brightness is out of range",
++                ));
++            }
++        }
++        Ok(())
++    }
++
++    /// `original` with only the fields where `self` differs from `before`
++    /// (the profile decoded from `original`) replaced, checksum renewed.
++    ///
++    /// A zone whose visible effect changed gets its power-saving copy
++    /// rewritten too: the same effect, dimmed by the ratio the copy had before
++    /// (half when that ratio is unknown), so the mouse keeps dimming.
++    pub fn encode_onto(&self, original: &[u8], before: &Self) -> Result<Vec<u8>, ProfileError> {
++        if original.len() < MIN_SECTOR_LEN {
++            return Err(ProfileError::TooShort);
++        }
++        let mut s = original.to_vec();
++        if self.report_interval_ms != before.report_interval_ms {
++            s[REPORT_RATE] = self.report_interval_ms;
++        }
++        if self.default_dpi_level != before.default_dpi_level {
++            s[DEFAULT_DPI] = self.default_dpi_level;
++        }
++        if self.shift_dpi_level != before.shift_dpi_level {
++            s[SHIFT_DPI] = self.shift_dpi_level.unwrap_or(NO_SHIFT_LEVEL);
++        }
++        for i in 0..DPI_LEVELS {
++            if self.dpi[i] != before.dpi[i] {
++                let at = DPI + 2 * i;
++                s[at..at + 2].copy_from_slice(&self.dpi[i].to_le_bytes());
++            }
++        }
++        for zone in 0..LED_ZONES {
++            if self.leds[zone] == before.leds[zone] {
++                continue;
++            }
++            s[LEDS[zone]..LEDS[zone] + LED_LEN].copy_from_slice(&self.leds[zone].encode());
++            let ratio = match (
++                before.leds[zone].brightness(),
++                before.power_save_leds[zone].brightness(),
++            ) {
++                (Some(shown), Some(saving)) if shown > 0 => {
++                    u16::from(saving) * 100 / u16::from(shown)
++                }
++                _ => DEFAULT_POWER_SAVE_PERCENT,
++            };
++            let saving = self.leds[zone].dimmed(ratio);
++            s[POWER_SAVE_LEDS[zone]..POWER_SAVE_LEDS[zone] + LED_LEN]
++                .copy_from_slice(&saving.encode());
++        }
++        for (base, now, was) in [
++            (BUTTONS, &self.buttons, &before.buttons),
++            (SHIFT_BUTTONS, &self.shift_buttons, &before.shift_buttons),
++        ] {
++            for (i, (a, b)) in now.iter().zip(was.iter()).enumerate().take(MAX_BUTTONS) {
++                if a != b {
++                    let at = base + 4 * i;
++                    s[at..at + 4].copy_from_slice(&a.encode());
++                }
++            }
++        }
++        seal_sector(&mut s);
++        Ok(s)
++    }
++}
++
++/// CRC-16/CCITT-FALSE, the checksum in the last two bytes of a user sector.
++#[must_use]
++pub fn crc16(data: &[u8]) -> u16 {
++    let mut crc: u16 = 0xffff;
++    for &byte in data {
++        crc ^= u16::from(byte) << 8;
++        for _ in 0..8 {
++            crc = if crc & 0x8000 != 0 {
++                (crc << 1) ^ 0x1021
++            } else {
++                crc << 1
++            };
++        }
++    }
++    crc
++}
++
++/// Whether the sector's stored checksum matches its data.
++#[must_use]
++pub fn sector_checksum_ok(sector: &[u8]) -> bool {
++    let Some(split) = sector.len().checked_sub(2) else {
++        return false;
++    };
++    u16::from_be_bytes([sector[split], sector[split + 1]]) == crc16(&sector[..split])
++}
++
++/// Writes the checksum of the sector's data into its last two bytes.
++pub fn seal_sector(sector: &mut [u8]) {
++    if let Some(split) = sector.len().checked_sub(2) {
++        let crc = crc16(&sector[..split]).to_be_bytes();
++        sector[split..].copy_from_slice(&crc);
++    }
++}
++
++/// The profile directory `dir` with profile `index` switched on, checksum
++/// renewed. Only that entry's flag byte changes. Refuses a directory whose
++/// entry for `index` doesn't point at `sector`.
++pub fn directory_with_enabled(
++    dir: &[u8],
++    index: NonZeroU8,
++    sector: u16,
++) -> Result<Vec<u8>, ProfileError> {
++    let entry = 4 * usize::from(index.get() - 1);
++    if entry + 3 >= dir.len().saturating_sub(2) {
++        return Err(ProfileError::TooShort);
++    }
++    if !sector_checksum_ok(dir) {
++        return Err(ProfileError::Checksum);
++    }
++    if u16::from_be_bytes([dir[entry], dir[entry + 1]]) != sector {
++        return Err(ProfileError::Implausible(
++            "the profile list doesn't point at that profile",
++        ));
++    }
++    let mut out = dir.to_vec();
++    out[entry + 2] = 0x01;
++    seal_sector(&mut out);
++    Ok(out)
++}
++
++/// One step of a macro stored in onboard memory (macro format 1).
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
++#[cfg_attr(feature = "serde", derive(serde::Serialize))]
++pub enum MacroStep {
++    /// Key press: modifiers and HID usage.
++    KeyDown(u8, u8),
++    /// Key release.
++    KeyUp(u8, u8),
++    /// Wait, in milliseconds.
++    Delay(u16),
++}
++
++/// Why a stored macro can't be read.
++#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
++pub enum MacroError {
++    /// A sector it uses couldn't be read.
++    #[error("its memory couldn't be read")]
++    Unreadable,
++    /// It runs past the end of its sector.
++    #[error("it is cut short")]
++    Truncated,
++    /// It uses a step this module does not know.
++    #[error("it uses an unknown step {0:#04x}")]
++    UnknownStep(u8),
++    /// It never ends, or jumps too often.
++    #[error("it does not end")]
++    Endless,
++}
++
++/// Reads the macro starting at `offset` in `sector`. `read` returns a
++/// sector's bytes. Steps seen on a G903 HERO: `43 mods usage` press,
++/// `44 mods usage` release, `40 ms(BE16)` wait, `60 offset sector` continue
++/// elsewhere, `00` no-op, `ff` end.
++pub fn read_stored_macro(
++    mut sector: u8,
++    mut offset: usize,
++    mut read: impl FnMut(u8) -> Option<Vec<u8>>,
++) -> Result<Vec<MacroStep>, MacroError> {
++    let mut steps = Vec::new();
++    let mut data = read(sector).ok_or(MacroError::Unreadable)?;
++    let mut jumps = 0;
++    for _ in 0..1024 {
++        let byte = |at: usize| data.get(at).copied().ok_or(MacroError::Truncated);
++        match byte(offset)? {
++            0xff => return Ok(steps),
++            0x00 => offset += 1,
++            kind @ (0x43 | 0x44) => {
++                let (mods, usage) = (byte(offset + 1)?, byte(offset + 2)?);
++                steps.push(if kind == 0x43 {
++                    MacroStep::KeyDown(mods, usage)
++                } else {
++                    MacroStep::KeyUp(mods, usage)
++                });
++                offset += 3;
++            }
++            0x40 => {
++                steps.push(MacroStep::Delay(u16::from_be_bytes([
++                    byte(offset + 1)?,
++                    byte(offset + 2)?,
++                ])));
++                offset += 3;
++            }
++            0x60 => {
++                jumps += 1;
++                if jumps > 16 {
++                    return Err(MacroError::Endless);
++                }
++                let (next_offset, next_sector) = (byte(offset + 1)?, byte(offset + 2)?);
++                if next_sector != sector {
++                    sector = next_sector;
++                    data = read(sector).ok_or(MacroError::Unreadable)?;
++                }
++                offset = usize::from(next_offset);
++            }
++            other => return Err(MacroError::UnknownStep(other)),
++        }
++    }
++    Err(MacroError::Endless)
++}
++
++#[cfg(test)]
++mod tests;
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/fixtures.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/fixtures.rs
+new file mode 100644
+index 00000000..2e369b17
+--- /dev/null
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/fixtures.rs
+@@ -0,0 +1,79 @@
++// Sectors from a G903 LIGHTSPEED HERO (`0x8100` format 4, 255-byte sectors).
++// Settings only: no unit id or serial number.
++
++/// The profile list: profile 1 on, 2-5 off.
++const DIRECTORY: [u8; 255] = [
++    0x00, 0x01, 0x01, 0xff, 0x00, 0x02, 0x00, 0xff, 0x00, 0x03, 0x00, 0xff, 0x00, 0x04, 0x00, 0xff,
++    0x00, 0x05, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x40, 0x37,
++];
++/// The factory profile as stored in a user sector (valid checksum).
++const FACTORY: [u8; 255] = [
++    0x01, 0x01, 0x00, 0x90, 0x01, 0x20, 0x03, 0x40, 0x06, 0x80, 0x0c, 0x00, 0x19, 0xff, 0xff, 0xff,
++    0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3c, 0x00, 0xf0, 0x00,
++    0x80, 0x01, 0x00, 0x01, 0x80, 0x01, 0x00, 0x02, 0x80, 0x01, 0x00, 0x04, 0x80, 0x01, 0x00, 0x08,
++    0x80, 0x01, 0x00, 0x10, 0x80, 0x01, 0x00, 0x08, 0x80, 0x01, 0x00, 0x10, 0x90, 0x04, 0x00, 0x00,
++    0x90, 0x03, 0x00, 0x00, 0x90, 0x01, 0xff, 0xff, 0x90, 0x02, 0xff, 0xff, 0x90, 0x0a, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40, 0x64, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x1f, 0x40, 0x64, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40, 0x32, 0x00,
++    0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40, 0x32, 0x00, 0x00, 0xff, 0x45, 0x69,
++];
++/// A G HUB-edited profile: 125 Hz, one DPI level, lights off, macros on side buttons.
++const EDITED: [u8; 255] = [
++    0x08, 0x00, 0x00, 0x08, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff,
++    0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x84, 0x03, 0x3c, 0x00,
++    0x80, 0x01, 0x00, 0x01, 0x80, 0x01, 0x00, 0x02, 0x80, 0x01, 0x00, 0x04, 0x80, 0x01, 0x00, 0x10,
++    0x80, 0x01, 0x00, 0x08, 0x00, 0x06, 0x00, 0x00, 0x00, 0x06, 0x00, 0x16, 0x00, 0x06, 0x00, 0x38,
++    0x00, 0x06, 0x00, 0x5a, 0x80, 0x02, 0x00, 0x28, 0x80, 0x02, 0x00, 0x3e, 0x90, 0x0a, 0x00, 0x00,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0x80, 0x01, 0x00, 0x01, 0x80, 0x01, 0x00, 0x02, 0x80, 0x01, 0x00, 0x04, 0x80, 0x01, 0x00, 0x10,
++    0x80, 0x01, 0x00, 0x08, 0x00, 0x06, 0x00, 0x70, 0x00, 0x06, 0x00, 0x86, 0x00, 0x06, 0x00, 0xa8,
++    0x00, 0x06, 0x00, 0xca, 0x80, 0x02, 0x00, 0x28, 0x80, 0x02, 0x00, 0x3e, 0x90, 0x0a, 0x00, 0x00,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0x4f, 0x00, 0x72, 0x00, 0x61, 0x00, 0x6e, 0x00, 0x67, 0x00, 0x65, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x42, 0xd2,
++];
++/// The macros `EDITED` points to (macro sectors carry no checksum).
++const MACROS: [u8; 255] = [
++    0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40,
++    0x00, 0x32, 0x44, 0x00, 0x2b, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02, 0xe1, 0x40,
++    0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01,
++    0xe0, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02,
++    0xe1, 0x40, 0x00, 0x32, 0x43, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x44, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x43, 0x00, 0x1a, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x44, 0x00, 0x1a, 0xff,
++    0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40,
++    0x00, 0x32, 0x44, 0x00, 0x2b, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02, 0xe1, 0x40,
++    0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01,
++    0xe0, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02,
++    0xe1, 0x40, 0x00, 0x32, 0x43, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x44, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x43, 0x00, 0x1a, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x44, 0x00, 0x1a, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++];
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs
+new file mode 100644
+index 00000000..55b0e5e0
+--- /dev/null
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs
+@@ -0,0 +1,322 @@
++use std::num::NonZeroU8;
++
++use super::*;
++
++include!("fixtures.rs");
++
++const RANGE: (u16, u16) = (100, 25_600);
++const FORMAT: u8 = 4;
++const BUTTONS_N: u8 = 12;
++
++fn decode(sector: &[u8]) -> StoredProfile {
++    StoredProfile::decode(sector, FORMAT, BUTTONS_N, RANGE).unwrap()
++}
++
++fn changed(a: &[u8], b: &[u8]) -> Vec<usize> {
++    a.iter()
++        .zip(b)
++        .enumerate()
++        .filter(|(_, (x, y))| x != y)
++        .map(|(i, _)| i)
++        .collect()
++}
++
++const fn rgb(red: u8, green: u8, blue: u8) -> Rgb {
++    Rgb { red, green, blue }
++}
++
++#[test]
++fn fixtures_have_the_documented_checksums() {
++    assert!(sector_checksum_ok(&DIRECTORY));
++    assert!(sector_checksum_ok(&FACTORY));
++    assert!(sector_checksum_ok(&EDITED));
++    assert_eq!(crc16(&FACTORY[..253]), 0x4569);
++}
++
++#[test]
++fn decodes_the_factory_profile() {
++    let p = decode(&FACTORY);
++    assert_eq!(p.report_interval_ms, 1);
++    assert_eq!(p.default_dpi_level, 1);
++    assert_eq!(p.shift_dpi_level, Some(0)); // stored 00: level 1 (ff would be none)
++    assert_eq!(p.dpi, [400, 800, 1600, 3200, 6400]);
++    assert_eq!(
++        p.leds[0],
++        LedEffect::Cycle {
++            period_ms: 8000,
++            brightness: 100
++        }
++    );
++    assert_eq!(
++        p.power_save_leds[0],
++        LedEffect::Cycle {
++            period_ms: 8000,
++            brightness: 50
++        }
++    );
++    assert_eq!(p.buttons.len(), 12);
++    assert_eq!(&p.buttons[..5], &[1, 2, 3, 4, 5].map(Binding::MouseButton));
++    assert_eq!(
++        p.buttons[7],
++        Binding::Special {
++            function: 0x04,
++            profile: 0
++        }
++    ); // DPI down
++    assert_eq!(
++        p.buttons[9],
++        Binding::Special {
++            function: 0x01,
++            profile: 0xff
++        }
++    ); // tilt left
++    assert!(p.shift_buttons.iter().all(|b| *b == Binding::Disabled));
++}
++
++#[test]
++fn decodes_a_g_hub_edited_profile() {
++    let p = decode(&EDITED);
++    assert_eq!(p.report_interval_ms, 8);
++    assert_eq!(p.dpi, [1800, 0, 0, 0, 0]);
++    assert_eq!(p.shift_dpi_level, Some(0));
++    assert_eq!(p.leds, [LedEffect::Off; 2]);
++    assert_eq!(p.buttons[3], Binding::MouseButton(5));
++    assert_eq!(
++        p.buttons[5],
++        Binding::StoredMacro {
++            sector: 6,
++            offset: 0x00
++        }
++    );
++    assert_eq!(
++        p.buttons[9],
++        Binding::Key {
++            modifiers: 0,
++            usage: 0x28
++        }
++    );
++    assert_eq!(
++        p.shift_buttons[5],
++        Binding::StoredMacro {
++            sector: 6,
++            offset: 0x70
++        }
++    );
++}
++
++#[test]
++fn every_binding_round_trips() {
++    for p in [decode(&FACTORY), decode(&EDITED)] {
++        for b in p.buttons.iter().chain(&p.shift_buttons) {
++            assert_eq!(Binding::decode(b.encode()), *b);
++        }
++    }
++}
++
++#[test]
++fn an_unchanged_profile_encodes_to_the_same_bytes() {
++    for sector in [&FACTORY[..], &EDITED[..]] {
++        let p = decode(sector);
++        assert_eq!(p.encode_onto(sector, &p).unwrap(), sector);
++    }
++}
++
++#[test]
++fn changing_one_button_changes_only_its_bytes() {
++    let before = decode(&EDITED);
++    let mut after = before.clone();
++    after.buttons[9] = Binding::Consumer(0xcd); // Enter -> play/pause
++    let out = after.encode_onto(&EDITED, &before).unwrap();
++    assert_eq!(
++        changed(&EDITED, &out),
++        [0x20 + 36 + 1, 0x20 + 36 + 3, 253, 254]
++    );
++    assert!(sector_checksum_ok(&out));
++    assert_eq!(decode(&out), after);
++}
++
++#[test]
++fn dpi_and_report_rate_touch_only_their_bytes() {
++    let before = decode(&EDITED);
++    let mut after = before.clone();
++    after.dpi[1] = 3200;
++    after.report_interval_ms = 1;
++    let out = after.encode_onto(&EDITED, &before).unwrap();
++    assert_eq!(changed(&EDITED, &out), [0, 5, 6, 253, 254]);
++    assert_eq!(&out[5..7], &[0x80, 0x0c]); // little-endian
++}
++
++#[test]
++fn a_new_light_keeps_a_dimmed_power_saving_copy() {
++    let before = decode(&EDITED); // both lights off: ratio unknown, half is used
++    let mut after = before.clone();
++    after.leds[1] = LedEffect::Breathing {
++        color: rgb(255, 120, 0),
++        period_ms: 4000,
++        brightness: 100,
++    };
++    let out = after.encode_onto(&EDITED, &before).unwrap();
++    let p = decode(&out);
++    assert_eq!(p.leds[1], after.leds[1]);
++    assert_eq!(
++        p.power_save_leds[1],
++        LedEffect::Breathing {
++            color: rgb(255, 120, 0),
++            period_ms: 4000,
++            brightness: 50
++        }
++    );
++    assert_eq!(p.leds[0], LedEffect::Off);
++
++    let before = decode(&FACTORY); // 100 % shown, 50 % saving: the ratio is kept
++    let mut after = before.clone();
++    after.leds[0] = LedEffect::Cycle {
++        period_ms: 8000,
++        brightness: 80,
++    };
++    let p = decode(&after.encode_onto(&FACTORY, &before).unwrap());
++    assert_eq!(
++        p.power_save_leds[0],
++        LedEffect::Cycle {
++            period_ms: 8000,
++            brightness: 40
++        }
++    );
++
++    let mut fixed = before.clone(); // a fixed colour has no brightness byte: its channels dim
++    fixed.leds[0] = LedEffect::Fixed(rgb(200, 100, 0));
++    let p = decode(&fixed.encode_onto(&FACTORY, &before).unwrap());
++    assert_eq!(p.power_save_leds[0], LedEffect::Fixed(rgb(100, 50, 0)));
++}
++
++#[test]
++fn unknown_bytes_survive_every_edit() {
++    let before = decode(&EDITED);
++    let mut after = before.clone();
++    after.buttons[0] = Binding::MouseButton(1);
++    after.buttons[10] = Binding::Key {
++        modifiers: 0x01,
++        usage: 0x06,
++    };
++    after.dpi[0] = 1850;
++    after.leds[0] = LedEffect::Fixed(rgb(0, 255, 0));
++    let out = after.encode_onto(&EDITED, &before).unwrap();
++    for range in [13..32, 0xa0..0xd0] {
++        // colour, power mode, angle snapping, timeouts, name
++        assert_eq!(&out[range.clone()], &EDITED[range]);
++    }
++}
++
++#[test]
++fn refuses_what_it_does_not_understand() {
++    assert_eq!(
++        StoredProfile::decode(&FACTORY, 9, 12, RANGE),
++        Err(ProfileError::UnsupportedFormat(9))
++    );
++    assert_eq!(
++        StoredProfile::decode(&FACTORY[..200], 4, 12, RANGE),
++        Err(ProfileError::TooShort)
++    );
++    let mut damaged = FACTORY;
++    damaged[40] ^= 0xff;
++    assert_eq!(
++        StoredProfile::decode(&damaged, 4, 12, RANGE),
++        Err(ProfileError::Checksum)
++    );
++    let mut odd_rate = FACTORY;
++    odd_rate[0] = 3;
++    seal_sector(&mut odd_rate);
++    assert!(matches!(
++        StoredProfile::decode(&odd_rate, 4, 12, RANGE),
++        Err(ProfileError::Implausible(_))
++    ));
++}
++
++#[test]
++fn validation_keeps_the_mouse_usable() {
++    let p = decode(&EDITED);
++    assert_eq!(p.validate(RANGE, 50), Ok(()));
++    let mut no_left = p.clone();
++    no_left.buttons[0] = Binding::MouseButton(4);
++    assert_eq!(
++        no_left.validate(RANGE, 50),
++        Err(ProfileError::Implausible("no button is left click"))
++    );
++    no_left.buttons[11] = Binding::MouseButton(1); // another button takes over
++    assert_eq!(no_left.validate(RANGE, 50), Ok(()));
++    let mut off_step = p.clone();
++    off_step.dpi[0] = 1825;
++    assert!(
++        off_step.validate(RANGE, 50).is_err(),
++        "1825 is not a multiple of 50 from 100"
++    );
++    let mut no_levels = p.clone();
++    no_levels.dpi = [0; 5];
++    assert!(
++        no_levels.validate(RANGE, 50).is_err(),
++        "a profile needs a DPI level"
++    );
++}
++
++#[test]
++fn switching_a_profile_on_changes_one_flag() {
++    let out = directory_with_enabled(&DIRECTORY, NonZeroU8::new(2).unwrap(), 2).unwrap();
++    assert_eq!(changed(&DIRECTORY, &out), [6, 253, 254]);
++    assert_eq!(out[6], 0x01);
++    assert_eq!(out[7], 0xff, "G HUB's fourth byte is kept");
++    assert!(
++        directory_with_enabled(&DIRECTORY, NonZeroU8::new(2).unwrap(), 9).is_err(),
++        "wrong sector"
++    );
++}
++
++#[test]
++fn reads_the_stored_macros() {
++    let read = |sector: u8| (sector == 6).then(|| MACROS.to_vec());
++    let chords = |offset: usize| -> Vec<(bool, u8)> {
++        read_stored_macro(6, offset, read)
++            .unwrap()
++            .into_iter()
++            .filter_map(|s| match s {
++                MacroStep::KeyDown(_, u) => Some((true, u)),
++                MacroStep::KeyUp(_, u) => Some((false, u)),
++                MacroStep::Delay(_) => None,
++            })
++            .collect()
++    };
++    // Ctrl+Tab, Ctrl+Shift+Tab, Ctrl+Shift+T, Ctrl+W
++    assert_eq!(
++        chords(0x00),
++        [(true, 0xe0), (true, 0x2b), (false, 0xe0), (false, 0x2b)]
++    );
++    assert_eq!(
++        chords(0x16),
++        [
++            (true, 0xe0),
++            (true, 0xe1),
++            (true, 0x2b),
++            (false, 0x2b),
++            (false, 0xe0),
++            (false, 0xe1)
++        ]
++    );
++    assert_eq!(
++        chords(0x38),
++        [
++            (true, 0xe0),
++            (true, 0xe1),
++            (true, 0x17),
++            (false, 0xe0),
++            (false, 0x17),
++            (false, 0xe1)
++        ]
++    );
++    assert_eq!(
++        chords(0x5a),
++        [(true, 0xe0), (true, 0x1a), (false, 0xe0), (false, 0x1a)]
++    );
++    assert_eq!(
++        read_stored_macro(6, 0x00, |_| None),
++        Err(MacroError::Unreadable)
++    );
++}
+-- 
+2.43.0
+
+From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Tue, 24 Nov 2026 15:50:16 +0000
+Subject: [PATCH 2/4] feat(device): edit stored G-series profiles through a
+ guarded write
+
+Reads a mouse's user profiles whole (with the factory bindings and the
+macros they point to), saves an edited profile, and selects a profile,
+switching it on in the profile list first: the mouse refuses to select
+a profile that is off (InvalidArgument on a G903 HERO).
+
+Every write re-reads the sector until two reads agree, requires it to
+still equal what the edit was based on and to carry a valid checksum,
+hands the original to the caller's backup, writes, reads back and
+compares; on a mismatch it writes the original back and checks that.
+DPI levels are checked against the sensor's own list; without one, DPI
+edits are refused.
+
+Wire: WriteError::{OnboardProfileRejected, OnboardMemoryChanged,
+OnboardBackupFailed, OnboardWriteNotStored} and
+HidppOperation::WriteOnboard appended; PROTOCOL_VERSION 47.
+---
+ crates/openlogi-core/src/hid/error.rs         |  40 +-
+ crates/openlogi-device/src/write.rs           |   5 +-
+ crates/openlogi-device/src/write/onboard.rs   |  10 +-
+ .../openlogi-device/src/write/onboard/edit.rs | 392 ++++++++++++++++++
+ .../src/write/onboard/edit/fixtures.rs        |  79 ++++
+ .../src/write/onboard/edit/tests.rs           | 373 +++++++++++++++++
+ .../src/feature/onboard_profiles.rs           |   4 +-
+ .../src/feature/onboard_profiles/profile.rs   |  17 +
+ crates/openlogi-ipc/src/ipc.rs                |   6 +-
+ crates/openlogi-ipc/tests/wire_format.rs      |   2 +-
+ 10 files changed, 920 insertions(+), 8 deletions(-)
+ create mode 100644 crates/openlogi-device/src/write/onboard/edit.rs
+ create mode 100644 crates/openlogi-device/src/write/onboard/edit/fixtures.rs
+ create mode 100644 crates/openlogi-device/src/write/onboard/edit/tests.rs
+
+diff --git a/crates/openlogi-core/src/hid/error.rs b/crates/openlogi-core/src/hid/error.rs
+index 6f1e2d3a..1c7e258c 100644
+--- a/crates/openlogi-core/src/hid/error.rs
++++ b/crates/openlogi-core/src/hid/error.rs
+@@ -272,6 +272,39 @@ pub enum WriteError {
+         /// Number of host channels the device reports.
+         host_count: u8,
+     },
++    /// A stored onboard profile that can't be decoded or saved as given: an
++    /// unknown layout, a damaged checksum, or an edit out of range (a DPI
++    /// level the sensor lacks, no button left on left click).
++    ///
++    /// Nothing was written. Appended after `HostOutOfRange` — variant order
++    /// is wire format.
++    #[error("the stored profile can't be saved: {reason}")]
++    OnboardProfileRejected {
++        /// Why, in the codec's words.
++        reason: String,
++    },
++    /// The onboard memory changed between the read the edit was based on and
++    /// the write (G HUB, or another session), or kept changing while read.
++    ///
++    /// Nothing was written. Appended after `OnboardProfileRejected` —
++    /// variant order is wire format.
++    #[error("the onboard memory changed since it was read")]
++    OnboardMemoryChanged,
++    /// The backup of the sector couldn't be saved before writing it.
++    ///
++    /// Nothing was written. Appended after `OnboardMemoryChanged` — variant
++    /// order is wire format.
++    #[error("the onboard memory couldn't be backed up, so nothing was written")]
++    OnboardBackupFailed,
++    /// The mouse didn't store what was written. `restored` says whether the
++    /// original was written back and read back intact.
++    ///
++    /// Appended last — variant order is wire format.
++    #[error("the mouse didn't store the change; the previous settings were {}", if *restored { "put back" } else { "not restored" })]
++    OnboardWriteNotStored {
++        /// Whether the original sector is back in place.
++        restored: bool,
++    },
+ }
+ 
+ /// HID++ operation being performed when a device write/read failed.
+@@ -362,9 +395,12 @@ pub enum HidppOperation {
+     /// Read the `0x8300` sidetone level. Appended after `ChangeHost` —
+     /// variant order is wire format.
+     ReadSidetone,
+-    /// Write the `0x8300` sidetone level. Appended last — variant order is
+-    /// wire format.
++    /// Write the `0x8300` sidetone level. Appended after `ReadSidetone` —
++    /// variant order is wire format.
+     WriteSidetone,
++    /// Write onboard memory through `0x8100` (a stored profile, or the
++    /// profile directory). Appended last — variant order is wire format.
++    WriteOnboard,
+ }
+ 
+ /// HID++ feature error kind in a serializable wire-safe form.
+diff --git a/crates/openlogi-device/src/write.rs b/crates/openlogi-device/src/write.rs
+index 5437f6a7..a93159a6 100644
+--- a/crates/openlogi-device/src/write.rs
++++ b/crates/openlogi-device/src/write.rs
+@@ -90,7 +90,10 @@ pub use litra::{
+     encode_command as encode_litra_command, find_litra, litra_model_for_route, matches_litra,
+     read_state as read_litra_state, watch as watch_litra,
+ };
+-pub use onboard::{get_onboard, get_onboard_on};
++pub use onboard::{
++    Backup, SaveOutcome, StoredProfileSlot, StoredProfiles, get_onboard, get_onboard_on,
++    read_stored_profiles_on, save_stored_profile_on, select_stored_profile_on,
++};
+ pub use openlogi_core::hid::{DisableKeysMask, DisableKeysState};
+ pub use openlogi_core::hid::{
+     EasySwitchHosts, EasySwitchSlot, HostConnection, HostOsInfo, HostOsKind,
+diff --git a/crates/openlogi-device/src/write/onboard.rs b/crates/openlogi-device/src/write/onboard.rs
+index 76e1b61f..424e50a9 100644
+--- a/crates/openlogi-device/src/write/onboard.rs
++++ b/crates/openlogi-device/src/write/onboard.rs
+@@ -1,4 +1,12 @@
+-//! G-series onboard memory reads; the capture session owns the writes.
++//! G-series onboard memory: reads, and editing stored profiles. The capture
++//! session owns the mode writes.
++
++mod edit;
++
++pub use edit::{
++    Backup, SaveOutcome, StoredProfileSlot, StoredProfiles, read_stored_profiles_on,
++    save_stored_profile_on, select_stored_profile_on,
++};
+ 
+ use std::sync::Arc;
+ 
+diff --git a/crates/openlogi-device/src/write/onboard/edit.rs b/crates/openlogi-device/src/write/onboard/edit.rs
+new file mode 100644
+index 00000000..6fa9e29f
+--- /dev/null
++++ b/crates/openlogi-device/src/write/onboard/edit.rs
+@@ -0,0 +1,392 @@
++//! Editing stored profiles: reading them whole, and the guarded write.
++//!
++//! Every write goes through [`guarded_write`]: re-read the sector until two
++//! reads agree, require it to still equal what the edit was based on and to
++//! carry a valid checksum, hand the original to the caller's backup, write,
++//! read back and compare byte for byte, and on any mismatch write the original
++//! back and check that too. Nothing is written when a step before the write
++//! fails.
++
++use std::collections::BTreeMap;
++use std::num::NonZeroU8;
++use std::sync::Arc;
++
++use hidpp::{
++    channel::HidppChannel,
++    device::Device,
++    feature::onboard_profiles::{
++        self, Binding, MacroError, MacroStep, OnboardProfilesFeature, OnboardProfilesInfo,
++        ProfileError, StoredProfile, directory_with_enabled, factory_bindings, read_stored_macro,
++        sector_checksum_ok,
++    },
++};
++use tracing::{debug, warn};
++
++use crate::SharedChannel;
++
++use super::super::dpi::get_dpi_info_on_channel;
++use super::super::{HidppOperation, WriteError, classify_hidpp_error, open_feature};
++
++const FEATURE: u16 = 0x8100;
++const USER_DIRECTORY: u16 = 0x0000;
++const FIRST_ROM_SECTOR: u16 = 0x0100;
++const FACTORY_PROFILE: u16 = 0x0101;
++const STABLE_READ_ATTEMPTS: usize = 3;
++
++/// Saves a copy of `sector` before it is overwritten; `false` stops the write.
++pub type Backup<'a> = &'a (dyn Fn(u16, &[u8]) -> bool + Send + Sync);
++
++/// One profile slot as read, with the bytes every edit is based on.
++#[derive(Clone, Debug)]
++pub struct StoredProfileSlot {
++    /// 1-based index.
++    pub index: NonZeroU8,
++    /// Flash sector.
++    pub sector: u16,
++    /// Whether it is on in the profile list (the mouse only selects those).
++    pub enabled: bool,
++    /// The sector as read.
++    pub raw: Vec<u8>,
++    /// The decoded profile, or why it can't be edited.
++    pub decoded: Result<StoredProfile, ProfileError>,
++}
++
++/// Everything the profile editor shows.
++#[derive(Clone, Debug)]
++pub struct StoredProfiles {
++    /// The `0x8100` description.
++    pub info: OnboardProfilesInfo,
++    /// Who is in control now.
++    pub mode: onboard_profiles::OnboardMode,
++    /// The active profile, `None` in host mode.
++    pub active: Option<NonZeroU8>,
++    /// The DPI values the sensor accepts, when they could be read.
++    pub dpi_values: Option<Vec<u16>>,
++    /// The user profile slots; empty when the mouse runs its factory profiles.
++    pub profiles: Vec<StoredProfileSlot>,
++    /// What each button did in the factory profile.
++    pub factory_buttons: Vec<Binding>,
++    /// The macros the profiles point to, by `(sector, offset)`.
++    pub macros: BTreeMap<(u8, u8), Result<Vec<MacroStep>, MacroError>>,
++}
++
++/// What a save did.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum SaveOutcome {
++    /// The mouse holds the new bytes, checked by reading them back.
++    Saved,
++    /// The edit changed nothing, so nothing was written.
++    Unchanged,
++}
++
++/// Reads every user profile, the factory buttons and the stored macros.
++pub async fn read_stored_profiles_on(shared: &SharedChannel) -> Result<StoredProfiles, WriteError> {
++    read_stored_profiles_on_channel(shared.channel(), shared.device_index()).await
++}
++
++/// Saves `after` into profile `index`, whose sector read as `original` and
++/// decoded as `before`.
++pub async fn save_stored_profile_on(
++    shared: &SharedChannel,
++    index: NonZeroU8,
++    original: &[u8],
++    before: &StoredProfile,
++    after: &StoredProfile,
++    backup: Backup<'_>,
++) -> Result<SaveOutcome, WriteError> {
++    save_stored_profile_on_channel(
++        shared.channel(),
++        shared.device_index(),
++        index,
++        original,
++        before,
++        after,
++        backup,
++    )
++    .await
++}
++
++/// Makes profile `index` the active one, switching it on in the profile list
++/// first if it is off (the mouse refuses to select a profile that is off).
++pub async fn select_stored_profile_on(
++    shared: &SharedChannel,
++    index: NonZeroU8,
++    backup: Backup<'_>,
++) -> Result<(), WriteError> {
++    select_stored_profile_on_channel(shared.channel(), shared.device_index(), index, backup).await
++}
++
++async fn open(
++    channel: &Arc<HidppChannel>,
++    index: u8,
++) -> Result<Arc<OnboardProfilesFeature>, WriteError> {
++    let mut device = Device::new(Arc::clone(channel), index)
++        .await
++        .map_err(|_| WriteError::DeviceUnreachable { index })?;
++    open_feature::<OnboardProfilesFeature>(&mut device).await
++}
++
++fn read_err(error: hidpp::protocol::v20::Hidpp20Error) -> WriteError {
++    classify_hidpp_error(error, HidppOperation::ReadOnboard, FEATURE)
++}
++
++fn write_err(error: hidpp::protocol::v20::Hidpp20Error) -> WriteError {
++    classify_hidpp_error(error, HidppOperation::WriteOnboard, FEATURE)
++}
++
++fn rejected(error: &ProfileError) -> WriteError {
++    WriteError::OnboardProfileRejected {
++        reason: error.to_string(),
++    }
++}
++
++/// Reads `sector` until two consecutive reads agree.
++async fn read_stable(
++    onboard: &OnboardProfilesFeature,
++    info: &OnboardProfilesInfo,
++    sector: u16,
++) -> Result<Vec<u8>, WriteError> {
++    let mut previous = onboard.read_sector(info, sector).await.map_err(read_err)?;
++    for _ in 1..STABLE_READ_ATTEMPTS {
++        let next = onboard.read_sector(info, sector).await.map_err(read_err)?;
++        if next == previous {
++            return Ok(next);
++        }
++        previous = next;
++    }
++    Err(WriteError::OnboardMemoryChanged)
++}
++
++/// The one way onboard memory is written. See the module docs.
++async fn guarded_write(
++    onboard: &OnboardProfilesFeature,
++    info: &OnboardProfilesInfo,
++    sector: u16,
++    original: &[u8],
++    updated: &[u8],
++    backup: Backup<'_>,
++) -> Result<SaveOutcome, WriteError> {
++    if updated == original {
++        return Ok(SaveOutcome::Unchanged);
++    }
++    if updated.len() != original.len() || !sector_checksum_ok(updated) {
++        return Err(WriteError::OnboardProfileRejected {
++            reason: "the new sector has no valid checksum".into(),
++        });
++    }
++    let now = read_stable(onboard, info, sector).await?;
++    if now != original {
++        return Err(WriteError::OnboardMemoryChanged);
++    }
++    if !sector_checksum_ok(&now) {
++        return Err(rejected(&ProfileError::Checksum));
++    }
++    if !backup(sector, original) {
++        return Err(WriteError::OnboardBackupFailed);
++    }
++    let stored = match onboard.write_sector(sector, updated).await {
++        Ok(()) => read_stable(onboard, info, sector).await.ok(),
++        Err(error) => {
++            warn!(sector, error = ?write_err(error), "onboard write failed; restoring");
++            None
++        }
++    };
++    if stored.as_deref() == Some(updated) {
++        return Ok(SaveOutcome::Saved);
++    }
++    let restored = match onboard.write_sector(sector, original).await {
++        Ok(()) => read_stable(onboard, info, sector).await.ok().as_deref() == Some(original),
++        Err(_) => false,
++    };
++    Err(WriteError::OnboardWriteNotStored { restored })
++}
++
++async fn read_stored_profiles_on_channel(
++    channel: &Arc<HidppChannel>,
++    index: u8,
++) -> Result<StoredProfiles, WriteError> {
++    let onboard = open(channel, index).await?;
++    let info = onboard.get_info().await.map_err(read_err)?;
++    let mode = onboard.get_mode().await.map_err(read_err)?;
++    let active = onboard.get_current_profile().await.map_err(read_err)?;
++    let dpi_values = match get_dpi_info_on_channel(channel, index).await {
++        Ok(dpi) => Some(
++            dpi.capabilities
++                .values()
++                .iter()
++                .filter_map(|&v| u16::try_from(u32::from(v)).ok())
++                .collect(),
++        ),
++        Err(error) => {
++            debug!(
++                ?error,
++                "DPI list unavailable; DPI levels are shown but not editable"
++            );
++            None
++        }
++    };
++    let decode_range = dpi_values
++        .as_ref()
++        .and_then(|v: &Vec<u16>| Some((*v.first()?, *v.last()?)))
++        .unwrap_or((1, u16::MAX));
++
++    let mut profiles = Vec::new();
++    for entry in onboard.read_directory(&info).await.map_err(read_err)? {
++        if entry.sector >= FIRST_ROM_SECTOR {
++            continue; // no user directory yet: the mouse runs its factory profiles
++        }
++        let raw = read_stable(&onboard, &info, entry.sector).await?;
++        let decoded =
++            StoredProfile::decode(&raw, info.profile_format, info.button_count, decode_range);
++        profiles.push(StoredProfileSlot {
++            index: entry.index,
++            sector: entry.sector,
++            enabled: entry.enabled,
++            raw,
++            decoded,
++        });
++    }
++
++    let factory_buttons = if info.profile_count_oob > 0 {
++        match onboard.read_sector(&info, FACTORY_PROFILE).await {
++            Ok(rom) => factory_bindings(&rom, info.button_count),
++            Err(error) => {
++                debug!(error = ?read_err(error), "factory profile unreadable");
++                Vec::new()
++            }
++        }
++    } else {
++        Vec::new()
++    };
++
++    // Read each sector a macro lives in once, then decode the macros from them.
++    let mut sectors: BTreeMap<u8, Option<Vec<u8>>> = BTreeMap::new();
++    let mut wanted = Vec::new();
++    for profile in profiles
++        .iter()
++        .filter_map(|slot| slot.decoded.as_ref().ok())
++    {
++        for binding in profile.buttons.iter().chain(&profile.shift_buttons) {
++            if let Binding::StoredMacro { sector, offset } = *binding {
++                wanted.push((sector, offset));
++                if let std::collections::btree_map::Entry::Vacant(slot) = sectors.entry(sector) {
++                    slot.insert(onboard.read_sector(&info, u16::from(sector)).await.ok());
++                }
++            }
++        }
++    }
++    let macros = wanted
++        .into_iter()
++        .map(|(sector, offset)| {
++            let steps = read_stored_macro(sector, usize::from(offset), |s| {
++                sectors.get(&s).cloned().flatten()
++            });
++            ((sector, offset), steps)
++        })
++        .collect();
++
++    Ok(StoredProfiles {
++        info,
++        mode,
++        active,
++        dpi_values,
++        profiles,
++        factory_buttons,
++        macros,
++    })
++}
++
++async fn save_stored_profile_on_channel(
++    channel: &Arc<HidppChannel>,
++    index: u8,
++    profile: NonZeroU8,
++    original: &[u8],
++    before: &StoredProfile,
++    after: &StoredProfile,
++    backup: Backup<'_>,
++) -> Result<SaveOutcome, WriteError> {
++    let onboard = open(channel, index).await?;
++    let info = onboard.get_info().await.map_err(read_err)?;
++    let sector = onboard
++        .read_directory(&info)
++        .await
++        .map_err(read_err)?
++        .into_iter()
++        .find(|entry| entry.index == profile && entry.sector < FIRST_ROM_SECTOR)
++        .map(|entry| entry.sector)
++        .ok_or_else(|| WriteError::OnboardProfileRejected {
++            reason: format!("profile {profile} is not a user profile"),
++        })?;
++    if after.dpi != before.dpi {
++        let values = get_dpi_info_on_channel(channel, index)
++            .await
++            .map(|dpi| dpi.capabilities);
++        let Ok(values) = values else {
++            return Err(WriteError::OnboardProfileRejected {
++                reason: "the sensor's DPI list couldn't be read".into(),
++            });
++        };
++        if let Some(&level) = after
++            .dpi
++            .iter()
++            .find(|&&level| level != 0 && !values.contains(level.into()))
++        {
++            return Err(WriteError::OnboardProfileRejected {
++                reason: format!("the sensor doesn't support {level} DPI"),
++            });
++        }
++    }
++    after.validate((1, u16::MAX), 0).map_err(|e| rejected(&e))?;
++    let updated = after
++        .encode_onto(original, before)
++        .map_err(|e| rejected(&e))?;
++    let outcome = guarded_write(&onboard, &info, sector, original, &updated, backup).await?;
++    if outcome == SaveOutcome::Saved
++        && onboard.get_current_profile().await.ok().flatten() == Some(profile)
++        && let Err(error) = onboard.set_current_profile(profile).await
++    {
++        // The new values are stored; the mouse picks them up on its next profile load.
++        debug!(error = ?write_err(error), "reloading the active profile failed");
++    }
++    Ok(outcome)
++}
++
++async fn select_stored_profile_on_channel(
++    channel: &Arc<HidppChannel>,
++    index: u8,
++    profile: NonZeroU8,
++    backup: Backup<'_>,
++) -> Result<(), WriteError> {
++    let onboard = open(channel, index).await?;
++    let info = onboard.get_info().await.map_err(read_err)?;
++    let entry = onboard
++        .read_directory(&info)
++        .await
++        .map_err(read_err)?
++        .into_iter()
++        .find(|entry| entry.index == profile)
++        .ok_or_else(|| WriteError::OnboardProfileRejected {
++            reason: format!("the mouse has no profile {profile}"),
++        })?;
++    if !entry.enabled {
++        let directory = read_stable(&onboard, &info, USER_DIRECTORY).await?;
++        let updated =
++            directory_with_enabled(&directory, profile, entry.sector).map_err(|e| rejected(&e))?;
++        guarded_write(
++            &onboard,
++            &info,
++            USER_DIRECTORY,
++            &directory,
++            &updated,
++            backup,
++        )
++        .await?;
++    }
++    onboard
++        .set_current_profile(profile)
++        .await
++        .map_err(write_err)
++}
++
++#[cfg(test)]
++mod tests;
+diff --git a/crates/openlogi-device/src/write/onboard/edit/fixtures.rs b/crates/openlogi-device/src/write/onboard/edit/fixtures.rs
+new file mode 100644
+index 00000000..2e369b17
+--- /dev/null
++++ b/crates/openlogi-device/src/write/onboard/edit/fixtures.rs
+@@ -0,0 +1,79 @@
++// Sectors from a G903 LIGHTSPEED HERO (`0x8100` format 4, 255-byte sectors).
++// Settings only: no unit id or serial number.
++
++/// The profile list: profile 1 on, 2-5 off.
++const DIRECTORY: [u8; 255] = [
++    0x00, 0x01, 0x01, 0xff, 0x00, 0x02, 0x00, 0xff, 0x00, 0x03, 0x00, 0xff, 0x00, 0x04, 0x00, 0xff,
++    0x00, 0x05, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x40, 0x37,
++];
++/// The factory profile as stored in a user sector (valid checksum).
++const FACTORY: [u8; 255] = [
++    0x01, 0x01, 0x00, 0x90, 0x01, 0x20, 0x03, 0x40, 0x06, 0x80, 0x0c, 0x00, 0x19, 0xff, 0xff, 0xff,
++    0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3c, 0x00, 0xf0, 0x00,
++    0x80, 0x01, 0x00, 0x01, 0x80, 0x01, 0x00, 0x02, 0x80, 0x01, 0x00, 0x04, 0x80, 0x01, 0x00, 0x08,
++    0x80, 0x01, 0x00, 0x10, 0x80, 0x01, 0x00, 0x08, 0x80, 0x01, 0x00, 0x10, 0x90, 0x04, 0x00, 0x00,
++    0x90, 0x03, 0x00, 0x00, 0x90, 0x01, 0xff, 0xff, 0x90, 0x02, 0xff, 0xff, 0x90, 0x0a, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40, 0x64, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x1f, 0x40, 0x64, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40, 0x32, 0x00,
++    0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40, 0x32, 0x00, 0x00, 0xff, 0x45, 0x69,
++];
++/// A G HUB-edited profile: 125 Hz, one DPI level, lights off, macros on side buttons.
++const EDITED: [u8; 255] = [
++    0x08, 0x00, 0x00, 0x08, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff,
++    0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x84, 0x03, 0x3c, 0x00,
++    0x80, 0x01, 0x00, 0x01, 0x80, 0x01, 0x00, 0x02, 0x80, 0x01, 0x00, 0x04, 0x80, 0x01, 0x00, 0x10,
++    0x80, 0x01, 0x00, 0x08, 0x00, 0x06, 0x00, 0x00, 0x00, 0x06, 0x00, 0x16, 0x00, 0x06, 0x00, 0x38,
++    0x00, 0x06, 0x00, 0x5a, 0x80, 0x02, 0x00, 0x28, 0x80, 0x02, 0x00, 0x3e, 0x90, 0x0a, 0x00, 0x00,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0x80, 0x01, 0x00, 0x01, 0x80, 0x01, 0x00, 0x02, 0x80, 0x01, 0x00, 0x04, 0x80, 0x01, 0x00, 0x10,
++    0x80, 0x01, 0x00, 0x08, 0x00, 0x06, 0x00, 0x70, 0x00, 0x06, 0x00, 0x86, 0x00, 0x06, 0x00, 0xa8,
++    0x00, 0x06, 0x00, 0xca, 0x80, 0x02, 0x00, 0x28, 0x80, 0x02, 0x00, 0x3e, 0x90, 0x0a, 0x00, 0x00,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0x4f, 0x00, 0x72, 0x00, 0x61, 0x00, 0x6e, 0x00, 0x67, 0x00, 0x65, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x42, 0xd2,
++];
++/// The macros `EDITED` points to (macro sectors carry no checksum).
++const MACROS: [u8; 255] = [
++    0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40,
++    0x00, 0x32, 0x44, 0x00, 0x2b, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02, 0xe1, 0x40,
++    0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01,
++    0xe0, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02,
++    0xe1, 0x40, 0x00, 0x32, 0x43, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x44, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x43, 0x00, 0x1a, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x44, 0x00, 0x1a, 0xff,
++    0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40,
++    0x00, 0x32, 0x44, 0x00, 0x2b, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02, 0xe1, 0x40,
++    0x00, 0x32, 0x43, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x00, 0x2b, 0x40, 0x00, 0x32, 0x44, 0x01,
++    0xe0, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x43, 0x02,
++    0xe1, 0x40, 0x00, 0x32, 0x43, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x44, 0x00, 0x17, 0x40, 0x00, 0x32, 0x44, 0x02, 0xe1, 0xff, 0x43, 0x01, 0xe0, 0x40, 0x00, 0x32,
++    0x43, 0x00, 0x1a, 0x40, 0x00, 0x32, 0x44, 0x01, 0xe0, 0x40, 0x00, 0x32, 0x44, 0x00, 0x1a, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++];
+diff --git a/crates/openlogi-device/src/write/onboard/edit/tests.rs b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+new file mode 100644
+index 00000000..19a2df5b
+--- /dev/null
++++ b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+@@ -0,0 +1,373 @@
++use std::collections::HashMap;
++use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
++use std::sync::{Arc, Mutex};
++
++use super::*;
++use crate::channel::scripted::{ScriptedRawHidChannel, feature_error, scripted_channel};
++
++include!("fixtures.rs");
++
++const ONBOARD: u8 = 8;
++const GET_INFO: u8 = 0;
++const SET_MODE: u8 = 1;
++const GET_MODE: u8 = 2;
++const SET_CURRENT: u8 = 3;
++const GET_CURRENT: u8 = 4;
++const READ: u8 = 5;
++const ADDR_WRITE: u8 = 6;
++const WRITE: u8 = 7;
++const WRITE_END: u8 = 8;
++const INVALID_ARGUMENT: u8 = 2;
++const HW_ERROR: u8 = 4;
++
++/// A write in progress: sector, announced length, data received so far.
++type PendingWrite = Arc<Mutex<(u16, usize, Vec<u8>)>>;
++/// Every backup taken: sector and the bytes saved.
++type Backups = Arc<Mutex<Vec<(u16, Vec<u8>)>>>;
++
++/// A scripted G903 HERO: `0x8100` at [`ONBOARD`] with its real sectors, and
++/// no DPI feature (so DPI edits are refused).
++#[derive(Clone, Default)]
++struct Mouse {
++    memory: Arc<Mutex<HashMap<u16, Vec<u8>>>>,
++    current: Arc<AtomicU8>,
++    /// The first write stores a corrupted byte.
++    store_wrong: Arc<AtomicBool>,
++    /// The write end call fails.
++    fail_end: Arc<AtomicBool>,
++    pending: PendingWrite,
++    writes: Arc<Mutex<Vec<u16>>>,
++}
++
++impl Mouse {
++    fn g903() -> Self {
++        let mouse = Self::default();
++        {
++            let mut memory = mouse.memory.lock().unwrap();
++            memory.insert(0x0000, DIRECTORY.to_vec());
++            memory.insert(0x0001, EDITED.to_vec());
++            for sector in 2..=5 {
++                memory.insert(sector, FACTORY.to_vec());
++            }
++            memory.insert(0x0006, MACROS.to_vec());
++            let mut rom = FACTORY.to_vec();
++            rom[253] = 0xff; // ROM sectors carry no checksum
++            rom[254] = 0xff;
++            memory.insert(0x0101, rom);
++        }
++        mouse.current.store(1, Ordering::SeqCst);
++        mouse
++    }
++
++    fn sector(&self, sector: u16) -> Vec<u8> {
++        self.memory.lock().unwrap()[&sector].clone()
++    }
++
++    fn responder(self) -> impl Fn(&[u8]) -> Option<Vec<u8>> {
++        move |request| {
++            let mut response = vec![0; 20];
++            response[..4].copy_from_slice(&request[..4]);
++            response[0] = 0x11;
++            // short (7-byte) requests carry 3 parameter bytes; pad to the long form
++            let mut padded = request.to_vec();
++            padded.resize(20, 0);
++            let args = &padded[4..20];
++            match (request[2], request[3] >> 4) {
++                (0, 1) => response[4] = 4,
++                (0, 0) => {
++                    response[4] = if u16::from_be_bytes([args[0], args[1]]) == 0x8100 {
++                        ONBOARD
++                    } else {
++                        0
++                    };
++                }
++                (ONBOARD, GET_INFO) => {
++                    response[4..15]
++                        .copy_from_slice(&[1, 4, 1, 5, 1, 12, 16, 0x00, 0xff, 0x10, 0x04]);
++                }
++                (ONBOARD, GET_MODE) => response[4] = 1,
++                (ONBOARD, SET_MODE) => {}
++                (ONBOARD, GET_CURRENT) => response[5] = self.current.load(Ordering::SeqCst),
++                (ONBOARD, SET_CURRENT) => {
++                    let wanted = args[1];
++                    let dir = self.sector(0);
++                    let entry = usize::from(wanted.saturating_sub(1)) * 4;
++                    if wanted == 0 || dir.get(entry + 2) != Some(&1) {
++                        return Some(feature_error(request, INVALID_ARGUMENT)); // like the real mouse
++                    }
++                    self.current.store(wanted, Ordering::SeqCst);
++                }
++                (ONBOARD, READ) => {
++                    let sector = u16::from_be_bytes([args[0], args[1]]);
++                    let offset = usize::from(u16::from_be_bytes([args[2], args[3]]));
++                    let memory = self.memory.lock().unwrap();
++                    let Some(data) = memory.get(&sector) else {
++                        return Some(feature_error(request, INVALID_ARGUMENT));
++                    };
++                    if offset + 16 > data.len() {
++                        return Some(feature_error(request, INVALID_ARGUMENT));
++                    }
++                    response[4..20].copy_from_slice(&data[offset..offset + 16]);
++                }
++                (ONBOARD, ADDR_WRITE) => {
++                    let sector = u16::from_be_bytes([args[0], args[1]]);
++                    let len = usize::from(u16::from_be_bytes([args[4], args[5]]));
++                    *self.pending.lock().unwrap() = (sector, len, Vec::new());
++                }
++                (ONBOARD, WRITE) => self.pending.lock().unwrap().2.extend_from_slice(args),
++                (ONBOARD, WRITE_END) => {
++                    if self.fail_end.load(Ordering::SeqCst) {
++                        return Some(feature_error(request, HW_ERROR));
++                    }
++                    let (sector, len, mut data) = self.pending.lock().unwrap().clone();
++                    data.truncate(len);
++                    if self.store_wrong.swap(false, Ordering::SeqCst) {
++                        data[5] ^= 0x01;
++                    }
++                    self.memory.lock().unwrap().insert(sector, data);
++                    self.writes.lock().unwrap().push(sector);
++                }
++                _ => return None,
++            }
++            Some(response)
++        }
++    }
++}
++
++struct Rig {
++    mouse: Mouse,
++    channel: Arc<HidppChannel>,
++    backups: Backups,
++}
++
++impl Rig {
++    async fn new() -> Self {
++        let mouse = Mouse::g903();
++        let (raw, _handle) =
++            ScriptedRawHidChannel::with_dynamic_responder(mouse.clone().responder());
++        let channel = scripted_channel(raw).await;
++        Self {
++            mouse,
++            channel,
++            backups: Arc::default(),
++        }
++    }
++
++    fn backup(&self) -> impl Fn(u16, &[u8]) -> bool + Send + Sync + 'static {
++        let backups = Arc::clone(&self.backups);
++        move |sector, data| {
++            backups.lock().unwrap().push((sector, data.to_vec()));
++            true
++        }
++    }
++
++    async fn read(&self) -> StoredProfiles {
++        read_stored_profiles_on_channel(&self.channel, 0xff)
++            .await
++            .unwrap()
++    }
++
++    async fn save(
++        &self,
++        profile: u8,
++        edit: impl FnOnce(&mut StoredProfile),
++    ) -> Result<SaveOutcome, WriteError> {
++        let read = self.read().await;
++        let slot = read
++            .profiles
++            .iter()
++            .find(|s| s.index.get() == profile)
++            .unwrap();
++        let before = slot.decoded.clone().unwrap();
++        let mut after = before.clone();
++        edit(&mut after);
++        let backup = self.backup();
++        save_stored_profile_on_channel(
++            &self.channel,
++            0xff,
++            slot.index,
++            &slot.raw,
++            &before,
++            &after,
++            &backup,
++        )
++        .await
++    }
++}
++
++fn nz(n: u8) -> NonZeroU8 {
++    NonZeroU8::new(n).unwrap()
++}
++
++#[tokio::test]
++async fn reads_profiles_factory_buttons_and_macros() {
++    let rig = Rig::new().await;
++    let read = rig.read().await;
++    assert_eq!(read.active, Some(nz(1)));
++    assert_eq!(read.profiles.len(), 5);
++    assert!(read.profiles[0].enabled && !read.profiles[1].enabled);
++    assert!(read.profiles.iter().all(|slot| slot.decoded.is_ok()));
++    assert_eq!(
++        read.dpi_values, None,
++        "this scripted mouse has no DPI feature"
++    );
++    assert_eq!(read.factory_buttons.len(), 12);
++    assert_eq!(read.factory_buttons[3], Binding::MouseButton(4));
++    assert_eq!(read.macros.len(), 8, "four macros, each in both layers");
++    assert!(read.macros.values().all(Result::is_ok));
++}
++
++#[tokio::test]
++async fn a_saved_button_is_written_backed_up_and_read_back() {
++    let rig = Rig::new().await;
++    let outcome = rig
++        .save(1, |p| p.buttons[9] = Binding::Consumer(0xcd))
++        .await;
++    assert_eq!(outcome, Ok(SaveOutcome::Saved));
++    let stored = rig.mouse.sector(1);
++    assert_eq!(&stored[0x44..0x48], &[0x80, 0x03, 0x00, 0xcd]);
++    assert_eq!(rig.mouse.sector(6), MACROS, "macros untouched");
++    assert_eq!(*rig.backups.lock().unwrap(), [(1, EDITED.to_vec())]);
++    assert_eq!(*rig.mouse.writes.lock().unwrap(), [1]);
++}
++
++#[tokio::test]
++async fn an_unchanged_profile_writes_nothing() {
++    let rig = Rig::new().await;
++    assert_eq!(rig.save(1, |_| {}).await, Ok(SaveOutcome::Unchanged));
++    assert!(rig.mouse.writes.lock().unwrap().is_empty());
++    assert!(rig.backups.lock().unwrap().is_empty());
++}
++
++#[tokio::test]
++async fn a_wrong_store_is_undone_and_checked() {
++    let rig = Rig::new().await;
++    rig.mouse.store_wrong.store(true, Ordering::SeqCst);
++    let outcome = rig
++        .save(1, |p| {
++            p.buttons[10] = Binding::Key {
++                modifiers: 1,
++                usage: 0x06,
++            }
++        })
++        .await;
++    assert_eq!(
++        outcome,
++        Err(WriteError::OnboardWriteNotStored { restored: true })
++    );
++    assert_eq!(rig.mouse.sector(1), EDITED);
++}
++
++#[tokio::test]
++async fn a_failed_write_puts_the_original_back() {
++    let rig = Rig::new().await;
++    rig.mouse.fail_end.store(true, Ordering::SeqCst);
++    let outcome = rig.save(1, |p| p.buttons[10] = Binding::Disabled).await;
++    assert_eq!(
++        outcome,
++        Err(WriteError::OnboardWriteNotStored { restored: false })
++    );
++    assert_eq!(
++        rig.mouse.sector(1),
++        EDITED,
++        "the failing end call never committed"
++    );
++}
++
++#[tokio::test]
++async fn memory_changed_meanwhile_is_not_overwritten() {
++    let rig = Rig::new().await;
++    let read = rig.read().await;
++    let slot = &read.profiles[0];
++    let before = slot.decoded.clone().unwrap();
++    let mut after = before.clone();
++    after.buttons[10] = Binding::Disabled;
++    let mut other = EDITED.to_vec(); // G HUB changes the profile meanwhile
++    other[0] = 1; // a real change: 125 Hz -> 1000 Hz
++    hidpp::feature::onboard_profiles::seal_sector(&mut other);
++    rig.mouse.memory.lock().unwrap().insert(1, other.clone());
++    let backup = rig.backup();
++    let outcome = save_stored_profile_on_channel(
++        &rig.channel,
++        0xff,
++        slot.index,
++        &slot.raw,
++        &before,
++        &after,
++        &backup,
++    )
++    .await;
++    assert_eq!(outcome, Err(WriteError::OnboardMemoryChanged));
++    assert_eq!(rig.mouse.sector(1), other);
++    assert!(rig.backups.lock().unwrap().is_empty());
++}
++
++#[tokio::test]
++async fn edits_that_would_break_the_mouse_are_refused() {
++    let rig = Rig::new().await;
++    let no_left = rig
++        .save(1, |p| p.buttons[0] = Binding::MouseButton(4))
++        .await;
++    assert!(matches!(
++        no_left,
++        Err(WriteError::OnboardProfileRejected { .. })
++    ));
++    let dpi = rig.save(1, |p| p.dpi[1] = 3200).await;
++    assert!(
++        matches!(dpi, Err(WriteError::OnboardProfileRejected { .. })),
++        "no DPI list: DPI edits refused"
++    );
++    assert!(rig.mouse.writes.lock().unwrap().is_empty());
++}
++
++#[tokio::test]
++async fn a_failed_backup_stops_the_write() {
++    let rig = Rig::new().await;
++    let read = rig.read().await;
++    let slot = &read.profiles[0];
++    let before = slot.decoded.clone().unwrap();
++    let mut after = before.clone();
++    after.buttons[10] = Binding::Disabled;
++    let refuse = |_: u16, _: &[u8]| false;
++    let outcome = save_stored_profile_on_channel(
++        &rig.channel,
++        0xff,
++        slot.index,
++        &slot.raw,
++        &before,
++        &after,
++        &refuse,
++    )
++    .await;
++    assert_eq!(outcome, Err(WriteError::OnboardBackupFailed));
++    assert!(rig.mouse.writes.lock().unwrap().is_empty());
++}
++
++#[tokio::test]
++async fn selecting_a_profile_that_is_off_switches_it_on_first() {
++    let rig = Rig::new().await;
++    let backup = rig.backup();
++    select_stored_profile_on_channel(&rig.channel, 0xff, nz(2), &backup)
++        .await
++        .unwrap();
++    assert_eq!(rig.mouse.current.load(Ordering::SeqCst), 2);
++    assert_eq!(rig.mouse.sector(0)[6], 0x01);
++    assert_eq!(*rig.backups.lock().unwrap(), [(0, DIRECTORY.to_vec())]);
++    // back to profile 1: already on, nothing written
++    select_stored_profile_on_channel(&rig.channel, 0xff, nz(1), &backup)
++        .await
++        .unwrap();
++    assert_eq!(rig.mouse.current.load(Ordering::SeqCst), 1);
++    assert_eq!(*rig.mouse.writes.lock().unwrap(), [0]);
++}
++
++#[tokio::test]
++async fn saving_the_active_profile_reloads_it() {
++    let rig = Rig::new().await;
++    rig.mouse.current.store(1, Ordering::SeqCst);
++    assert_eq!(
++        rig.save(1, |p| p.buttons[10] = Binding::Disabled).await,
++        Ok(SaveOutcome::Saved)
++    );
++    assert_eq!(rig.mouse.current.load(Ordering::SeqCst), 1);
++}
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
+index 89802456..fabd126e 100644
+--- a/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
+@@ -33,8 +33,8 @@ mod profile;
+ 
+ pub use profile::{
+     Binding, DPI_LEVELS, LED_ZONES, LedEffect, MacroError, MacroStep, ProfileError, StoredProfile,
+-    crc16, directory_with_enabled, profile_format_supported, read_stored_macro, seal_sector,
+-    sector_checksum_ok,
++    crc16, directory_with_enabled, factory_bindings, profile_format_supported, read_stored_macro,
++    seal_sector, sector_checksum_ok,
+ };
+ 
+ /// Implements the `OnboardProfiles` / `0x8100` feature.
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
+index 39eb588c..40d77c1b 100644
+--- a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
+@@ -501,6 +501,23 @@ impl StoredProfile {
+     }
+ }
+ 
++/// The button bindings of a factory (ROM) profile sector, for naming what
++/// each button did originally. ROM sectors carry no checksum, so this reads
++/// only the binding table and never feeds a write.
++#[must_use]
++pub fn factory_bindings(sector: &[u8], button_count: u8) -> Vec<Binding> {
++    let count = usize::from(button_count).min(MAX_BUTTONS);
++    if sector.len() < BUTTONS + 4 * count {
++        return Vec::new();
++    }
++    (0..count)
++        .map(|i| {
++            let at = BUTTONS + 4 * i;
++            Binding::decode([sector[at], sector[at + 1], sector[at + 2], sector[at + 3]])
++        })
++        .collect()
++}
++
+ /// CRC-16/CCITT-FALSE, the checksum in the last two bytes of a user sector.
+ #[must_use]
+ pub fn crc16(data: &[u8]) -> u16 {
+diff --git a/crates/openlogi-ipc/src/ipc.rs b/crates/openlogi-ipc/src/ipc.rs
+index 97a745d2..2b2b62e0 100644
+--- a/crates/openlogi-ipc/src/ipc.rs
++++ b/crates/openlogi-ipc/src/ipc.rs
+@@ -194,7 +194,11 @@ pub use succession::Identity;
+ ///      and `ActionRingIcon::{Channel1, Channel2, Channel3}` appended after
+ ///      them — a device's move to another Easy-Switch channel, bound to a
+ ///      button or an Actions Ring slot.
+-pub const PROTOCOL_VERSION: u32 = 46;
++/// v47: `WriteError::{OnboardProfileRejected, OnboardMemoryChanged,
++///      OnboardBackupFailed, OnboardWriteNotStored}` and
++///      `HidppOperation::WriteOnboard` appended — editing a G-series mouse's
++///      stored `0x8100` profiles.
++pub const PROTOCOL_VERSION: u32 = 47;
+ 
+ /// Environment variable through which the agent hands a supervised helper the
+ /// run token it will serve, so the helper knows which agent it belongs to
+diff --git a/crates/openlogi-ipc/tests/wire_format.rs b/crates/openlogi-ipc/tests/wire_format.rs
+index 644af8d4..fed9c1de 100644
+--- a/crates/openlogi-ipc/tests/wire_format.rs
++++ b/crates/openlogi-ipc/tests/wire_format.rs
+@@ -119,7 +119,7 @@ fn representative_smartshift_status() -> SmartShiftStatus {
+ /// unreleased version and leave this pin alone (`crates/openlogi-ipc/AGENTS.md`).
+ #[test]
+ fn protocol_version_is_pinned() {
+-    assert_eq!(PROTOCOL_VERSION, 46);
++    assert_eq!(PROTOCOL_VERSION, 47);
+ }
+ 
+ #[test]
+-- 
+2.43.0
+
+From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Tue, 24 Nov 2026 19:47:31 +0000
+Subject: [PATCH 3/4] feat(agent): read, save and select stored G-series
+ profiles over IPC
+
+Agent::{read_stored_profiles, save_stored_profile,
+select_stored_profile} appended, carrying new wire types in
+openlogi_core::hid::stored_profile (mirrors of the 0x8100 codec, which
+core must not depend on; the device crate converts).
+
+A save sends the sector bytes the editor read; the device layer decodes
+that base itself rather than trusting a caller's copy, lays the edited
+settings over it (button lists keep the base's length, the
+power-saving lights always come from the base) and runs the guarded
+write.
+
+Before every write the agent saves the sector to
+data_dir()/onboard-backups/<route>/, as a new file that is read back;
+a failed backup stops the write.
+
+Part of PROTOCOL_VERSION 47.
+---
+ crates/openlogi-agent/src/bin/mock_agent.rs   |  37 ++++
+ crates/openlogi-agent/src/server.rs           |  46 +++++
+ .../src/server/onboard_backup.rs              | 142 +++++++++++++
+ .../src/cmd/fixture/record_profile/tests.rs   |  28 +++
+ crates/openlogi-core/src/hid.rs               |   5 +
+ .../openlogi-core/src/hid/stored_profile.rs   | 168 ++++++++++++++++
+ crates/openlogi-device/src/lib.rs             |   5 +-
+ crates/openlogi-device/src/write.rs           |   4 +-
+ crates/openlogi-device/src/write/onboard.rs   |   5 +-
+ .../openlogi-device/src/write/onboard/edit.rs |  61 +++---
+ .../src/write/onboard/edit/convert.rs         | 187 ++++++++++++++++++
+ .../src/write/onboard/edit/tests.rs           |  25 ++-
+ crates/openlogi-ipc/src/ipc.rs                |  36 +++-
+ 13 files changed, 709 insertions(+), 40 deletions(-)
+ create mode 100644 crates/openlogi-agent/src/server/onboard_backup.rs
+ create mode 100644 crates/openlogi-core/src/hid/stored_profile.rs
+ create mode 100644 crates/openlogi-device/src/write/onboard/edit/convert.rs
+
+diff --git a/crates/openlogi-agent/src/bin/mock_agent.rs b/crates/openlogi-agent/src/bin/mock_agent.rs
+index 2ae02e9c..6304e90d 100644
+--- a/crates/openlogi-agent/src/bin/mock_agent.rs
++++ b/crates/openlogi-agent/src/bin/mock_agent.rs
+@@ -1182,6 +1182,43 @@ impl Agent for MockAgent {
+         })
+     }
+ 
++    async fn read_stored_profiles(
++        self,
++        _: Context,
++        route: DeviceRoute,
++    ) -> Result<openlogi_core::hid::StoredProfiles, WriteError> {
++        info!(%route, "read_stored_profiles (no onboard memory in the mock)");
++        Err(WriteError::FeatureUnsupported {
++            feature_hex: 0x8100,
++        })
++    }
++
++    async fn save_stored_profile(
++        self,
++        _: Context,
++        route: DeviceRoute,
++        _index: openlogi_core::hid::ProfileIndex,
++        _base: Vec<u8>,
++        _settings: openlogi_core::hid::StoredProfileSettings,
++    ) -> Result<openlogi_core::hid::StoredProfileSave, WriteError> {
++        info!(%route, "save_stored_profile (no onboard memory in the mock)");
++        Err(WriteError::FeatureUnsupported {
++            feature_hex: 0x8100,
++        })
++    }
++
++    async fn select_stored_profile(
++        self,
++        _: Context,
++        route: DeviceRoute,
++        _index: openlogi_core::hid::ProfileIndex,
++    ) -> Result<(), WriteError> {
++        info!(%route, "select_stored_profile (no onboard memory in the mock)");
++        Err(WriteError::FeatureUnsupported {
++            feature_hex: 0x8100,
++        })
++    }
++
+     async fn unpair_device(self, _: Context, route: DeviceRoute) -> Result<(), PairingFailure> {
+         let result = self.state.lock().await.unpair(&route);
+         info!(%route, ok = result.is_ok(), "unpair_device");
+diff --git a/crates/openlogi-agent/src/server.rs b/crates/openlogi-agent/src/server.rs
+index 366284c4..ad36386b 100644
+--- a/crates/openlogi-agent/src/server.rs
++++ b/crates/openlogi-agent/src/server.rs
+@@ -7,6 +7,7 @@
+ 
+ pub(crate) mod backlight;
+ mod haptic_restore;
++mod onboard_backup;
+ mod settings;
+ 
+ use std::sync::{Arc, PoisonError};
+@@ -303,6 +304,51 @@ impl Agent for AgentServer {
+             .await
+     }
+ 
++    async fn read_stored_profiles(
++        self,
++        _: Context,
++        route: DeviceRoute,
++    ) -> Result<openlogi_core::hid::StoredProfiles, WriteError> {
++        self.shared
++            .device(&route)
++            .run(HidppOperation::ReadOnboard, |c| async move {
++                openlogi_hid::read_stored_profiles_on(&c).await
++            })
++            .await
++    }
++
++    async fn save_stored_profile(
++        self,
++        _: Context,
++        route: DeviceRoute,
++        index: openlogi_core::hid::ProfileIndex,
++        base: Vec<u8>,
++        settings: openlogi_core::hid::StoredProfileSettings,
++    ) -> Result<openlogi_core::hid::StoredProfileSave, WriteError> {
++        let backup = onboard_backup::sink(&route);
++        self.shared
++            .device(&route)
++            .run(HidppOperation::WriteOnboard, move |c| async move {
++                openlogi_hid::save_stored_profile_on(&c, index, &base, &settings, &backup).await
++            })
++            .await
++    }
++
++    async fn select_stored_profile(
++        self,
++        _: Context,
++        route: DeviceRoute,
++        index: openlogi_core::hid::ProfileIndex,
++    ) -> Result<(), WriteError> {
++        let backup = onboard_backup::sink(&route);
++        self.shared
++            .device(&route)
++            .run(HidppOperation::WriteOnboard, move |c| async move {
++                openlogi_hid::select_stored_profile_on(&c, index, &backup).await
++            })
++            .await
++    }
++
+     async fn request_accessibility_prompt(self, _: Context) {
+         Hook::prompt_accessibility();
+     }
+diff --git a/crates/openlogi-agent/src/server/onboard_backup.rs b/crates/openlogi-agent/src/server/onboard_backup.rs
+new file mode 100644
+index 00000000..84eb7228
+--- /dev/null
++++ b/crates/openlogi-agent/src/server/onboard_backup.rs
+@@ -0,0 +1,142 @@
++//! Copies of a gaming mouse's onboard memory, saved before every write.
++//!
++//! Files land in `data_dir()/onboard-backups/<route>/sector-<hex>-<unix ms>.bin`.
++//! A backup is created new and never overwritten, then read back: the write
++//! only goes ahead when the copy on disk equals what was read from the mouse.
++//! The folder is named after the route, so a mouse moved to another receiver
++//! starts a new folder; the old copies stay where they are.
++
++use std::fs;
++use std::io::Write as _;
++use std::path::{Path, PathBuf};
++use std::time::{SystemTime, UNIX_EPOCH};
++
++use openlogi_core::hid::DeviceRoute;
++use openlogi_core::paths;
++use tracing::warn;
++
++const FOLDER: &str = "onboard-backups";
++
++/// The backup function for the mouse on `route`; `false` (nothing saved)
++/// stops the write.
++pub(super) fn sink(route: &DeviceRoute) -> impl Fn(u16, &[u8]) -> bool + Send + Sync + 'static {
++    let dir = paths::data_dir().map(|dir| dir.join(FOLDER).join(route_folder(route)));
++    move |sector, data| match &dir {
++        Ok(dir) => save(dir, sector, data),
++        Err(error) => {
++            warn!(?error, "no data directory for onboard backups");
++            false
++        }
++    }
++}
++
++fn route_folder(route: &DeviceRoute) -> String {
++    let name: String = format!("{route:?}")
++        .chars()
++        .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
++        .collect();
++    let name = name.trim_matches('_');
++    if name.is_empty() {
++        "device".to_owned()
++    } else {
++        name.to_owned()
++    }
++}
++
++fn save(dir: &Path, sector: u16, data: &[u8]) -> bool {
++    match try_save(dir, sector, data) {
++        Ok(path) => {
++            tracing::info!(path = %path.display(), "onboard memory backed up");
++            true
++        }
++        Err(error) => {
++            warn!(?error, dir = %dir.display(), "onboard backup failed; not writing");
++            false
++        }
++    }
++}
++
++fn try_save(dir: &Path, sector: u16, data: &[u8]) -> std::io::Result<PathBuf> {
++    fs::create_dir_all(dir)?;
++    let millis = SystemTime::now()
++        .duration_since(UNIX_EPOCH)
++        .map_or(0, |d| d.as_millis());
++    for attempt in 0..100 {
++        let name = if attempt == 0 {
++            format!("sector-{sector:04x}-{millis}.bin")
++        } else {
++            format!("sector-{sector:04x}-{millis}-{attempt}.bin")
++        };
++        let path = dir.join(name);
++        let mut file = match fs::OpenOptions::new()
++            .write(true)
++            .create_new(true)
++            .open(&path)
++        {
++            Ok(file) => file,
++            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
++            Err(error) => return Err(error),
++        };
++        file.write_all(data)?;
++        file.sync_all()?;
++        drop(file);
++        if fs::read(&path)? != data {
++            return Err(std::io::Error::other(
++                "the backup on disk differs from the memory read",
++            ));
++        }
++        return Ok(path);
++    }
++    Err(std::io::Error::other("no free backup file name"))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    fn temp_dir(name: &str) -> PathBuf {
++        let dir = std::env::temp_dir().join(format!(
++            "openlogi-backup-test-{name}-{}",
++            std::process::id()
++        ));
++        let _ = fs::remove_dir_all(&dir);
++        dir
++    }
++
++    #[test]
++    fn saves_new_files_and_never_overwrites() {
++        let dir = temp_dir("new");
++        assert!(save(&dir, 1, &[1, 2, 3]));
++        assert!(save(&dir, 1, &[4, 5, 6])); // same millisecond is likely: gets a suffix
++        let mut files: Vec<Vec<u8>> = fs::read_dir(&dir)
++            .unwrap()
++            .map(|e| fs::read(e.unwrap().path()).unwrap())
++            .collect();
++        files.sort();
++        assert_eq!(files, [vec![1, 2, 3], vec![4, 5, 6]]);
++        fs::remove_dir_all(&dir).unwrap();
++    }
++
++    #[test]
++    fn a_folder_that_cannot_be_made_refuses_the_write() {
++        let dir = temp_dir("blocked");
++        fs::write(&dir, b"a file where the folder should be").unwrap();
++        assert!(!save(&dir.join("inner"), 1, &[1]));
++        fs::remove_file(&dir).unwrap();
++    }
++
++    #[test]
++    fn route_folders_are_plain_names() {
++        let route = DeviceRoute::Bolt {
++            receiver_uid: "AB:CD/12".into(),
++            slot: 2,
++        };
++        let folder = route_folder(&route);
++        assert!(
++            folder
++                .chars()
++                .all(|c| c.is_ascii_alphanumeric() || c == '_')
++        );
++        assert!(folder.contains("Bolt") && folder.contains('2'));
++    }
++}
+diff --git a/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs b/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs
+index 9fc4d804..31e8eaef 100644
+--- a/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs
++++ b/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs
+@@ -179,6 +179,34 @@ impl Agent for TestAgent {
+         unreachable!("profile capture does not read onboard memory")
+     }
+ 
++    async fn read_stored_profiles(
++        self,
++        _: TarpcContext,
++        _route: DeviceRoute,
++    ) -> Result<openlogi_core::hid::StoredProfiles, WriteError> {
++        unreachable!("profile capture does not read stored profiles")
++    }
++
++    async fn save_stored_profile(
++        self,
++        _: TarpcContext,
++        _route: DeviceRoute,
++        _index: openlogi_core::hid::ProfileIndex,
++        _base: Vec<u8>,
++        _settings: openlogi_core::hid::StoredProfileSettings,
++    ) -> Result<openlogi_core::hid::StoredProfileSave, WriteError> {
++        unreachable!("profile capture does not write stored profiles")
++    }
++
++    async fn select_stored_profile(
++        self,
++        _: TarpcContext,
++        _route: DeviceRoute,
++        _index: openlogi_core::hid::ProfileIndex,
++    ) -> Result<(), WriteError> {
++        unreachable!("profile capture does not select stored profiles")
++    }
++
+     async fn unpair_device(
+         self,
+         _: TarpcContext,
+diff --git a/crates/openlogi-core/src/hid.rs b/crates/openlogi-core/src/hid.rs
+index 8f9cbd58..86cf1063 100644
+--- a/crates/openlogi-core/src/hid.rs
++++ b/crates/openlogi-core/src/hid.rs
+@@ -24,6 +24,7 @@ pub mod route;
+ pub mod scroll;
+ pub mod sidetone;
+ pub mod smartshift;
++pub mod stored_profile;
+ 
+ pub use backlight::{
+     BacklightChange, BacklightControls, BacklightDuration, BacklightMode, BacklightState,
+@@ -50,3 +51,7 @@ pub use sidetone::SidetoneLevel;
+ pub use smartshift::{
+     SmartShiftAutoDisengage, SmartShiftMode, SmartShiftStatus, SmartShiftThreshold, TunableTorque,
+ };
++pub use stored_profile::{
++    STORED_DPI_LEVELS, StoredBinding, StoredLed, StoredMacro, StoredMacroStep, StoredProfileSave,
++    StoredProfileSettings, StoredProfileSlot, StoredProfiles,
++};
+diff --git a/crates/openlogi-core/src/hid/stored_profile.rs b/crates/openlogi-core/src/hid/stored_profile.rs
+new file mode 100644
+index 00000000..83d73727
+--- /dev/null
++++ b/crates/openlogi-core/src/hid/stored_profile.rs
+@@ -0,0 +1,168 @@
++//! A gaming mouse's stored profiles, for editing. Wire types: field and
++//! variant order matter, and variants are append-only.
++//!
++//! These mirror the `0x8100` codec in `openlogi-hidpp`, which this crate must
++//! not depend on; the device crate converts between the two.
++
++use serde::{Deserialize, Serialize};
++
++use super::onboard::{OnboardMode, ProfileIndex};
++use crate::color::Rgb;
++
++/// Number of DPI levels a profile stores.
++pub const STORED_DPI_LEVELS: usize = 5;
++
++/// What a button does, as stored in the profile.
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
++pub enum StoredBinding {
++    /// Mouse button `1..=16` (1 left, 2 right, 3 middle, 4 back, 5 forward).
++    MouseButton(u8),
++    /// A keyboard key: boot-keyboard modifier byte and HID usage.
++    Key {
++        /// Bit 0 left Ctrl, 1 left Shift, 2 left Alt, 3 left GUI; 4–7 right.
++        modifiers: u8,
++        /// HID usage (page 7).
++        usage: u8,
++    },
++    /// A consumer-control usage (media keys).
++    Consumer(u16),
++    /// A firmware function (DPI cycling, profile switching, …).
++    Special {
++        /// The function number.
++        function: u8,
++        /// Its stored profile argument.
++        profile: u8,
++    },
++    /// A macro in onboard memory.
++    StoredMacro {
++        /// The macro's sector.
++        sector: u8,
++        /// Its offset in that sector.
++        offset: u8,
++    },
++    /// Does nothing.
++    Disabled,
++    /// A binding the codec does not decode; written back unchanged.
++    Other([u8; 4]),
++}
++
++/// A lighting zone's stored effect.
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
++pub enum StoredLed {
++    /// Dark.
++    Off,
++    /// A fixed colour.
++    Fixed(Rgb),
++    /// Breathing in one colour.
++    Breathing {
++        /// The colour.
++        color: Rgb,
++        /// One breath, in milliseconds.
++        period_ms: u16,
++        /// `1..=100`.
++        brightness: u8,
++    },
++    /// Cycling through the colour wheel.
++    Cycle {
++        /// One cycle, in milliseconds.
++        period_ms: u16,
++        /// `1..=100`.
++        brightness: u8,
++    },
++    /// An effect the codec does not decode; written back unchanged.
++    Other([u8; 11]),
++}
++
++/// The editable settings of one stored profile.
++#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
++pub struct StoredProfileSettings {
++    /// Report interval in milliseconds: 1, 2, 4 or 8.
++    pub report_interval_ms: u8,
++    /// Index into `dpi` of the starting level.
++    pub default_dpi_level: u8,
++    /// Index into `dpi` of the DPI-shift level.
++    pub shift_dpi_level: Option<u8>,
++    /// DPI per level; `0` marks an unused level.
++    pub dpi: [u16; STORED_DPI_LEVELS],
++    /// The visible lighting per zone.
++    pub leds: [StoredLed; 2],
++    /// The copy shown while the mouse saves power.
++    pub power_save_leds: [StoredLed; 2],
++    /// One binding per button.
++    pub buttons: Vec<StoredBinding>,
++    /// The second (G-Shift) layer.
++    pub shift_buttons: Vec<StoredBinding>,
++}
++
++/// One stored profile slot.
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
++pub struct StoredProfileSlot {
++    /// Slot number.
++    pub index: ProfileIndex,
++    /// Whether it is on in the profile list.
++    pub enabled: bool,
++    /// The sector as read: a save sends it back, and the agent refuses to
++    /// write if the mouse no longer holds exactly these bytes.
++    pub base: Vec<u8>,
++    /// The decoded settings, or why the profile can't be edited.
++    pub settings: Result<StoredProfileSettings, String>,
++}
++
++/// One step of a stored macro.
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
++pub enum StoredMacroStep {
++    /// Key press: modifiers and HID usage.
++    KeyDown(u8, u8),
++    /// Key release.
++    KeyUp(u8, u8),
++    /// Wait, in milliseconds.
++    Delay(u16),
++}
++
++/// A macro a profile points to.
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
++pub struct StoredMacro {
++    /// Where it lives.
++    pub sector: u8,
++    /// Its offset there.
++    pub offset: u8,
++    /// Its steps, or why they can't be read.
++    pub steps: Result<Vec<StoredMacroStep>, String>,
++}
++
++/// A gaming mouse's stored profiles, read for editing.
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
++pub struct StoredProfiles {
++    /// Who is in control now.
++    pub mode: OnboardMode,
++    /// The active profile; `None` in host mode.
++    pub active: Option<ProfileIndex>,
++    /// The DPI values the sensor accepts, when they could be read; without
++    /// them DPI levels are shown but not editable.
++    pub dpi_values: Option<Vec<u16>>,
++    /// The user profile slots; empty while the mouse runs its factory profiles.
++    pub profiles: Vec<StoredProfileSlot>,
++    /// What each button did in the factory profile.
++    pub factory_buttons: Vec<StoredBinding>,
++    /// The macros the profiles point to.
++    pub macros: Vec<StoredMacro>,
++}
++
++/// What a save did.
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
++pub enum StoredProfileSave {
++    /// Written and read back intact.
++    Saved,
++    /// The edit changed nothing; nothing was written.
++    Unchanged,
++}
++
++impl StoredProfiles {
++    /// The macro at `sector`, `offset`, if a profile points to it.
++    #[must_use]
++    pub fn stored_macro(&self, sector: u8, offset: u8) -> Option<&StoredMacro> {
++        self.macros
++            .iter()
++            .find(|m| m.sector == sector && m.offset == offset)
++    }
++}
+diff --git a/crates/openlogi-device/src/lib.rs b/crates/openlogi-device/src/lib.rs
+index 56006522..d93d778f 100644
+--- a/crates/openlogi-device/src/lib.rs
++++ b/crates/openlogi-device/src/lib.rs
+@@ -92,8 +92,9 @@ pub use write::{
+     get_report_rate_info_on, get_scroll_wheel_mode, get_scroll_wheel_mode_on, get_sidetone,
+     get_sidetone_on, get_smartshift_status, get_smartshift_status_on, get_unit_id_on,
+     keep_os_layout_on, key_display_for, litra_model_for_route, matches_litra, play_haptic,
+-    play_haptic_on, raw_feature_calls, read_battery_raw, read_litra_state, rename_easy_switch_host,
+-    rename_easy_switch_host_on, restore_haptics_on, set_disable_keys, set_disable_keys_on,
++    play_haptic_on, raw_feature_calls, read_battery_raw, read_litra_state, read_stored_profiles_on,
++    rename_easy_switch_host, rename_easy_switch_host_on, restore_haptics_on,
++    save_stored_profile_on, select_stored_profile_on, set_disable_keys, set_disable_keys_on,
+     set_disable_keys_write_through_on, set_dpi, set_dpi_led_on, set_dpi_on, set_dpi_target_on,
+     set_fn_lock, set_fn_lock_on, set_force_sensing_on, set_keyboard_color, set_keyboard_color_on,
+     set_keyboard_color_with, set_keyboard_color_with_on, set_pointer_speed_on, set_report_rate,
+diff --git a/crates/openlogi-device/src/write.rs b/crates/openlogi-device/src/write.rs
+index a93159a6..48197217 100644
+--- a/crates/openlogi-device/src/write.rs
++++ b/crates/openlogi-device/src/write.rs
+@@ -91,8 +91,8 @@ pub use litra::{
+     read_state as read_litra_state, watch as watch_litra,
+ };
+ pub use onboard::{
+-    Backup, SaveOutcome, StoredProfileSlot, StoredProfiles, get_onboard, get_onboard_on,
+-    read_stored_profiles_on, save_stored_profile_on, select_stored_profile_on,
++    Backup, get_onboard, get_onboard_on, read_stored_profiles_on, save_stored_profile_on,
++    select_stored_profile_on,
+ };
+ pub use openlogi_core::hid::{DisableKeysMask, DisableKeysState};
+ pub use openlogi_core::hid::{
+diff --git a/crates/openlogi-device/src/write/onboard.rs b/crates/openlogi-device/src/write/onboard.rs
+index 424e50a9..0c981dc4 100644
+--- a/crates/openlogi-device/src/write/onboard.rs
++++ b/crates/openlogi-device/src/write/onboard.rs
+@@ -3,10 +3,7 @@
+ 
+ mod edit;
+ 
+-pub use edit::{
+-    Backup, SaveOutcome, StoredProfileSlot, StoredProfiles, read_stored_profiles_on,
+-    save_stored_profile_on, select_stored_profile_on,
+-};
++pub use edit::{Backup, read_stored_profiles_on, save_stored_profile_on, select_stored_profile_on};
+ 
+ use std::sync::Arc;
+ 
+diff --git a/crates/openlogi-device/src/write/onboard/edit.rs b/crates/openlogi-device/src/write/onboard/edit.rs
+index 6fa9e29f..4d4c23a2 100644
+--- a/crates/openlogi-device/src/write/onboard/edit.rs
++++ b/crates/openlogi-device/src/write/onboard/edit.rs
+@@ -23,6 +23,7 @@ use hidpp::{
+ use tracing::{debug, warn};
+ 
+ use crate::SharedChannel;
++use openlogi_core::hid::{ProfileIndex, stored_profile as wire};
+ 
+ use super::super::dpi::get_dpi_info_on_channel;
+ use super::super::{HidppOperation, WriteError, classify_hidpp_error, open_feature};
+@@ -41,8 +42,6 @@ pub type Backup<'a> = &'a (dyn Fn(u16, &[u8]) -> bool + Send + Sync);
+ pub struct StoredProfileSlot {
+     /// 1-based index.
+     pub index: NonZeroU8,
+-    /// Flash sector.
+-    pub sector: u16,
+     /// Whether it is on in the profile list (the mouse only selects those).
+     pub enabled: bool,
+     /// The sector as read.
+@@ -54,8 +53,6 @@ pub struct StoredProfileSlot {
+ /// Everything the profile editor shows.
+ #[derive(Clone, Debug)]
+ pub struct StoredProfiles {
+-    /// The `0x8100` description.
+-    pub info: OnboardProfilesInfo,
+     /// Who is in control now.
+     pub mode: onboard_profiles::OnboardMode,
+     /// The active profile, `None` in host mode.
+@@ -80,40 +77,48 @@ pub enum SaveOutcome {
+ }
+ 
+ /// Reads every user profile, the factory buttons and the stored macros.
+-pub async fn read_stored_profiles_on(shared: &SharedChannel) -> Result<StoredProfiles, WriteError> {
+-    read_stored_profiles_on_channel(shared.channel(), shared.device_index()).await
++pub async fn read_stored_profiles_on(
++    shared: &SharedChannel,
++) -> Result<wire::StoredProfiles, WriteError> {
++    read_stored_profiles_on_channel(shared.channel(), shared.device_index())
++        .await
++        .map(convert::profiles_to_wire)
+ }
+ 
+-/// Saves `after` into profile `index`, whose sector read as `original` and
+-/// decoded as `before`.
++/// Saves `settings` into profile `index`, whose sector the editor read as
++/// `base`. Refused, with nothing written, if the mouse no longer holds
++/// exactly `base`.
+ pub async fn save_stored_profile_on(
+     shared: &SharedChannel,
+-    index: NonZeroU8,
+-    original: &[u8],
+-    before: &StoredProfile,
+-    after: &StoredProfile,
++    index: ProfileIndex,
++    base: &[u8],
++    settings: &wire::StoredProfileSettings,
+     backup: Backup<'_>,
+-) -> Result<SaveOutcome, WriteError> {
++) -> Result<wire::StoredProfileSave, WriteError> {
+     save_stored_profile_on_channel(
+         shared.channel(),
+         shared.device_index(),
+-        index,
+-        original,
+-        before,
+-        after,
++        index.get(),
++        base,
++        settings,
+         backup,
+     )
+     .await
++    .map(|outcome| match outcome {
++        SaveOutcome::Saved => wire::StoredProfileSave::Saved,
++        SaveOutcome::Unchanged => wire::StoredProfileSave::Unchanged,
++    })
+ }
+ 
+ /// Makes profile `index` the active one, switching it on in the profile list
+ /// first if it is off (the mouse refuses to select a profile that is off).
+ pub async fn select_stored_profile_on(
+     shared: &SharedChannel,
+-    index: NonZeroU8,
++    index: ProfileIndex,
+     backup: Backup<'_>,
+ ) -> Result<(), WriteError> {
+-    select_stored_profile_on_channel(shared.channel(), shared.device_index(), index, backup).await
++    select_stored_profile_on_channel(shared.channel(), shared.device_index(), index.get(), backup)
++        .await
+ }
+ 
+ async fn open(
+@@ -240,7 +245,6 @@ async fn read_stored_profiles_on_channel(
+             StoredProfile::decode(&raw, info.profile_format, info.button_count, decode_range);
+         profiles.push(StoredProfileSlot {
+             index: entry.index,
+-            sector: entry.sector,
+             enabled: entry.enabled,
+             raw,
+             decoded,
+@@ -286,7 +290,6 @@ async fn read_stored_profiles_on_channel(
+         .collect();
+ 
+     Ok(StoredProfiles {
+-        info,
+         mode,
+         active,
+         dpi_values,
+@@ -301,12 +304,22 @@ async fn save_stored_profile_on_channel(
+     index: u8,
+     profile: NonZeroU8,
+     original: &[u8],
+-    before: &StoredProfile,
+-    after: &StoredProfile,
++    settings: &wire::StoredProfileSettings,
+     backup: Backup<'_>,
+ ) -> Result<SaveOutcome, WriteError> {
+     let onboard = open(channel, index).await?;
+     let info = onboard.get_info().await.map_err(read_err)?;
++    // The base is decoded here, not taken from the caller: a stale editor
++    // can't make a field look unchanged when the mouse holds something else.
++    let before = StoredProfile::decode(
++        original,
++        info.profile_format,
++        info.button_count,
++        (1, u16::MAX),
++    )
++    .map_err(|e| rejected(&e))?;
++    let after = convert::settings_from_wire(settings, &before);
++    let (before, after) = (&before, &after);
+     let sector = onboard
+         .read_directory(&info)
+         .await
+@@ -388,5 +401,7 @@ async fn select_stored_profile_on_channel(
+         .map_err(write_err)
+ }
+ 
++mod convert;
++
+ #[cfg(test)]
+ mod tests;
+diff --git a/crates/openlogi-device/src/write/onboard/edit/convert.rs b/crates/openlogi-device/src/write/onboard/edit/convert.rs
+new file mode 100644
+index 00000000..87838297
+--- /dev/null
++++ b/crates/openlogi-device/src/write/onboard/edit/convert.rs
+@@ -0,0 +1,187 @@
++//! Between the `0x8100` codec's types and the wire types in `openlogi-core`.
++
++use hidpp::feature::color_led_effects::Rgb as HidppRgb;
++use hidpp::feature::onboard_profiles::{Binding, LedEffect, MacroStep, StoredProfile};
++use openlogi_core::color::Rgb;
++use openlogi_core::hid::{OnboardMode, ProfileIndex, stored_profile as wire};
++
++use super::StoredProfiles;
++use hidpp::feature::onboard_profiles;
++
++fn rgb_to_wire(c: HidppRgb) -> Rgb {
++    Rgb::new(c.red, c.green, c.blue)
++}
++
++fn rgb_from_wire(c: Rgb) -> HidppRgb {
++    let (red, green, blue) = c.components();
++    HidppRgb { red, green, blue }
++}
++
++pub(super) fn binding_to_wire(b: Binding) -> wire::StoredBinding {
++    match b {
++        Binding::MouseButton(n) => wire::StoredBinding::MouseButton(n),
++        Binding::Key { modifiers, usage } => wire::StoredBinding::Key { modifiers, usage },
++        Binding::Consumer(u) => wire::StoredBinding::Consumer(u),
++        Binding::Special { function, profile } => {
++            wire::StoredBinding::Special { function, profile }
++        }
++        Binding::StoredMacro { sector, offset } => {
++            wire::StoredBinding::StoredMacro { sector, offset }
++        }
++        Binding::Disabled => wire::StoredBinding::Disabled,
++        Binding::Other(raw) => wire::StoredBinding::Other(raw),
++    }
++}
++
++pub(super) fn binding_from_wire(b: wire::StoredBinding) -> Binding {
++    match b {
++        wire::StoredBinding::MouseButton(n) => Binding::MouseButton(n),
++        wire::StoredBinding::Key { modifiers, usage } => Binding::Key { modifiers, usage },
++        wire::StoredBinding::Consumer(u) => Binding::Consumer(u),
++        wire::StoredBinding::Special { function, profile } => {
++            Binding::Special { function, profile }
++        }
++        wire::StoredBinding::StoredMacro { sector, offset } => {
++            Binding::StoredMacro { sector, offset }
++        }
++        wire::StoredBinding::Disabled => Binding::Disabled,
++        wire::StoredBinding::Other(raw) => Binding::Other(raw),
++    }
++}
++
++fn led_to_wire(l: LedEffect) -> wire::StoredLed {
++    match l {
++        LedEffect::Off => wire::StoredLed::Off,
++        LedEffect::Fixed(c) => wire::StoredLed::Fixed(rgb_to_wire(c)),
++        LedEffect::Breathing {
++            color,
++            period_ms,
++            brightness,
++        } => wire::StoredLed::Breathing {
++            color: rgb_to_wire(color),
++            period_ms,
++            brightness,
++        },
++        LedEffect::Cycle {
++            period_ms,
++            brightness,
++        } => wire::StoredLed::Cycle {
++            period_ms,
++            brightness,
++        },
++        LedEffect::Other(raw) => wire::StoredLed::Other(raw),
++    }
++}
++
++fn led_from_wire(l: wire::StoredLed) -> LedEffect {
++    match l {
++        wire::StoredLed::Off => LedEffect::Off,
++        wire::StoredLed::Fixed(c) => LedEffect::Fixed(rgb_from_wire(c)),
++        wire::StoredLed::Breathing {
++            color,
++            period_ms,
++            brightness,
++        } => LedEffect::Breathing {
++            color: rgb_from_wire(color),
++            period_ms,
++            brightness,
++        },
++        wire::StoredLed::Cycle {
++            period_ms,
++            brightness,
++        } => LedEffect::Cycle {
++            period_ms,
++            brightness,
++        },
++        wire::StoredLed::Other(raw) => LedEffect::Other(raw),
++    }
++}
++
++pub(super) fn settings_to_wire(p: &StoredProfile) -> wire::StoredProfileSettings {
++    wire::StoredProfileSettings {
++        report_interval_ms: p.report_interval_ms,
++        default_dpi_level: p.default_dpi_level,
++        shift_dpi_level: p.shift_dpi_level,
++        dpi: p.dpi,
++        leds: p.leds.map(led_to_wire),
++        power_save_leds: p.power_save_leds.map(led_to_wire),
++        buttons: p.buttons.iter().copied().map(binding_to_wire).collect(),
++        shift_buttons: p
++            .shift_buttons
++            .iter()
++            .copied()
++            .map(binding_to_wire)
++            .collect(),
++    }
++}
++
++/// The edited `settings` laid over `base`, the profile decoded from the
++/// mouse. Button lists keep `base`'s length whatever the caller sent, and the
++/// power-saving copy always comes from `base`: the codec derives it from a
++/// changed light itself.
++pub(super) fn settings_from_wire(
++    settings: &wire::StoredProfileSettings,
++    base: &StoredProfile,
++) -> StoredProfile {
++    let layer = |edited: &[wire::StoredBinding], base: &[Binding]| -> Vec<Binding> {
++        base.iter()
++            .enumerate()
++            .map(|(i, &b)| edited.get(i).map_or(b, |&e| binding_from_wire(e)))
++            .collect()
++    };
++    StoredProfile {
++        report_interval_ms: settings.report_interval_ms,
++        default_dpi_level: settings.default_dpi_level,
++        shift_dpi_level: settings.shift_dpi_level,
++        dpi: settings.dpi,
++        leds: settings.leds.map(led_from_wire),
++        power_save_leds: base.power_save_leds,
++        buttons: layer(&settings.buttons, &base.buttons),
++        shift_buttons: layer(&settings.shift_buttons, &base.shift_buttons),
++    }
++}
++
++fn step_to_wire(s: MacroStep) -> wire::StoredMacroStep {
++    match s {
++        MacroStep::KeyDown(m, u) => wire::StoredMacroStep::KeyDown(m, u),
++        MacroStep::KeyUp(m, u) => wire::StoredMacroStep::KeyUp(m, u),
++        MacroStep::Delay(ms) => wire::StoredMacroStep::Delay(ms),
++    }
++}
++
++pub(super) fn profiles_to_wire(p: StoredProfiles) -> wire::StoredProfiles {
++    wire::StoredProfiles {
++        mode: match p.mode {
++            onboard_profiles::OnboardMode::Onboard => OnboardMode::Onboard,
++            onboard_profiles::OnboardMode::Host => OnboardMode::Host,
++        },
++        active: p.active.map(ProfileIndex::from),
++        dpi_values: p.dpi_values,
++        profiles: p
++            .profiles
++            .into_iter()
++            .map(|slot| wire::StoredProfileSlot {
++                index: ProfileIndex::from(slot.index),
++                enabled: slot.enabled,
++                settings: slot
++                    .decoded
++                    .as_ref()
++                    .map(settings_to_wire)
++                    .map_err(ToString::to_string),
++                base: slot.raw,
++            })
++            .collect(),
++        factory_buttons: p.factory_buttons.into_iter().map(binding_to_wire).collect(),
++        macros: p
++            .macros
++            .into_iter()
++            .map(|((sector, offset), steps)| wire::StoredMacro {
++                sector,
++                offset,
++                steps: steps
++                    .map(|steps| steps.into_iter().map(step_to_wire).collect())
++                    .map_err(|e| e.to_string()),
++            })
++            .collect(),
++    }
++}
+diff --git a/crates/openlogi-device/src/write/onboard/edit/tests.rs b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+index 19a2df5b..e12769a6 100644
+--- a/crates/openlogi-device/src/write/onboard/edit/tests.rs
++++ b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+@@ -187,8 +187,7 @@ impl Rig {
+             0xff,
+             slot.index,
+             &slot.raw,
+-            &before,
+-            &after,
++            &convert::settings_to_wire(&after),
+             &backup,
+         )
+         .await
+@@ -292,8 +291,7 @@ async fn memory_changed_meanwhile_is_not_overwritten() {
+         0xff,
+         slot.index,
+         &slot.raw,
+-        &before,
+-        &after,
++        &convert::settings_to_wire(&after),
+         &backup,
+     )
+     .await;
+@@ -334,8 +332,7 @@ async fn a_failed_backup_stops_the_write() {
+         0xff,
+         slot.index,
+         &slot.raw,
+-        &before,
+-        &after,
++        &convert::settings_to_wire(&after),
+         &refuse,
+     )
+     .await;
+@@ -371,3 +368,19 @@ async fn saving_the_active_profile_reloads_it() {
+     );
+     assert_eq!(rig.mouse.current.load(Ordering::SeqCst), 1);
+ }
++
++#[tokio::test]
++async fn wire_settings_round_trip_and_cannot_resize_layers() {
++    let rig = Rig::new().await;
++    for slot in rig.read().await.profiles {
++        let decoded = slot.decoded.unwrap();
++        let wire = convert::settings_to_wire(&decoded);
++        assert_eq!(convert::settings_from_wire(&wire, &decoded), decoded);
++        let mut short = wire.clone();
++        short.buttons.truncate(3); // a caller sending too few buttons changes nothing else
++        short
++            .shift_buttons
++            .push(openlogi_core::hid::StoredBinding::Disabled); // or too many
++        assert_eq!(convert::settings_from_wire(&short, &decoded), decoded);
++    }
++}
+diff --git a/crates/openlogi-ipc/src/ipc.rs b/crates/openlogi-ipc/src/ipc.rs
+index 2b2b62e0..e4951993 100644
+--- a/crates/openlogi-ipc/src/ipc.rs
++++ b/crates/openlogi-ipc/src/ipc.rs
+@@ -21,8 +21,9 @@ use openlogi_core::device::{
+ use openlogi_core::hid::{
+     BacklightChange, BacklightState, DeviceRoute, DisableKeysMask, DisableKeysState, Dpi, DpiInfo,
+     EasySwitchHosts, FnLockState, ForceSensingInfo, LightCommand, OnboardState, PairingError,
+-    PasskeyMethod, PointerSpeed, ReceiverSelector, ReportRate, ReportRateInfo, ScrollWheelMode,
+-    SidetoneLevel, SmartShiftStatus, WriteError,
++    PasskeyMethod, PointerSpeed, ProfileIndex, ReceiverSelector, ReportRate, ReportRateInfo,
++    ScrollWheelMode, SidetoneLevel, SmartShiftStatus, StoredProfileSave, StoredProfileSettings,
++    StoredProfiles, WriteError,
+ };
+ use serde::{Deserialize, Serialize};
+ pub use succession::Identity;
+@@ -197,7 +198,9 @@ pub use succession::Identity;
+ /// v47: `WriteError::{OnboardProfileRejected, OnboardMemoryChanged,
+ ///      OnboardBackupFailed, OnboardWriteNotStored}` and
+ ///      `HidppOperation::WriteOnboard` appended — editing a G-series mouse's
+-///      stored `0x8100` profiles.
++///      stored `0x8100` profiles. `Agent::{read_stored_profiles,
++///      save_stored_profile, select_stored_profile}` appended, with
++///      `StoredProfiles` and the types it carries.
+ pub const PROTOCOL_VERSION: u32 = 47;
+ 
+ /// Environment variable through which the agent hands a supervised helper the
+@@ -1267,4 +1270,31 @@ pub trait Agent {
+     /// held trigger cancels instead of choosing the slot last reported by
+     /// [`Agent::action_ring_hover`].
+     async fn action_ring_unhover(session_id: u64) -> Result<(), ActionRingCommandError>;
++
++    /// Read a G-series mouse's stored profiles for editing: every user
++    /// profile's settings and bytes, the factory bindings, and the stored
++    /// macros the profiles point to.
++    ///
++    /// Appended after `action_ring_unhover` — method order is wire format.
++    async fn read_stored_profiles(route: DeviceRoute) -> Result<StoredProfiles, WriteError>;
++    /// Save `settings` into stored profile `index`, read as `base`. The agent
++    /// backs the sector up first, writes only the fields that differ, reads it
++    /// back, and puts the original back if the mouse stored anything else.
++    /// Nothing is written if the mouse no longer holds exactly `base`.
++    ///
++    /// Appended after `read_stored_profiles` — method order is wire format.
++    async fn save_stored_profile(
++        route: DeviceRoute,
++        index: ProfileIndex,
++        base: Vec<u8>,
++        settings: StoredProfileSettings,
++    ) -> Result<StoredProfileSave, WriteError>;
++    /// Make stored profile `index` active, switching it on in the profile
++    /// list first if it is off (the mouse refuses to select one that is off).
++    ///
++    /// Appended last — method order is wire format.
++    async fn select_stored_profile(
++        route: DeviceRoute,
++        index: ProfileIndex,
++    ) -> Result<(), WriteError>;
+ }
+-- 
+2.43.0
+
+From ba9e16c036e1ebdfad0056a4ac7ba6f9d1494bf4 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Tue, 24 Nov 2026 20:26:54 +0000
+Subject: [PATCH 4/4] feat(desktop): state for editing stored G-series profiles
+
+Reads a mouse's stored profiles through the agent, keeps one edit per
+mouse, saves it with the sector bytes it started from, and selects a
+profile. Each read and save carries a request number, so a late answer
+can't overwrite newer state. A refused save keeps the edit; one refused
+because the mouse changed meanwhile drops it, so the next edit starts
+from a fresh read.
+
+The mouse is the only store: nothing touches config.toml. The editor
+screens come next.
+---
+ crates/openlogi-desktop/src/runtime.rs        |  18 +
+ crates/openlogi-desktop/src/services/ipc.rs   |  32 +-
+ .../src/services/ipc/request.rs               |  89 ++++-
+ crates/openlogi-desktop/src/state.rs          |   6 +
+ .../src/state/stored_profiles.rs              | 349 ++++++++++++++++++
+ crates/openlogi-desktop/src/state/tests.rs    |   1 +
+ .../src/state/tests/stored_profiles.rs        | 293 +++++++++++++++
+ 7 files changed, 782 insertions(+), 6 deletions(-)
+ create mode 100644 crates/openlogi-desktop/src/state/stored_profiles.rs
+ create mode 100644 crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+
+diff --git a/crates/openlogi-desktop/src/runtime.rs b/crates/openlogi-desktop/src/runtime.rs
+index 630832b3..ad3d7b25 100644
+--- a/crates/openlogi-desktop/src/runtime.rs
++++ b/crates/openlogi-desktop/src/runtime.rs
+@@ -375,6 +375,24 @@ impl Runtime {
+                     AppState::apply(cx, |state| state.apply_sidetone_written(&key, result));
+                 });
+             }
++            ipc::GuiUpdate::StoredProfileSaved {
++                key,
++                request,
++                result,
++            } => {
++                cx.update(|cx| {
++                    AppState::update(cx, |state, cx| {
++                        state.apply_stored_profile_saved(&key, request, result, cx);
++                    });
++                });
++            }
++            ipc::GuiUpdate::StoredProfileSelected { key, index, result } => {
++                cx.update(|cx| {
++                    AppState::update(cx, |state, cx| {
++                        state.apply_stored_profile_selected(&key, index, result, cx);
++                    });
++                });
++            }
+             ipc::GuiUpdate::ForceSensingWritten {
+                 key,
+                 write,
+diff --git a/crates/openlogi-desktop/src/services/ipc.rs b/crates/openlogi-desktop/src/services/ipc.rs
+index 29149c3c..4da7a384 100644
+--- a/crates/openlogi-desktop/src/services/ipc.rs
++++ b/crates/openlogi-desktop/src/services/ipc.rs
+@@ -44,7 +44,8 @@ use std::time::{Duration, Instant};
+ 
+ use openlogi_core::hid::{
+     BacklightState, DeviceRoute, DisableKeysState, Dpi, EasySwitchHosts, FnLockState,
+-    ForceSensingInfo, LightCommand, PointerSpeed, ReportRateInfo, SidetoneLevel, WriteError,
++    ForceSensingInfo, LightCommand, PointerSpeed, ProfileIndex, ReportRateInfo, SidetoneLevel,
++    StoredProfileSave, WriteError,
+ };
+ use openlogi_ipc::client::{self, ConnectError};
+ use openlogi_ipc::{
+@@ -74,10 +75,11 @@ pub use request::{
+     CancelFlowPairing, CancelPairing, Command, ConfirmFlowPairing, LoadConfig, PairDevice,
+     PairFlowPeer, ReadBacklight, ReadDisableKeys, ReadDpi, ReadEasySwitchHosts, ReadFnLock,
+     ReadForceSensing, ReadOnboard, ReadPointerSpeed, ReadReportRate, ReadSidetone, ReadSmartShift,
+-    ReloadConfig, RenameEasySwitchHost, RequestAccessibilityPrompt, RetryConnection, SetBacklight,
+-    SetDisableKeys, SetDpi, SetFnLock, SetForceSensing, SetLight, SetLightManualPower, SetLighting,
+-    SetPointerSpeed, SetReportRate, SetSidetone, SetSmartShift, StartFlowPairing, StartPairing,
+-    StopFlowPairing, UnpairDevice,
++    ReadStoredProfiles, ReloadConfig, RenameEasySwitchHost, RequestAccessibilityPrompt,
++    RetryConnection, SaveStoredProfile, SelectStoredProfile, SetBacklight, SetDisableKeys, SetDpi,
++    SetFnLock, SetForceSensing, SetLight, SetLightManualPower, SetLighting, SetPointerSpeed,
++    SetReportRate, SetSidetone, SetSmartShift, StartFlowPairing, StartPairing, StopFlowPairing,
++    UnpairDevice,
+ };
+ 
+ /// Complete identity of one Disable Keys write/reload transaction.
+@@ -196,6 +198,26 @@ pub enum GuiUpdate {
+         /// The confirmed level, or why the write did not land.
+         result: Result<SidetoneLevel, WriteError>,
+     },
++    /// The answer to a [`SaveStoredProfile`]: saved and read back, nothing to
++    /// save, or the typed refusal (the mouse's memory is then unchanged or
++    /// put back, as the error says).
++    StoredProfileSaved {
++        /// The mouse that was written.
++        key: DeviceKey,
++        /// The number the state gave the save.
++        request: u64,
++        /// What the save did.
++        result: Result<StoredProfileSave, WriteError>,
++    },
++    /// The answer to a [`SelectStoredProfile`].
++    StoredProfileSelected {
++        /// The mouse.
++        key: DeviceKey,
++        /// The profile asked for.
++        index: ProfileIndex,
++        /// Whether it is active now.
++        result: Result<(), WriteError>,
++    },
+     /// What a force-sensing button reports after a press-force write the GUI
+     /// asked for: the force it took, or the typed refusal. Answers
+     /// [`SetForceSensing`].
+diff --git a/crates/openlogi-desktop/src/services/ipc/request.rs b/crates/openlogi-desktop/src/services/ipc/request.rs
+index f7de04ef..89dacaca 100644
+--- a/crates/openlogi-desktop/src/services/ipc/request.rs
++++ b/crates/openlogi-desktop/src/services/ipc/request.rs
+@@ -20,7 +20,8 @@ use openlogi_core::config::{ConfigRevision, Lighting};
+ use openlogi_core::hid::{
+     BacklightChange, BacklightState, DeviceRoute, DisableKeysMask, DisableKeysState, Dpi, DpiInfo,
+     EasySwitchHosts, FnLockState, ForceSensingInfo, LightCommand, OnboardState, PointerSpeed,
+-    ReceiverSelector, ReportRate, ReportRateInfo, SidetoneLevel, SmartShiftStatus, WriteError,
++    ProfileIndex, ReceiverSelector, ReportRate, ReportRateInfo, SidetoneLevel, SmartShiftStatus,
++    StoredProfileSave, StoredProfileSettings, StoredProfiles, WriteError,
+ };
+ use openlogi_ipc::{
+     AgentClient, ChosenLight, ConfigReloadError, FlowPairTarget, FlowPairingCommandError,
+@@ -691,6 +692,89 @@ impl Request for ReadOnboard {
+     }
+ }
+ 
++/// Read a G-series mouse's stored profiles for the editor.
++pub struct ReadStoredProfiles {
++    pub route: DeviceRoute,
++    pub reply: oneshot::Sender<Result<StoredProfiles, WriteError>>,
++}
++
++impl Request for ReadStoredProfiles {
++    type Answer = Result<StoredProfiles, WriteError>;
++
++    async fn call(&self, client: &AgentClient) -> Result<Self::Answer, RpcError> {
++        client
++            .read_stored_profiles(context::current(), self.route.clone())
++            .await
++    }
++
++    fn deliver(self, outcome: Result<Self::Answer, Unavailable>, _: &UpdateSender) {
++        let _ = self.reply.send(or_unavailable(outcome));
++    }
++}
++
++/// Save an edited stored profile, answered as
++/// [`GuiUpdate::StoredProfileSaved`].
++pub struct SaveStoredProfile {
++    pub route: DeviceRoute,
++    pub key: DeviceKey,
++    /// The number the state gave this save, returned with the answer.
++    pub request: u64,
++    pub index: ProfileIndex,
++    /// The sector bytes the editor's settings were read from.
++    pub base: Vec<u8>,
++    pub settings: StoredProfileSettings,
++}
++
++impl Request for SaveStoredProfile {
++    type Answer = Result<StoredProfileSave, WriteError>;
++
++    async fn call(&self, client: &AgentClient) -> Result<Self::Answer, RpcError> {
++        client
++            .save_stored_profile(
++                context::current(),
++                self.route.clone(),
++                self.index,
++                self.base.clone(),
++                self.settings.clone(),
++            )
++            .await
++    }
++
++    fn deliver(self, outcome: Result<Self::Answer, Unavailable>, updates: &UpdateSender) {
++        let _ = updates.send(GuiUpdate::StoredProfileSaved {
++            key: self.key,
++            request: self.request,
++            result: or_unavailable(outcome),
++        });
++    }
++}
++
++/// Make a stored profile active, answered as
++/// [`GuiUpdate::StoredProfileSelected`].
++pub struct SelectStoredProfile {
++    pub route: DeviceRoute,
++    pub key: DeviceKey,
++    pub index: ProfileIndex,
++}
++
++impl Request for SelectStoredProfile {
++    type Answer = Result<(), WriteError>;
++
++    async fn call(&self, client: &AgentClient) -> Result<Self::Answer, RpcError> {
++        client
++            .select_stored_profile(context::current(), self.route.clone(), self.index)
++            .await
++    }
++
++    fn deliver(self, outcome: Result<Self::Answer, Unavailable>, updates: &UpdateSender) {
++        let _ = updates.send(GuiUpdate::StoredProfileSelected {
++            key: self.key,
++            index: self.index,
++            result: or_unavailable(outcome),
++        });
++    }
++}
++
+ /// Have the agent re-read the `config.toml` the GUI just saved
+ /// ([`openlogi_ipc::Agent::reload_saved_config`]).
+ ///
+@@ -1166,6 +1250,9 @@ commands! {
+     ReadDisableKeys,
+     SetDisableKeys,
+     ReadOnboard,
++    ReadStoredProfiles,
++    SaveStoredProfile,
++    SelectStoredProfile,
+     ReloadConfig,
+     RequestAccessibilityPrompt,
+     RetryConnection,
+diff --git a/crates/openlogi-desktop/src/state.rs b/crates/openlogi-desktop/src/state.rs
+index 762ba83b..2e53638e 100644
+--- a/crates/openlogi-desktop/src/state.rs
++++ b/crates/openlogi-desktop/src/state.rs
+@@ -44,6 +44,7 @@ pub use load::{
+     BacklightLoad, DisableKeysLoad, DpiLoad, EasySwitchLoad, FnLockLoad, ForceSensingLoad,
+     OnboardLoad, PointerSpeedLoad, ReportRateLoad, SidetoneLoad, SmartShiftLoad,
+ };
++pub use stored_profiles::{StoredProfileEdit, StoredProfileNotice, StoredProfilesLoad};
+ 
+ /// Result of confirming a SmartShift write by reading the value back.
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+@@ -110,6 +111,7 @@ mod scroll;
+ mod settings;
+ mod sidetone;
+ mod smartshift;
++mod stored_profiles;
+ 
+ #[cfg(test)]
+ pub(crate) mod tests;
+@@ -207,6 +209,8 @@ pub struct AppState {
+     disable_keys_reads: DisableKeysReads,
+     /// Monotonic identity for Disable Keys write/reload transactions.
+     next_disable_keys_request_id: u64,
++    /// The stored-profile editor of each G-series mouse.
++    stored_profiles: stored_profiles::StoredProfilesState,
+     /// Standalone-light sequencing and aggregate camera activity.
+     lights: LightSession,
+     /// Which timer steps the backlight card is showing. A disclosure, not a
+@@ -265,6 +269,7 @@ impl AppState {
+             state.load_current_easy_switch(cx);
+             state.load_current_disable_keys(cx);
+             state.load_current_onboard(cx);
++            state.load_current_stored_profiles(cx);
+         });
+     }
+ 
+@@ -323,6 +328,7 @@ impl AppState {
+             lights: LightSession::default(),
+             duration_steps: DurationSteps::Short,
+             disable_keys_reads: DisableKeysReads::default(),
++            stored_profiles: stored_profiles::StoredProfilesState::default(),
+             next_disable_keys_request_id: 0,
+             ipc_commands,
+             #[cfg(target_os = "macos")]
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+new file mode 100644
+index 00000000..a3bdb28d
+--- /dev/null
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -0,0 +1,349 @@
++//! Editing a G-series mouse's stored profiles: the read, one edit buffer per
++//! mouse, saves, and making a profile active.
++//!
++//! The mouse is the only store: nothing here touches `config.toml`. A save
++//! sends the sector bytes the edit started from, and the agent refuses to
++//! write if the mouse no longer holds them, so an edit made on a stale read
++//! can't overwrite a change made meanwhile (in G HUB, say).
++
++use std::collections::BTreeMap;
++use std::sync::Arc;
++
++use gpui::Context;
++use openlogi_core::hid::{
++    ProfileIndex, StoredProfileSave, StoredProfileSettings, StoredProfiles, WriteError,
++};
++use tracing::{debug, warn};
++
++use super::{AppState, DeviceKey, DeviceRecord, Load, StateEvent, StateEvents};
++use crate::services::ipc::{ReadStoredProfiles, SaveStoredProfile, SelectStoredProfile};
++
++/// Read state of one mouse's stored profiles. See [`Load`].
++pub type StoredProfilesLoad = Load<Arc<StoredProfiles>>;
++
++/// How the last save or selection ended, for the editor to report.
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub enum StoredProfileNotice {
++    /// Written and read back intact.
++    Saved,
++    /// The edit changed nothing.
++    NothingToSave,
++    /// The profile is active now.
++    Selected(ProfileIndex),
++    /// Refused or failed; the error says whether anything changed.
++    Failed(WriteError),
++}
++
++/// An edit in progress: the profile, its settings as edited, and the sector
++/// bytes they were read from.
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct StoredProfileEdit {
++    /// The profile being edited.
++    pub index: ProfileIndex,
++    /// The settings as edited so far.
++    pub settings: StoredProfileSettings,
++    /// What the read held, to tell an edit from no edit.
++    pub original: StoredProfileSettings,
++    base: Vec<u8>,
++}
++
++impl StoredProfileEdit {
++    /// Whether anything differs from what the mouse holds.
++    #[must_use]
++    pub fn is_dirty(&self) -> bool {
++        self.settings != self.original
++    }
++}
++
++#[derive(Default)]
++struct Entry {
++    load: StoredProfilesLoad,
++    read_flight: u64,
++    edit: Option<StoredProfileEdit>,
++    saving: Option<u64>,
++    selecting: Option<ProfileIndex>,
++    notice: Option<StoredProfileNotice>,
++}
++
++/// Every mouse's stored-profile editor state.
++#[derive(Default)]
++pub(crate) struct StoredProfilesState {
++    entries: BTreeMap<DeviceKey, Entry>,
++    next_request: u64,
++}
++
++impl StoredProfilesState {
++    fn entry(&mut self, key: &DeviceKey) -> &mut Entry {
++        self.entries.entry(key.clone()).or_default()
++    }
++
++    fn next(&mut self) -> u64 {
++        self.next_request += 1;
++        self.next_request
++    }
++}
++
++fn load_from(result: Result<StoredProfiles, WriteError>) -> StoredProfilesLoad {
++    match result {
++        Ok(profiles) => Load::Ready(Arc::new(profiles)),
++        Err(error @ WriteError::FeatureUnsupported { .. }) => Load::Unsupported(error.to_string()),
++        Err(error) => Load::Failed(error.to_string()),
++    }
++}
++
++impl AppState {
++    fn stored_profile_target(&self) -> Option<(DeviceKey, openlogi_core::hid::DeviceRoute)> {
++        let record = self
++            .current_record()
++            .filter(|_| self.current_onboard_supported())?;
++        Some((record.device_key(), record.addressable_route()?.clone()))
++    }
++
++    /// The selected mouse's stored profiles, as last read.
++    #[must_use]
++    pub fn current_stored_profiles(&self) -> StoredProfilesLoad {
++        self.current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))
++            .map(|entry| entry.load.clone())
++            .unwrap_or_default()
++    }
++
++    /// The selected mouse's edit in progress, if any.
++    #[must_use]
++    pub fn current_stored_profile_edit(&self) -> Option<&StoredProfileEdit> {
++        self.current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))
++            .and_then(|entry| entry.edit.as_ref())
++    }
++
++    /// How the selected mouse's last save or selection ended.
++    #[must_use]
++    pub fn current_stored_profile_notice(&self) -> Option<&StoredProfileNotice> {
++        self.current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))
++            .and_then(|entry| entry.notice.as_ref())
++    }
++
++    /// Whether a save or selection for the selected mouse is in flight.
++    #[must_use]
++    pub fn current_stored_profile_busy(&self) -> bool {
++        self.current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))
++            .is_some_and(|entry| entry.saving.is_some() || entry.selecting.is_some())
++    }
++
++    /// Read the selected mouse's stored profiles if they haven't been read.
++    pub(super) fn load_current_stored_profiles(&mut self, cx: &mut Context<Self>) {
++        let Some((key, _)) = self.stored_profile_target() else {
++            return;
++        };
++        if matches!(self.stored_profiles.entry(&key).load, Load::Unknown) {
++            self.read_stored_profiles(cx);
++        }
++    }
++
++    /// Read the selected mouse's stored profiles again, discarding nothing:
++    /// an edit in progress stays until it is saved or dropped.
++    pub fn read_stored_profiles(&mut self, cx: &mut Context<Self>) {
++        let Some((key, route)) = self.stored_profile_target() else {
++            return;
++        };
++        let flight = self.stored_profiles.next();
++        let entry = self.stored_profiles.entry(&key);
++        entry.read_flight = flight;
++        if !matches!(entry.load, Load::Ready(_)) {
++            entry.load = Load::Loading;
++        }
++        let (reply, answer) = tokio::sync::oneshot::channel();
++        if !self.send_ipc(ReadStoredProfiles { route, reply }) {
++            self.stored_profiles.entry(&key).load =
++                Load::Failed(WriteError::AgentUnavailable.to_string());
++            return;
++        }
++        debug!(key = %key, "reading stored profiles");
++        cx.spawn(async move |state, cx| {
++            let result = answer.await.unwrap_or(Err(WriteError::AgentUnavailable));
++            let _ = state.update(cx, |state, cx| {
++                let entry = state.stored_profiles.entry(&key);
++                if entry.read_flight != flight {
++                    return; // a newer read is in flight
++                }
++                entry.load = load_from(result);
++                cx.emit(StateEvent::OnboardChanged(key.clone()));
++            });
++        })
++        .detach();
++    }
++
++    /// Start or continue editing profile `index` of the selected mouse, then
++    /// change its settings with `edit`.
++    pub fn edit_stored_profile(
++        &mut self,
++        index: ProfileIndex,
++        edit: impl FnOnce(&mut StoredProfileSettings),
++    ) -> StateEvents {
++        let events = self.for_current_device(StateEvent::OnboardChanged);
++        let Some(key) = self.current_record().map(DeviceRecord::device_key) else {
++            return events;
++        };
++        let entry = self.stored_profiles.entry(&key);
++        let Load::Ready(profiles) = &entry.load else {
++            return events;
++        };
++        if entry
++            .edit
++            .as_ref()
++            .is_none_or(|current| current.index != index)
++        {
++            let Some(slot) = profiles.profiles.iter().find(|slot| slot.index == index) else {
++                return events;
++            };
++            let Ok(settings) = &slot.settings else {
++                return events; // shown, but not editable
++            };
++            entry.edit = Some(StoredProfileEdit {
++                index,
++                settings: settings.clone(),
++                original: settings.clone(),
++                base: slot.base.clone(),
++            });
++        }
++        if let Some(current) = entry.edit.as_mut() {
++            edit(&mut current.settings);
++        }
++        entry.notice = None;
++        events
++    }
++
++    /// Drop the selected mouse's edit in progress.
++    pub fn discard_stored_profile_edit(&mut self) -> StateEvents {
++        let events = self.for_current_device(StateEvent::OnboardChanged);
++        if let Some(key) = self.current_record().map(DeviceRecord::device_key) {
++            let entry = self.stored_profiles.entry(&key);
++            entry.edit = None;
++            entry.notice = None;
++        }
++        events
++    }
++
++    /// Save the selected mouse's edit. The answer arrives as
++    /// [`Self::apply_stored_profile_saved`].
++    pub fn save_stored_profile_edit(&mut self) -> StateEvents {
++        let events = self.for_current_device(StateEvent::OnboardChanged);
++        let Some((key, route)) = self.stored_profile_target() else {
++            return events;
++        };
++        let request = self.stored_profiles.next();
++        let entry = self.stored_profiles.entry(&key);
++        let Some(edit) = entry.edit.clone().filter(StoredProfileEdit::is_dirty) else {
++            entry.notice = Some(StoredProfileNotice::NothingToSave);
++            return events;
++        };
++        if entry.saving.is_some() {
++            return events;
++        }
++        entry.saving = Some(request);
++        entry.notice = None;
++        if !self.send_ipc(SaveStoredProfile {
++            route,
++            key: key.clone(),
++            request,
++            index: edit.index,
++            base: edit.base,
++            settings: edit.settings,
++        }) {
++            let entry = self.stored_profiles.entry(&key);
++            entry.saving = None;
++            entry.notice = Some(StoredProfileNotice::Failed(WriteError::AgentUnavailable));
++        }
++        events
++    }
++
++    /// The agent's answer to a save: on success the edit is done and the
++    /// mouse is read again; on a refusal the edit stays, so nothing typed is
++    /// lost, and the mouse is read again in case it changed.
++    pub fn apply_stored_profile_saved(
++        &mut self,
++        key: &DeviceKey,
++        request: u64,
++        result: Result<StoredProfileSave, WriteError>,
++        cx: &mut Context<Self>,
++    ) {
++        let entry = self.stored_profiles.entry(key);
++        if entry.saving != Some(request) {
++            return; // an answer to a save this state no longer waits for
++        }
++        entry.saving = None;
++        entry.notice = Some(match result {
++            Ok(StoredProfileSave::Saved) => {
++                entry.edit = None;
++                StoredProfileNotice::Saved
++            }
++            Ok(StoredProfileSave::Unchanged) => {
++                entry.edit = None;
++                StoredProfileNotice::NothingToSave
++            }
++            Err(error) => {
++                warn!(%error, key = %key, "stored profile not saved");
++                if matches!(error, WriteError::OnboardMemoryChanged) {
++                    entry.edit = None; // its base is stale: the next read starts fresh
++                }
++                StoredProfileNotice::Failed(error)
++            }
++        });
++        cx.emit(StateEvent::OnboardChanged(key.clone()));
++        if self.is_current_device(key) {
++            self.read_stored_profiles(cx);
++        }
++    }
++
++    /// Make profile `index` the selected mouse's active profile. The answer
++    /// arrives as [`Self::apply_stored_profile_selected`].
++    pub fn select_stored_profile(&mut self, index: ProfileIndex) -> StateEvents {
++        let events = self.for_current_device(StateEvent::OnboardChanged);
++        let Some((key, route)) = self.stored_profile_target() else {
++            return events;
++        };
++        let entry = self.stored_profiles.entry(&key);
++        if entry.selecting.is_some() || entry.saving.is_some() {
++            return events;
++        }
++        entry.selecting = Some(index);
++        entry.notice = None;
++        if !self.send_ipc(SelectStoredProfile {
++            route,
++            key: key.clone(),
++            index,
++        }) {
++            let entry = self.stored_profiles.entry(&key);
++            entry.selecting = None;
++            entry.notice = Some(StoredProfileNotice::Failed(WriteError::AgentUnavailable));
++        }
++        events
++    }
++
++    /// The agent's answer to a selection; the mouse is read again either way.
++    pub fn apply_stored_profile_selected(
++        &mut self,
++        key: &DeviceKey,
++        index: ProfileIndex,
++        result: Result<(), WriteError>,
++        cx: &mut Context<Self>,
++    ) {
++        let entry = self.stored_profiles.entry(key);
++        if entry.selecting != Some(index) {
++            return;
++        }
++        entry.selecting = None;
++        entry.notice = Some(match result {
++            Ok(()) => StoredProfileNotice::Selected(index),
++            Err(error) => StoredProfileNotice::Failed(error),
++        });
++        cx.emit(StateEvent::OnboardChanged(key.clone()));
++        // OpenLogi's own onboard read (who is in control, the active profile) changed too.
++        self.pointer.reads.refresh_onboard(key);
++        if self.is_current_device(key) {
++            self.read_stored_profiles(cx);
++        }
++    }
++}
+diff --git a/crates/openlogi-desktop/src/state/tests.rs b/crates/openlogi-desktop/src/state/tests.rs
+index 6196d8f6..19449691 100644
+--- a/crates/openlogi-desktop/src/state/tests.rs
++++ b/crates/openlogi-desktop/src/state/tests.rs
+@@ -68,6 +68,7 @@ mod report_rate;
+ mod sidetone;
+ mod smartshift;
+ mod smooth_wheel;
++mod stored_profiles;
+ mod transient_identity;
+ mod wheel_hold;
+ mod wheel_resolution;
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+new file mode 100644
+index 00000000..7d64e451
+--- /dev/null
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -0,0 +1,293 @@
++//! The stored-profile editor: the read lands, an edit saves through the
++//! agent with the bytes it started from, and every answer is matched to the
++//! request it answers.
++
++use super::fn_lock::drain;
++use super::pointer_speed::install;
++use super::*;
++use crate::services::ipc::{Command, ReadStoredProfiles, SaveStoredProfile, SelectStoredProfile};
++use crate::state::{StoredProfileNotice, StoredProfilesLoad};
++use openlogi_core::hid::{
++    OnboardMode, ProfileIndex, StoredBinding, StoredLed, StoredProfileSave, StoredProfileSettings,
++    StoredProfileSlot, StoredProfiles, WriteError,
++};
++
++fn index(n: u8) -> ProfileIndex {
++    ProfileIndex::new(n).expect("a profile number")
++}
++
++/// A direct G-series mouse with onboard memory.
++fn mouse_inventory() -> DeviceInventory {
++    let mut inventory = direct_inventory([0x9d, 0xa8, 0x1d, 0x11]);
++    inventory.paired[0].kind = DeviceKind::Mouse;
++    inventory.paired[0].capabilities = Some(Capabilities {
++        onboard_profiles: true,
++        ..Capabilities::default()
++    });
++    inventory
++}
++
++fn mouse_state() -> (AppState, tokio::sync::mpsc::UnboundedReceiver<Command>) {
++    let resolver = AssetResolver::new();
++    let (commands, receiver) = tokio::sync::mpsc::unbounded_channel();
++    let state = AppState::new(Sources {
++        inventories: &[mouse_inventory()],
++        ..Sources::in_memory(Config::ephemeral(), &resolver, commands)
++    });
++    (state, receiver)
++}
++
++fn settings() -> StoredProfileSettings {
++    StoredProfileSettings {
++        report_interval_ms: 8,
++        default_dpi_level: 0,
++        shift_dpi_level: Some(0),
++        dpi: [1800, 0, 0, 0, 0],
++        leds: [StoredLed::Off; 2],
++        power_save_leds: [StoredLed::Off; 2],
++        buttons: vec![
++            StoredBinding::MouseButton(1),
++            StoredBinding::MouseButton(2),
++            StoredBinding::Key {
++                modifiers: 0,
++                usage: 0x28,
++            },
++        ],
++        shift_buttons: vec![StoredBinding::Disabled; 3],
++    }
++}
++
++fn profiles(active: u8) -> StoredProfiles {
++    StoredProfiles {
++        mode: OnboardMode::Onboard,
++        active: Some(index(active)),
++        dpi_values: Some((100..=25_600).step_by(50).collect()),
++        profiles: vec![
++            StoredProfileSlot {
++                index: index(1),
++                enabled: true,
++                base: vec![1; 255],
++                settings: Ok(settings()),
++            },
++            StoredProfileSlot {
++                index: index(2),
++                enabled: false,
++                base: vec![2; 255],
++                settings: Err("its checksum doesn't match".into()),
++            },
++        ],
++        factory_buttons: vec![StoredBinding::MouseButton(1); 3],
++        macros: Vec::new(),
++    }
++}
++
++/// Answer the stored-profile read the state has queued; every other command
++/// is dropped.
++fn answer_read(
++    receiver: &mut tokio::sync::mpsc::UnboundedReceiver<Command>,
++    answer: Result<StoredProfiles, WriteError>,
++) {
++    let mut answered = false;
++    for command in drain(receiver) {
++        if let Command::ReadStoredProfiles(ReadStoredProfiles { reply, .. }) = command {
++            assert!(!answered, "one stored-profile read at a time");
++            let _ = reply.send(answer.clone());
++            answered = true;
++        }
++    }
++    assert!(answered, "the state read the stored profiles");
++}
++
++fn take_save(receiver: &mut tokio::sync::mpsc::UnboundedReceiver<Command>) -> SaveStoredProfile {
++    let mut saves = drain(receiver)
++        .into_iter()
++        .filter_map(|command| match command {
++            Command::SaveStoredProfile(save) => Some(save),
++            _ => None,
++        });
++    let save = saves.next().expect("a save was sent");
++    assert!(saves.next().is_none(), "one save at a time");
++    save
++}
++
++fn load(cx: &gpui::TestAppContext) -> StoredProfilesLoad {
++    cx.read(|cx| {
++        AppState::try_read(cx)
++            .expect("state")
++            .current_stored_profiles()
++    })
++}
++
++fn notice(cx: &gpui::TestAppContext) -> Option<StoredProfileNotice> {
++    cx.read(|cx| {
++        AppState::try_read(cx)
++            .expect("state")
++            .current_stored_profile_notice()
++            .cloned()
++    })
++}
++
++fn dirty(cx: &gpui::TestAppContext) -> Option<bool> {
++    cx.read(|cx| {
++        AppState::try_read(cx)
++            .expect("state")
++            .current_stored_profile_edit()
++            .map(|edit| edit.is_dirty())
++    })
++}
++
++/// A mouse whose stored profiles have been read.
++fn ready(
++    cx: &mut gpui::TestAppContext,
++) -> (DeviceKey, tokio::sync::mpsc::UnboundedReceiver<Command>) {
++    let (state, mut receiver) = mouse_state();
++    let key = state.current_record().expect("mouse").device_key();
++    install(state, cx);
++    answer_read(&mut receiver, Ok(profiles(1)));
++    cx.run_until_parked();
++    (key, receiver)
++}
++
++fn edit_enter_to_play(cx: &mut gpui::TestAppContext) {
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            state.edit_stored_profile(index(1), |s| s.buttons[2] = StoredBinding::Consumer(0xcd))
++        })
++    });
++}
++
++#[gpui::test]
++fn the_read_lands_for_a_mouse_with_onboard_memory(cx: &mut gpui::TestAppContext) {
++    let (_key, _receiver) = ready(cx);
++    assert!(matches!(load(cx), Load::Ready(p) if p.profiles.len() == 2));
++}
++
++#[gpui::test]
++fn an_unsupported_mouse_reads_as_unsupported(cx: &mut gpui::TestAppContext) {
++    let (state, mut receiver) = mouse_state();
++    install(state, cx);
++    answer_read(
++        &mut receiver,
++        Err(WriteError::FeatureUnsupported {
++            feature_hex: 0x8100,
++        }),
++    );
++    cx.run_until_parked();
++    assert!(matches!(load(cx), Load::Unsupported(_)));
++}
++
++#[gpui::test]
++fn an_edit_saves_with_the_bytes_it_started_from(cx: &mut gpui::TestAppContext) {
++    let (key, mut receiver) = ready(cx);
++    edit_enter_to_play(cx);
++    assert_eq!(dirty(cx), Some(true));
++    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.save_stored_profile_edit()));
++    let save = take_save(&mut receiver);
++    assert_eq!(save.index, index(1));
++    assert_eq!(save.base, vec![1; 255]);
++    assert_eq!(save.settings.buttons[2], StoredBinding::Consumer(0xcd));
++
++    cx.update(|cx| {
++        AppState::update(cx, |state, cx| {
++            state.apply_stored_profile_saved(&key, save.request, Ok(StoredProfileSave::Saved), cx);
++        });
++    });
++    assert_eq!(notice(cx), Some(StoredProfileNotice::Saved));
++    assert_eq!(dirty(cx), None, "the edit is done");
++    answer_read(&mut receiver, Ok(profiles(1))); // read again after the save
++}
++
++#[gpui::test]
++fn an_unchanged_edit_sends_nothing(cx: &mut gpui::TestAppContext) {
++    let (_key, mut receiver) = ready(cx);
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            state.edit_stored_profile(index(1), |_| {});
++            state.save_stored_profile_edit()
++        })
++    });
++    assert!(drain(&mut receiver).is_empty());
++    assert_eq!(notice(cx), Some(StoredProfileNotice::NothingToSave));
++}
++
++#[gpui::test]
++fn a_profile_that_cannot_be_decoded_cannot_be_edited(cx: &mut gpui::TestAppContext) {
++    let (_key, _receiver) = ready(cx);
++    let _ = cx
++        .update(|cx| AppState::update(cx, |state, _| state.edit_stored_profile(index(2), |_| {})));
++    assert_eq!(dirty(cx), None);
++}
++
++#[gpui::test]
++fn a_refused_save_keeps_the_edit_unless_its_base_is_stale(cx: &mut gpui::TestAppContext) {
++    let (key, mut receiver) = ready(cx);
++    edit_enter_to_play(cx);
++    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.save_stored_profile_edit()));
++    let save = take_save(&mut receiver);
++    let not_stored = WriteError::OnboardWriteNotStored { restored: true };
++    cx.update(|cx| {
++        AppState::update(cx, |state, cx| {
++            state.apply_stored_profile_saved(&key, save.request, Err(not_stored.clone()), cx);
++        });
++    });
++    assert_eq!(notice(cx), Some(StoredProfileNotice::Failed(not_stored)));
++    assert_eq!(dirty(cx), Some(true), "nothing typed is lost");
++    answer_read(&mut receiver, Ok(profiles(1)));
++
++    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.save_stored_profile_edit()));
++    let save = take_save(&mut receiver);
++    cx.update(|cx| {
++        AppState::update(cx, |state, cx| {
++            state.apply_stored_profile_saved(
++                &key,
++                save.request,
++                Err(WriteError::OnboardMemoryChanged),
++                cx,
++            );
++        });
++    });
++    assert_eq!(dirty(cx), None, "an edit on a stale read starts over");
++}
++
++#[gpui::test]
++fn a_late_answer_to_another_save_is_ignored(cx: &mut gpui::TestAppContext) {
++    let (key, mut receiver) = ready(cx);
++    edit_enter_to_play(cx);
++    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.save_stored_profile_edit()));
++    let save = take_save(&mut receiver);
++    cx.update(|cx| {
++        AppState::update(cx, |state, cx| {
++            state.apply_stored_profile_saved(
++                &key,
++                save.request + 99,
++                Ok(StoredProfileSave::Saved),
++                cx,
++            );
++        });
++    });
++    assert_eq!(notice(cx), None);
++    assert_eq!(dirty(cx), Some(true));
++}
++
++#[gpui::test]
++fn selecting_a_profile_asks_the_agent_and_reads_again(cx: &mut gpui::TestAppContext) {
++    let (key, mut receiver) = ready(cx);
++    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.select_stored_profile(index(2))));
++    let selected: Vec<_> = drain(&mut receiver)
++        .into_iter()
++        .filter_map(|command| match command {
++            Command::SelectStoredProfile(SelectStoredProfile { index, .. }) => Some(index),
++            _ => None,
++        })
++        .collect();
++    assert_eq!(selected, [index(2)]);
++    cx.update(|cx| {
++        AppState::update(cx, |state, cx| {
++            state.apply_stored_profile_selected(&key, index(2), Ok(()), cx)
++        });
++    });
++    assert_eq!(notice(cx), Some(StoredProfileNotice::Selected(index(2))));
++    answer_read(&mut receiver, Ok(profiles(2)));
++    cx.run_until_parked();
++    assert!(matches!(load(cx), Load::Ready(p) if p.active == Some(index(2))));
++}
+-- 
+2.43.0
+
