@@ -3279,7 +3279,7 @@ index 2b2b62e0..e4951993 100644
 -- 
 2.43.0
 
-From ba9e16c036e1ebdfad0056a4ac7ba6f9d1494bf4 Mon Sep 17 00:00:00 2001
+From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
 Subject: [PATCH 4/4] feat(desktop): state for editing stored G-series profiles
@@ -3300,8 +3300,8 @@ screens come next.
  crates/openlogi-desktop/src/state.rs          |   6 +
  .../src/state/stored_profiles.rs              | 349 ++++++++++++++++++
  crates/openlogi-desktop/src/state/tests.rs    |   1 +
- .../src/state/tests/stored_profiles.rs        | 293 +++++++++++++++
- 7 files changed, 782 insertions(+), 6 deletions(-)
+ .../src/state/tests/stored_profiles.rs        | 299 +++++++++++++++
+ 7 files changed, 788 insertions(+), 6 deletions(-)
  create mode 100644 crates/openlogi-desktop/src/state/stored_profiles.rs
  create mode 100644 crates/openlogi-desktop/src/state/tests/stored_profiles.rs
 
@@ -3919,10 +3919,10 @@ index 6196d8f6..19449691 100644
  mod wheel_resolution;
 diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
 new file mode 100644
-index 00000000..7d64e451
+index 00000000..d68ee5a7
 --- /dev/null
 +++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
-@@ -0,0 +1,293 @@
+@@ -0,0 +1,299 @@
 +//! The stored-profile editor: the read lands, an edit saves through the
 +//! agent with the bytes it started from, and every answer is matched to the
 +//! request it answers.
@@ -4131,7 +4131,13 @@ index 00000000..7d64e451
 +            state.save_stored_profile_edit()
 +        })
 +    });
-+    assert!(drain(&mut receiver).is_empty());
++    // Other device reads may be queued; what matters is that no save went out.
++    assert!(
++        !drain(&mut receiver)
++            .iter()
++            .any(|command| matches!(command, Command::SaveStoredProfile(_))),
++        "an unchanged edit sends no save"
++    );
 +    assert_eq!(notice(cx), Some(StoredProfileNotice::NothingToSave));
 +}
 +
