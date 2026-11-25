@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 1/5] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 1/6] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 2/5] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 2/6] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 3/5] feat(agent): read, save and select stored G-series
+Subject: [PATCH 3/6] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 4/5] feat(desktop): state for editing stored G-series profiles
+Subject: [PATCH 4/6] feat(desktop): state for editing stored G-series profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
 mouse, saves it with the sector bytes it started from, and selects a
@@ -4228,7 +4228,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 5/5] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 5/6] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5847,6 +5847,2276 @@ index c08a6671..17399b00 100644
 +selected = "Profile %{number} is in use."
 +failed = "Not saved: %{error}"
 +unsaved = "Unsaved changes"
+-- 
+2.43.0
+
+From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 09:40:50 +0000
+Subject: [PATCH 6/6] feat(desktop): edit stored bindings from the Buttons
+ panel itself
+
+Replaces the separate stored-profile panel. While a stored profile is in
+control, the mouse picture shows that profile's bindings as actions
+(G HUB's one-chord macros read as their shortcut: Ctrl+Tab is Next
+Tab), the picker offers only what a profile can hold, and a picked
+action is written into the mouse at once, like a pick applies at once
+in host mode. A line under the inspector says how the write went.
+
+Adds KeyCombo::new to openlogi-core for building a combo from a stored
+HID usage.
+---
+ crates/openlogi-core/src/binding/key_combo.rs |   6 +
+ .../src/features/mouse/mod.rs                 |   2 +-
+ .../src/features/mouse/stored_panel.rs        | 435 ------------------
+ .../src/features/mouse/stored_status.rs       |  39 ++
+ .../src/features/mouse/view.rs                |  19 +-
+ crates/openlogi-desktop/src/services/ipc.rs   |   9 +-
+ crates/openlogi-desktop/src/state.rs          |   2 +
+ crates/openlogi-desktop/src/state/bindings.rs |   4 +
+ .../src/state/stored_actions.rs               | 339 ++++++++++++++
+ .../src/state/stored_profiles.rs              | 161 ++++---
+ .../src/state/tests/stored_profiles.rs        |  37 --
+ crates/openlogi-ui/locales/be.toml            |  27 +-
+ crates/openlogi-ui/locales/cs.toml            |  27 +-
+ crates/openlogi-ui/locales/da.toml            |  27 +-
+ crates/openlogi-ui/locales/de.toml            |  27 +-
+ crates/openlogi-ui/locales/el.toml            |  27 +-
+ crates/openlogi-ui/locales/en.toml            |  27 +-
+ crates/openlogi-ui/locales/es.toml            |  27 +-
+ crates/openlogi-ui/locales/fi.toml            |  27 +-
+ crates/openlogi-ui/locales/fr.toml            |  27 +-
+ crates/openlogi-ui/locales/it.toml            |  27 +-
+ crates/openlogi-ui/locales/ja.toml            |  27 +-
+ crates/openlogi-ui/locales/ko.toml            |  27 +-
+ crates/openlogi-ui/locales/nb.toml            |  27 +-
+ crates/openlogi-ui/locales/nl.toml            |  27 +-
+ crates/openlogi-ui/locales/pl.toml            |  27 +-
+ crates/openlogi-ui/locales/pt-BR.toml         |  27 +-
+ crates/openlogi-ui/locales/pt-PT.toml         |  27 +-
+ crates/openlogi-ui/locales/ru.toml            |  27 +-
+ crates/openlogi-ui/locales/sv.toml            |  27 +-
+ crates/openlogi-ui/locales/tr.toml            |  27 +-
+ crates/openlogi-ui/locales/uk.toml            |  27 +-
+ crates/openlogi-ui/locales/zh-CN.toml         |  27 +-
+ crates/openlogi-ui/locales/zh-HK.toml         |  27 +-
+ crates/openlogi-ui/locales/zh-TW.toml         |  27 +-
+ 35 files changed, 537 insertions(+), 1164 deletions(-)
+ delete mode 100644 crates/openlogi-desktop/src/features/mouse/stored_panel.rs
+ create mode 100644 crates/openlogi-desktop/src/features/mouse/stored_status.rs
+ create mode 100644 crates/openlogi-desktop/src/state/stored_actions.rs
+
+diff --git a/crates/openlogi-core/src/binding/key_combo.rs b/crates/openlogi-core/src/binding/key_combo.rs
+index 97bbe54d..37b2c8c5 100644
+--- a/crates/openlogi-core/src/binding/key_combo.rs
++++ b/crates/openlogi-core/src/binding/key_combo.rs
+@@ -193,6 +193,12 @@ impl<'de> Deserialize<'de> for KeyCombo {
+ }
+ 
+ impl KeyCombo {
++    /// The combo of `modifiers` and `key`.
++    #[must_use]
++    pub const fn new(modifiers: Modifiers, key: KeyboardUsage) -> Self {
++        Self { modifiers, key }
++    }
++
+     /// USB HID keyboard usage for the ordinary key.
+     #[must_use]
+     pub const fn key(&self) -> KeyboardUsage {
+diff --git a/crates/openlogi-desktop/src/features/mouse/mod.rs b/crates/openlogi-desktop/src/features/mouse/mod.rs
+index 7963af53..4373a5af 100644
+--- a/crates/openlogi-desktop/src/features/mouse/mod.rs
++++ b/crates/openlogi-desktop/src/features/mouse/mod.rs
+@@ -6,6 +6,6 @@ pub mod geometry;
+ mod hotspots;
+ mod inspector;
+ pub mod leader_lines;
+-mod stored_panel;
++mod stored_status;
+ pub(crate) mod thumbwheel;
+ pub mod view;
+diff --git a/crates/openlogi-desktop/src/features/mouse/stored_panel.rs b/crates/openlogi-desktop/src/features/mouse/stored_panel.rs
+deleted file mode 100644
+index 60bc81c5..00000000
+--- a/crates/openlogi-desktop/src/features/mouse/stored_panel.rs
++++ /dev/null
+@@ -1,435 +0,0 @@
+-//! "Stored in the mouse": the stored profile's own button bindings, edited
+-//! and saved into the mouse, so they work without OpenLogi running. Shown
+-//! under the binding inspector while a stored profile is in control.
+-
+-use gpui::{
+-    App, Context, IntoElement, ParentElement, Role, SharedString, Styled, div,
+-    prelude::FluentBuilder as _,
+-};
+-use gpui_kit::component::{Disableable as _, Selectable as _, h_flex, v_flex};
+-use openlogi_core::config::OnboardMemory;
+-use openlogi_core::hid::{ProfileIndex, StoredBinding, StoredMacroStep, StoredProfiles};
+-
+-use super::view::MouseModelView;
+-use crate::state::{AppState, Load, StoredProfileNotice};
+-use crate::ui::components::{MenuRow, ProfileTab, control_button};
+-use crate::ui::section::section_label;
+-use crate::ui::theme::{self, Typography as _};
+-
+-const MOUSE: [(u8, &str); 5] = [
+-    (1, "actions.left_click"),
+-    (2, "actions.right_click"),
+-    (3, "actions.middle_click"),
+-    (4, "actions.back"),
+-    (5, "actions.forward"),
+-];
+-const MEDIA: [(u16, &str); 6] = [
+-    (0xcd, "actions.play_pause"),
+-    (0xb5, "actions.next_track"),
+-    (0xb6, "actions.previous_track"),
+-    (0xe9, "actions.volume_up"),
+-    (0xea, "actions.volume_down"),
+-    (0xe2, "actions.mute"),
+-];
+-const FUNCTIONS: [(u8, &str); 11] = [
+-    (0x03, "pointer.next_dpi_preset"),
+-    (0x04, "pointer.previous_dpi_preset"),
+-    (0x05, "pointer.cycle_dpi_presets"),
+-    (0x07, "pointer.dpi_shift"),
+-    (0x08, "stored_profile.next_profile"),
+-    (0x09, "stored_profile.previous_profile"),
+-    (0x0a, "stored_profile.cycle_profiles"),
+-    (0x0b, "actions.g_shift_hold"),
+-    (0x0c, "stored_profile.battery_level"),
+-    (0x01, "actions.scroll_left"),
+-    (0x02, "actions.scroll_right"),
+-];
+-
+-/// A key name for a HID usage (page 7). Key names stay in English, as on
+-/// the keycaps.
+-fn key_name(usage: u8) -> String {
+-    match usage {
+-        0x04..=0x1d => char::from(b'A' + (usage - 0x04)).to_string(),
+-        0x1e..=0x26 => char::from(b'1' + (usage - 0x1e)).to_string(),
+-        0x27 => "0".into(),
+-        0x3a..=0x45 => format!("F{}", usage - 0x3a + 1),
+-        0x68..=0x73 => format!("F{}", usage - 0x68 + 13),
+-        0x28 => "Enter".into(),
+-        0x29 => "Esc".into(),
+-        0x2a => "Backspace".into(),
+-        0x2b => "Tab".into(),
+-        0x2c => "Space".into(),
+-        0x46 => "Print Screen".into(),
+-        0x49 => "Insert".into(),
+-        0x4a => "Home".into(),
+-        0x4b => "Page Up".into(),
+-        0x4c => "Delete".into(),
+-        0x4d => "End".into(),
+-        0x4e => "Page Down".into(),
+-        0x4f => "Right".into(),
+-        0x50 => "Left".into(),
+-        0x51 => "Down".into(),
+-        0x52 => "Up".into(),
+-        0xe0 | 0xe4 => "Ctrl".into(),
+-        0xe1 | 0xe5 => "Shift".into(),
+-        0xe2 | 0xe6 => "Alt".into(),
+-        0xe3 | 0xe7 => "Win".into(),
+-        other => format!("Key {other:02X}"),
+-    }
+-}
+-
+-fn key_combo(modifiers: u8, usage: u8) -> String {
+-    let mut parts = Vec::new();
+-    for (bits, name) in [
+-        (0x11, "Ctrl"),
+-        (0x22, "Shift"),
+-        (0x44, "Alt"),
+-        (0x88, "Win"),
+-    ] {
+-        if modifiers & bits != 0 {
+-            parts.push(name.to_owned());
+-        }
+-    }
+-    parts.push(key_name(usage));
+-    parts.join(" + ")
+-}
+-
+-/// "Ctrl + Tab" for a stored macro: the keys held when the first one of a
+-/// chord is released, chord by chord.
+-fn macro_keys(steps: &[StoredMacroStep]) -> String {
+-    let mut held: Vec<u8> = Vec::new();
+-    let mut chords: Vec<String> = Vec::new();
+-    let mut emitted = false;
+-    for step in steps {
+-        match *step {
+-            StoredMacroStep::KeyDown(_, usage) => {
+-                held.push(usage);
+-                emitted = false;
+-            }
+-            StoredMacroStep::KeyUp(_, usage) => {
+-                if !emitted && !held.is_empty() {
+-                    chords.push(
+-                        held.iter()
+-                            .map(|&u| key_name(u))
+-                            .collect::<Vec<_>>()
+-                            .join(" + "),
+-                    );
+-                    emitted = true;
+-                }
+-                held.retain(|&u| u != usage);
+-            }
+-            StoredMacroStep::Delay(_) => {}
+-        }
+-    }
+-    chords.join(", ")
+-}
+-
+-fn binding_label(binding: StoredBinding, profiles: &StoredProfiles) -> SharedString {
+-    match binding {
+-        StoredBinding::MouseButton(n) => MOUSE.iter().find(|(v, _)| *v == n).map_or_else(
+-            || tr!("stored_profile.mouse_button", number = n),
+-            |(_, key)| tr!(*key),
+-        ),
+-        StoredBinding::Key { modifiers, usage } => key_combo(modifiers, usage).into(),
+-        StoredBinding::Consumer(code) => MEDIA.iter().find(|(v, _)| *v == code).map_or_else(
+-            || tr!("stored_profile.media_key", code = format!("{code:04X}")),
+-            |(_, key)| tr!(*key),
+-        ),
+-        StoredBinding::Special { function, .. } => {
+-            FUNCTIONS.iter().find(|(v, _)| *v == function).map_or_else(
+-                || tr!("stored_profile.function", number = function),
+-                |(_, key)| tr!(*key),
+-            )
+-        }
+-        StoredBinding::StoredMacro { sector, offset } => {
+-            match profiles
+-                .stored_macro(sector, offset)
+-                .and_then(|m| m.steps.as_ref().ok())
+-            {
+-                Some(steps) if !steps.is_empty() => {
+-                    tr!("stored_profile.macro", keys = macro_keys(steps))
+-                }
+-                _ => tr!("stored_profile.macro_stored"),
+-            }
+-        }
+-        StoredBinding::Disabled => tr!("pointer.do_nothing"),
+-        StoredBinding::Other(_) => tr!("stored_profile.other"),
+-    }
+-}
+-
+-fn notice_text(notice: &StoredProfileNotice) -> SharedString {
+-    match notice {
+-        StoredProfileNotice::Saved => tr!("stored_profile.saved"),
+-        StoredProfileNotice::NothingToSave => tr!("stored_profile.nothing_to_save"),
+-        StoredProfileNotice::Selected(index) => {
+-            tr!("stored_profile.selected", number = index.get())
+-        }
+-        StoredProfileNotice::Failed(error) => {
+-            tr!("stored_profile.failed", error = error.to_string())
+-        }
+-    }
+-}
+-
+-/// One choice row: selected when it is what the button does now.
+-fn choice(
+-    id: (&'static str, usize),
+-    label: SharedString,
+-    selected: bool,
+-    enabled: bool,
+-    shown: ProfileIndex,
+-    button: usize,
+-    binding: StoredBinding,
+-) -> impl IntoElement {
+-    MenuRow::new(id)
+-        .selected(selected)
+-        .role(Role::Button)
+-        .child(div().text_body().child(label))
+-        .when(enabled, |row| {
+-            row.on_click(move |_, _, cx: &mut App| {
+-                AppState::apply(cx, |state| {
+-                    state.edit_stored_profile(shown, |settings| {
+-                        if let Some(slot) = settings.buttons.get_mut(button) {
+-                            *slot = binding;
+-                        }
+-                    })
+-                });
+-            })
+-        })
+-}
+-
+-/// The panel, or `None` when the selected device has no stored profiles or
+-/// OpenLogi is in control.
+-pub(super) fn stored_profile_panel(cx: &Context<MouseModelView>) -> Option<gpui::Div> {
+-    let state = AppState::try_read(cx)?;
+-    if !state.current_onboard_supported()
+-        || state.current_onboard_active() == Some(OnboardMemory::Off)
+-    {
+-        return None;
+-    }
+-    let pal = theme::palette(cx);
+-    let header = v_flex()
+-        .gap_1()
+-        .child(section_label(tr!("stored_profile.title"), pal))
+-        .child(
+-            div()
+-                .text_caption()
+-                .text_color(pal.text_muted)
+-                .child(tr!("stored_profile.description")),
+-        );
+-
+-    let profiles = match state.current_stored_profiles() {
+-        Load::Ready(profiles) => profiles,
+-        Load::Unsupported(_) => return None,
+-        Load::Failed(error) => {
+-            return Some(
+-                v_flex()
+-                    .gap_2()
+-                    .child(header)
+-                    .child(
+-                        div()
+-                            .text_body()
+-                            .child(tr!("stored_profile.read_failed", error = error)),
+-                    )
+-                    .child(
+-                        control_button("stored-retry")
+-                            .label(tr!("stored_profile.retry"))
+-                            .on_click(|_, _, cx| {
+-                                AppState::update(cx, |state, cx| state.read_stored_profiles(cx))
+-                            }),
+-                    ),
+-            );
+-        }
+-        Load::Unknown | Load::Loading => {
+-            return Some(
+-                v_flex().gap_2().child(header).child(
+-                    div()
+-                        .text_body()
+-                        .text_color(pal.text_muted)
+-                        .child(tr!("stored_profile.reading")),
+-                ),
+-            );
+-        }
+-    };
+-
+-    let shown = state.current_stored_profile_shown()?;
+-    let busy = state.current_stored_profile_busy();
+-    let edit = state
+-        .current_stored_profile_edit()
+-        .filter(|edit| edit.index == shown);
+-    let dirty = edit.is_some_and(|edit| edit.is_dirty());
+-    let slot = profiles.profiles.iter().find(|slot| slot.index == shown)?;
+-
+-    let tabs = h_flex()
+-        .gap_1()
+-        .children(profiles.profiles.iter().map(|slot| {
+-            let index = slot.index;
+-            ProfileTab::new(
+-                ("stored-profile", usize::from(index.get().get())),
+-                format!("{index}"),
+-            )
+-            .selected(index == shown)
+-            .on_click(move |_, _, cx| AppState::apply(cx, |state| state.show_stored_profile(index)))
+-        }));
+-    let in_use = if profiles.active == Some(shown) {
+-        div()
+-            .text_caption()
+-            .text_color(pal.text_muted)
+-            .child(tr!("stored_profile.in_use"))
+-    } else {
+-        let label = if slot.enabled {
+-            tr!("stored_profile.use_profile")
+-        } else {
+-            tr!("stored_profile.use_profile_off")
+-        };
+-        div().child(
+-            control_button("stored-use-profile")
+-                .label(label)
+-                .disabled(busy || dirty)
+-                .on_click(move |_, _, cx| {
+-                    AppState::apply(cx, |state| state.select_stored_profile(shown))
+-                }),
+-        )
+-    };
+-
+-    let mut panel = v_flex().gap_2().child(header).child(tabs).child(in_use);
+-
+-    let settings = match (&edit, &slot.settings) {
+-        (Some(edit), _) => &edit.settings,
+-        (None, Ok(settings)) => settings,
+-        (None, Err(reason)) => {
+-            return Some(
+-                panel.child(
+-                    div()
+-                        .text_body()
+-                        .child(tr!("stored_profile.not_editable", reason = reason.clone())),
+-                ),
+-            );
+-        }
+-    };
+-
+-    let open = state.current_stored_open_button();
+-    for (index, &binding) in settings.buttons.iter().enumerate() {
+-        let original = profiles
+-            .factory_buttons
+-            .get(index)
+-            .map(|&b| binding_label(b, &profiles));
+-        let row = MenuRow::new(("stored-button", index))
+-            .selected(open == Some(index))
+-            .role(Role::Button)
+-            .child(
+-                v_flex()
+-                    .min_w_0()
+-                    .child(
+-                        h_flex()
+-                            .justify_between()
+-                            .gap_2()
+-                            .child(
+-                                div()
+-                                    .text_body()
+-                                    .child(tr!("stored_profile.button", number = index + 1)),
+-                            )
+-                            .child(div().text_body().child(binding_label(binding, &profiles))),
+-                    )
+-                    .when_some(original, |row, original| {
+-                        row.child(
+-                            div()
+-                                .text_caption()
+-                                .text_color(pal.text_muted)
+-                                .child(tr!("stored_profile.originally", action = original)),
+-                        )
+-                    }),
+-            )
+-            .on_click(move |_, _, cx| {
+-                AppState::apply(cx, |state| state.open_stored_button(Some(index)))
+-            });
+-        panel = panel.child(row);
+-        if open == Some(index) {
+-            let enabled = !busy;
+-            let mut choices = v_flex().gap_1().pl_3();
+-            choices = choices.child(section_label(tr!("stored_profile.group_mouse"), pal));
+-            for (i, (n, key)) in MOUSE.iter().enumerate() {
+-                let b = StoredBinding::MouseButton(*n);
+-                choices = choices.child(choice(
+-                    ("stored-choice-mouse", i),
+-                    tr!(*key),
+-                    binding == b,
+-                    enabled,
+-                    shown,
+-                    index,
+-                    b,
+-                ));
+-            }
+-            choices = choices.child(section_label(tr!("stored_profile.group_media"), pal));
+-            for (i, (code, key)) in MEDIA.iter().enumerate() {
+-                let b = StoredBinding::Consumer(*code);
+-                choices = choices.child(choice(
+-                    ("stored-choice-media", i),
+-                    tr!(*key),
+-                    binding == b,
+-                    enabled,
+-                    shown,
+-                    index,
+-                    b,
+-                ));
+-            }
+-            choices = choices.child(section_label(tr!("stored_profile.group_functions"), pal));
+-            for (i, (function, key)) in FUNCTIONS.iter().enumerate() {
+-                let b = StoredBinding::Special {
+-                    function: *function,
+-                    profile: 0,
+-                };
+-                let selected =
+-                    matches!(binding, StoredBinding::Special { function: f, .. } if f == *function);
+-                choices = choices.child(choice(
+-                    ("stored-choice-function", i),
+-                    tr!(*key),
+-                    selected,
+-                    enabled,
+-                    shown,
+-                    index,
+-                    b,
+-                ));
+-            }
+-            choices = choices.child(choice(
+-                ("stored-choice-off", 0),
+-                tr!("pointer.do_nothing"),
+-                binding == StoredBinding::Disabled,
+-                enabled,
+-                shown,
+-                index,
+-                StoredBinding::Disabled,
+-            ));
+-            panel = panel.child(choices);
+-        }
+-    }
+-
+-    let footer = h_flex()
+-        .gap_2()
+-        .child(
+-            control_button("stored-save")
+-                .label(tr!("stored_profile.save"))
+-                .disabled(!dirty || busy)
+-                .on_click(|_, _, cx| AppState::apply(cx, |state| state.save_stored_profile_edit())),
+-        )
+-        .child(
+-            control_button("stored-undo")
+-                .label(tr!("common.undo"))
+-                .disabled(!dirty || busy)
+-                .on_click(|_, _, cx| {
+-                    AppState::apply(cx, |state| state.discard_stored_profile_edit())
+-                }),
+-        )
+-        .when(dirty, |row| {
+-            row.child(
+-                div()
+-                    .text_caption()
+-                    .text_color(pal.text_muted)
+-                    .child(tr!("stored_profile.unsaved")),
+-            )
+-        });
+-    panel = panel.child(footer);
+-    if let Some(notice) = state.current_stored_profile_notice() {
+-        panel = panel.child(div().text_body().child(notice_text(notice)));
+-    }
+-    Some(panel)
+-}
+diff --git a/crates/openlogi-desktop/src/features/mouse/stored_status.rs b/crates/openlogi-desktop/src/features/mouse/stored_status.rs
+new file mode 100644
+index 00000000..fab7a4a8
+--- /dev/null
++++ b/crates/openlogi-desktop/src/features/mouse/stored_status.rs
+@@ -0,0 +1,39 @@
++//! One line under the binding inspector saying how the last write to a
++//! stored profile went, while a stored profile is in control.
++
++use gpui::{Context, ParentElement as _, SharedString, Styled as _, div};
++
++use super::view::MouseModelView;
++use crate::state::{AppState, StoredProfileNotice};
++use crate::ui::theme::{self, Typography as _};
++
++fn text(notice: &StoredProfileNotice) -> SharedString {
++    match notice {
++        StoredProfileNotice::Saved => tr!("stored_profile.saved"),
++        StoredProfileNotice::NothingToSave => tr!("stored_profile.nothing_to_save"),
++        StoredProfileNotice::Selected(index) => {
++            tr!("stored_profile.selected", number = index.get())
++        }
++        StoredProfileNotice::Failed(error) => {
++            tr!("stored_profile.failed", error = error.to_string())
++        }
++    }
++}
++
++pub(super) fn stored_status_line(cx: &Context<MouseModelView>) -> Option<gpui::Div> {
++    let state = AppState::try_read(cx)?;
++    state.stored_mode_bindings()?;
++    let pal = theme::palette(cx);
++    let line = if state.current_stored_profile_busy() {
++        tr!("stored_profile.saving")
++    } else {
++        text(state.current_stored_profile_notice()?)
++    };
++    Some(
++        div()
++            .px_3()
++            .text_caption()
++            .text_color(pal.text_muted)
++            .child(line),
++    )
++}
+diff --git a/crates/openlogi-desktop/src/features/mouse/view.rs b/crates/openlogi-desktop/src/features/mouse/view.rs
+index 04cdcaf3..a07d5232 100644
+--- a/crates/openlogi-desktop/src/features/mouse/view.rs
++++ b/crates/openlogi-desktop/src/features/mouse/view.rs
+@@ -1,4 +1,5 @@
+ use crate::ui::theme::FocusRingStyle as _;
++use std::borrow::Cow;
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::mem;
+ use std::sync::Arc;
+@@ -95,7 +96,9 @@ struct MouseWorkspaceData<'a> {
+     asset: Option<&'a ResolvedAsset>,
+     layout: Option<&'static GamingLayout>,
+     active: Option<MouseControlId>,
+-    bindings: &'a BTreeMap<ButtonId, Action>,
++    /// OpenLogi's bindings, or while a stored profile is in control, that
++    /// profile's own.
++    bindings: Cow<'a, BTreeMap<ButtonId, Action>>,
+     gesture_maps: &'a BTreeMap<ButtonId, BTreeMap<GestureDirection, Action>>,
+     glow: Option<(Arc<GlowGeometry>, Hsla)>,
+     thumbwheel: bool,
+@@ -120,7 +123,9 @@ impl<'a> MouseWorkspaceData<'a> {
+             active: state
+                 .active_button()
+                 .map(MouseControlId::from_active_button),
+-            bindings: state.button_bindings(),
++            bindings: state
++                .stored_mode_bindings()
++                .map_or(Cow::Borrowed(state.button_bindings()), Cow::Owned),
+             gesture_maps: state.gesture_bindings(),
+             glow: state
+                 .current_record()
+@@ -148,7 +153,10 @@ impl<'a> MouseWorkspaceData<'a> {
+                 state.current_gaming_layout().is_some()
+                     && state.binding_layer() == BindingLayer::Normal,
+             ),
+-            hidden_actions: if state
++            hidden_actions: if state.stored_mode_bindings().is_some() {
++                // A stored profile can only hold what the mouse itself can do.
++                &crate::state::NOT_STORABLE[..]
++            } else if state
+                 .current_record()
+                 .is_none_or(crate::app::offers_actions_ring)
+             {
+@@ -168,7 +176,7 @@ impl<'a> MouseWorkspaceData<'a> {
+             asset: None,
+             layout: None,
+             active: None,
+-            bindings: &NO_BINDINGS,
++            bindings: Cow::Borrowed(&NO_BINDINGS),
+             gesture_maps: &NO_GESTURE_MAPS,
+             glow: None,
+             thumbwheel: false,
+@@ -524,6 +532,7 @@ impl Render for MouseModelView {
+             extra_actions,
+             hidden_actions,
+         } = MouseWorkspaceData::read(cx).unwrap_or_else(MouseWorkspaceData::empty);
++        let bindings: &BTreeMap<ButtonId, Action> = &bindings;
+ 
+         let gesture_buttons: Vec<ButtonId> = gesture_maps
+             .keys()
+@@ -601,7 +610,7 @@ impl Render for MouseModelView {
+             self.action_picker_context(&view),
+             cx,
+         )
+-        .children(super::stored_panel::stored_profile_panel(cx));
++        .children(super::stored_status::stored_status_line(cx));
+         workspace_layout(canvas, profile_status, inspector, &self.focus_handle, view)
+     }
+ }
+diff --git a/crates/openlogi-desktop/src/services/ipc.rs b/crates/openlogi-desktop/src/services/ipc.rs
+index 4da7a384..24a184f5 100644
+--- a/crates/openlogi-desktop/src/services/ipc.rs
++++ b/crates/openlogi-desktop/src/services/ipc.rs
+@@ -71,15 +71,16 @@ use reflex::SpawnReflex;
+ use request::LinkLost;
+ #[cfg(all(target_os = "macos", debug_assertions))]
+ pub use request::PollEventMonitor;
++#[cfg(test)]
++pub use request::SelectStoredProfile;
+ pub use request::{
+     CancelFlowPairing, CancelPairing, Command, ConfirmFlowPairing, LoadConfig, PairDevice,
+     PairFlowPeer, ReadBacklight, ReadDisableKeys, ReadDpi, ReadEasySwitchHosts, ReadFnLock,
+     ReadForceSensing, ReadOnboard, ReadPointerSpeed, ReadReportRate, ReadSidetone, ReadSmartShift,
+     ReadStoredProfiles, ReloadConfig, RenameEasySwitchHost, RequestAccessibilityPrompt,
+-    RetryConnection, SaveStoredProfile, SelectStoredProfile, SetBacklight, SetDisableKeys, SetDpi,
+-    SetFnLock, SetForceSensing, SetLight, SetLightManualPower, SetLighting, SetPointerSpeed,
+-    SetReportRate, SetSidetone, SetSmartShift, StartFlowPairing, StartPairing, StopFlowPairing,
+-    UnpairDevice,
++    RetryConnection, SaveStoredProfile, SetBacklight, SetDisableKeys, SetDpi, SetFnLock,
++    SetForceSensing, SetLight, SetLightManualPower, SetLighting, SetPointerSpeed, SetReportRate,
++    SetSidetone, SetSmartShift, StartFlowPairing, StartPairing, StopFlowPairing, UnpairDevice,
+ };
+ 
+ /// Complete identity of one Disable Keys write/reload transaction.
+diff --git a/crates/openlogi-desktop/src/state.rs b/crates/openlogi-desktop/src/state.rs
+index 57bc4e72..79ffe682 100644
+--- a/crates/openlogi-desktop/src/state.rs
++++ b/crates/openlogi-desktop/src/state.rs
+@@ -44,6 +44,7 @@ pub use load::{
+     BacklightLoad, DisableKeysLoad, DpiLoad, EasySwitchLoad, FnLockLoad, ForceSensingLoad,
+     OnboardLoad, PointerSpeedLoad, ReportRateLoad, SidetoneLoad, SmartShiftLoad,
+ };
++pub use stored_actions::NOT_STORABLE;
+ pub use stored_profiles::StoredProfileNotice;
+ 
+ /// Result of confirming a SmartShift write by reading the value back.
+@@ -111,6 +112,7 @@ mod scroll;
+ mod settings;
+ mod sidetone;
+ mod smartshift;
++mod stored_actions;
+ mod stored_profiles;
+ 
+ #[cfg(test)]
+diff --git a/crates/openlogi-desktop/src/state/bindings.rs b/crates/openlogi-desktop/src/state/bindings.rs
+index a877e40e..f9af591c 100644
+--- a/crates/openlogi-desktop/src/state/bindings.rs
++++ b/crates/openlogi-desktop/src/state/bindings.rs
+@@ -382,6 +382,10 @@ impl AppState {
+     /// Disk failures restore the persisted projection and surface a config
+     /// error instead of crashing the UI thread.
+     pub fn commit_binding(&mut self, button: ButtonId, action: Action) -> StateEvents {
++        // While a stored profile is in control, the pick goes into the mouse.
++        if let Some(events) = self.commit_stored_binding(button, &action) {
++            return events;
++        }
+         let events = self.for_current_device(StateEvent::BindingsChanged);
+         self.bindings.button_bindings.insert(button, action.clone());
+ 
+diff --git a/crates/openlogi-desktop/src/state/stored_actions.rs b/crates/openlogi-desktop/src/state/stored_actions.rs
+new file mode 100644
+index 00000000..b31d7af2
+--- /dev/null
++++ b/crates/openlogi-desktop/src/state/stored_actions.rs
+@@ -0,0 +1,339 @@
++//! Between OpenLogi's [`Action`]s and what a G-series mouse can store in a
++//! profile: mouse buttons, key combinations, media keys and a few firmware
++//! functions. While a stored profile is in control, the Buttons panel shows
++//! the stored bindings as actions and offers only the actions a profile can
++//! hold.
++
++use std::sync::LazyLock;
++
++use openlogi_core::binding::{Action, KeyCombo, KeyboardUsage, Modifiers};
++use openlogi_core::hid::{StoredBinding, StoredMacroStep, StoredProfiles};
++
++/// Boot-keyboard modifier bits: left Ctrl, Shift, Alt, GUI; the right-hand
++/// ones are the same shifted four up.
++const CTRL: u8 = 0x01;
++const SHIFT: u8 = 0x02;
++const ALT: u8 = 0x04;
++const GUI: u8 = 0x08;
++
++/// The platform's primary modifier, as the mouse stores it: Command on macOS,
++/// Control elsewhere.
++const PRIMARY: u8 = if cfg!(target_os = "macos") { GUI } else { CTRL };
++
++const TAB: u8 = 0x2b;
++
++/// Shortcut actions and the chord each stands for (modifiers, HID usage).
++const SHORTCUTS: [(Action, u8, u8); 13] = [
++    (Action::Copy, PRIMARY, 0x06),
++    (Action::Paste, PRIMARY, 0x19),
++    (Action::Cut, PRIMARY, 0x1b),
++    (Action::Undo, PRIMARY, 0x1d),
++    (Action::SelectAll, PRIMARY, 0x04),
++    (Action::Find, PRIMARY, 0x09),
++    (Action::Save, PRIMARY, 0x16),
++    (Action::NewTab, PRIMARY, 0x17),
++    (Action::CloseTab, PRIMARY, 0x1a),
++    (Action::ReopenTab, PRIMARY | SHIFT, 0x17),
++    (Action::NextTab, CTRL, TAB),
++    (Action::PrevTab, CTRL | SHIFT, TAB),
++    (Action::ReloadPage, PRIMARY, 0x15),
++];
++
++const MOUSE: [(Action, u8); 5] = [
++    (Action::LeftClick, 1),
++    (Action::RightClick, 2),
++    (Action::MiddleClick, 3),
++    (Action::MouseBack, 4),
++    (Action::MouseForward, 5),
++];
++
++const MEDIA: [(Action, u16); 8] = [
++    (Action::PlayPause, 0xcd),
++    (Action::NextTrack, 0xb5),
++    (Action::PrevTrack, 0xb6),
++    (Action::VolumeUp, 0xe9),
++    (Action::VolumeDown, 0xea),
++    (Action::MuteVolume, 0xe2),
++    (Action::BrowserBack, 0x224),
++    (Action::BrowserForward, 0x225),
++];
++
++/// Firmware functions with an action of their own. Profile switching and the
++/// battery check have none: they are shown as stored, not offered.
++const FUNCTIONS: [(Action, u8); 7] = [
++    (Action::NextDpiPreset, 0x03),
++    (Action::PreviousDpiPreset, 0x04),
++    (Action::CycleDpiPresets, 0x05),
++    (Action::DpiShift, 0x07),
++    (Action::GShift, 0x0b),
++    (Action::HorizontalScrollLeft, 0x01),
++    (Action::HorizontalScrollRight, 0x02),
++];
++
++fn modifiers_to_hid(combo: &KeyCombo) -> u8 {
++    let mut bits = 0;
++    if combo.has_command() {
++        bits |= PRIMARY;
++    }
++    if combo.has_control() {
++        bits |= CTRL;
++    }
++    if combo.has_shift() {
++        bits |= SHIFT;
++    }
++    if combo.has_option() {
++        bits |= ALT;
++    }
++    if combo.has_super() {
++        bits |= GUI;
++    }
++    bits
++}
++
++fn modifiers_from_hid(bits: u8) -> Modifiers {
++    // Fold the right-hand modifiers onto the left ones.
++    let bits = (bits | (bits >> 4)) & 0x0f;
++    let mut modifiers = Modifiers::empty();
++    if bits & CTRL != 0 {
++        modifiers |= Modifiers::CONTROL;
++    }
++    if bits & SHIFT != 0 {
++        modifiers |= Modifiers::SHIFT;
++    }
++    if bits & ALT != 0 {
++        modifiers |= Modifiers::OPTION;
++    }
++    if bits & GUI != 0 {
++        modifiers |= Modifiers::SUPER;
++    }
++    modifiers
++}
++
++fn key_action(modifiers: u8, usage: u8) -> Option<Action> {
++    let folded = (modifiers | (modifiers >> 4)) & 0x0f;
++    if let Some((action, ..)) = SHORTCUTS
++        .iter()
++        .find(|(_, m, u)| *m == folded && *u == usage)
++    {
++        return Some(action.clone());
++    }
++    let key = KeyboardUsage::try_from(usage).ok()?;
++    Some(Action::CustomShortcut(KeyCombo::new(
++        modifiers_from_hid(modifiers),
++        key,
++    )))
++}
++
++/// The chord a macro plays, when it is exactly one chord (G HUB stores a
++/// shortcut assigned to a button as such a macro).
++fn single_chord(steps: &[StoredMacroStep]) -> Option<(u8, u8)> {
++    let mut modifiers = 0;
++    let mut key = None;
++    let mut released = false;
++    for step in steps {
++        match *step {
++            StoredMacroStep::KeyDown(_, usage) => {
++                if released {
++                    return None; // a second chord
++                }
++                match usage {
++                    0xe0..=0xe7 => modifiers |= 1 << (usage - 0xe0),
++                    _ if key.is_none() => key = Some(usage),
++                    _ => return None,
++                }
++            }
++            StoredMacroStep::KeyUp(..) => released = true,
++            StoredMacroStep::Delay(_) => {}
++        }
++    }
++    Some((modifiers, key?))
++}
++
++/// What `binding` does, as an action; `None` when no action stands for it
++/// (profile switching, a multi-chord macro, a binding the codec keeps raw).
++#[must_use]
++pub fn action_for(binding: StoredBinding, profiles: &StoredProfiles) -> Option<Action> {
++    match binding {
++        StoredBinding::MouseButton(n) => {
++            MOUSE.iter().find(|(_, v)| *v == n).map(|(a, _)| a.clone())
++        }
++        StoredBinding::Key { modifiers, usage } => key_action(modifiers, usage),
++        StoredBinding::Consumer(code) => MEDIA
++            .iter()
++            .find(|(_, v)| *v == code)
++            .map(|(a, _)| a.clone()),
++        StoredBinding::Special { function, .. } => FUNCTIONS
++            .iter()
++            .find(|(_, v)| *v == function)
++            .map(|(a, _)| a.clone()),
++        StoredBinding::StoredMacro { sector, offset } => {
++            let steps = profiles.stored_macro(sector, offset)?.steps.as_ref().ok()?;
++            let (modifiers, usage) = single_chord(steps)?;
++            key_action(modifiers, usage)
++        }
++        StoredBinding::Disabled => Some(Action::None),
++        StoredBinding::Other(_) => None,
++    }
++}
++
++/// How the mouse stores `action`; `None` when a profile can't hold it.
++#[must_use]
++pub fn binding_for(action: &Action) -> Option<StoredBinding> {
++    if let Some((_, n)) = MOUSE.iter().find(|(a, _)| a == action) {
++        return Some(StoredBinding::MouseButton(*n));
++    }
++    if let Some((_, code)) = MEDIA.iter().find(|(a, _)| a == action) {
++        return Some(StoredBinding::Consumer(*code));
++    }
++    if let Some((_, function)) = FUNCTIONS.iter().find(|(a, _)| a == action) {
++        return Some(StoredBinding::Special {
++            function: *function,
++            profile: 0,
++        });
++    }
++    if let Some((_, modifiers, usage)) = SHORTCUTS.iter().find(|(a, ..)| a == action) {
++        return Some(StoredBinding::Key {
++            modifiers: *modifiers,
++            usage: *usage,
++        });
++    }
++    match action {
++        Action::None => Some(StoredBinding::Disabled),
++        Action::CustomShortcut(combo) => Some(StoredBinding::Key {
++            modifiers: modifiers_to_hid(combo),
++            usage: combo.key().into(),
++        }),
++        _ => None,
++    }
++}
++
++/// Every pickable action a stored profile can't hold, hidden from the picker
++/// while a stored profile is in control.
++pub static NOT_STORABLE: LazyLock<Vec<Action>> = LazyLock::new(|| {
++    Action::catalog()
++        .into_iter()
++        .filter(|action| binding_for(action).is_none())
++        .collect()
++});
++
++#[cfg(test)]
++mod stored_profiles_mapping {
++    use super::*;
++    use openlogi_core::hid::{OnboardMode, StoredMacro};
++
++    fn profiles_with(macros: Vec<StoredMacro>) -> StoredProfiles {
++        StoredProfiles {
++            mode: OnboardMode::Onboard,
++            active: None,
++            dpi_values: None,
++            profiles: Vec::new(),
++            factory_buttons: Vec::new(),
++            macros,
++        }
++    }
++
++    #[test]
++    fn storable_actions_round_trip() {
++        let none = profiles_with(Vec::new());
++        for action in Action::catalog() {
++            if let Some(binding) = binding_for(&action) {
++                assert_eq!(
++                    action_for(binding, &none),
++                    Some(action.clone()),
++                    "{action:?}"
++                );
++            }
++        }
++    }
++
++    #[test]
++    fn g_hub_macros_that_are_one_chord_read_as_their_shortcut() {
++        let steps = |m: &[u8], key: u8| -> Vec<StoredMacroStep> {
++            let mut v: Vec<StoredMacroStep> =
++                m.iter().map(|&u| StoredMacroStep::KeyDown(0, u)).collect();
++            v.push(StoredMacroStep::Delay(50));
++            v.push(StoredMacroStep::KeyDown(0, key));
++            v.extend(m.iter().map(|&u| StoredMacroStep::KeyUp(0, u)));
++            v.push(StoredMacroStep::KeyUp(0, key));
++            v
++        };
++        // The four macros on a G903 HERO's side and DPI buttons.
++        let macros = vec![
++            StoredMacro {
++                sector: 6,
++                offset: 0x00,
++                steps: Ok(steps(&[0xe0], 0x2b)),
++            },
++            StoredMacro {
++                sector: 6,
++                offset: 0x16,
++                steps: Ok(steps(&[0xe0, 0xe1], 0x2b)),
++            },
++            StoredMacro {
++                sector: 6,
++                offset: 0x5a,
++                steps: Ok(steps(&[0xe0], 0x1a)),
++            },
++        ];
++        let profiles = profiles_with(macros);
++        let at = |offset| action_for(StoredBinding::StoredMacro { sector: 6, offset }, &profiles);
++        assert_eq!(at(0x00), Some(Action::NextTab));
++        assert_eq!(at(0x16), Some(Action::PrevTab));
++        if !cfg!(target_os = "macos") {
++            assert_eq!(at(0x5a), Some(Action::CloseTab));
++        }
++        assert_eq!(at(0x99), None, "a macro nobody points to");
++    }
++
++    #[test]
++    fn a_two_chord_macro_has_no_action() {
++        let steps = vec![
++            StoredMacroStep::KeyDown(0, 0x04),
++            StoredMacroStep::KeyUp(0, 0x04),
++            StoredMacroStep::KeyDown(0, 0x05),
++            StoredMacroStep::KeyUp(0, 0x05),
++        ];
++        let profiles = profiles_with(vec![StoredMacro {
++            sector: 6,
++            offset: 0,
++            steps: Ok(steps),
++        }]);
++        assert_eq!(
++            action_for(
++                StoredBinding::StoredMacro {
++                    sector: 6,
++                    offset: 0
++                },
++                &profiles
++            ),
++            None
++        );
++    }
++
++    #[test]
++    fn a_plain_key_reads_as_a_custom_shortcut_and_writes_back() {
++        let none = profiles_with(Vec::new());
++        let enter = StoredBinding::Key {
++            modifiers: 0,
++            usage: 0x28,
++        };
++        let action = action_for(enter, &none).expect("Enter is a key");
++        assert!(matches!(action, Action::CustomShortcut(_)));
++        assert_eq!(binding_for(&action), Some(enter));
++        let ctrl_alt_f5 = StoredBinding::Key {
++            modifiers: CTRL | ALT,
++            usage: 0x3e,
++        };
++        let action = action_for(ctrl_alt_f5, &none).expect("a chord");
++        assert_eq!(binding_for(&action), Some(ctrl_alt_f5));
++    }
++
++    #[test]
++    fn what_a_profile_cannot_hold_is_hidden() {
++        assert!(NOT_STORABLE.contains(&Action::ShowActionsRing));
++        assert!(NOT_STORABLE.contains(&Action::LockScreen));
++        assert!(!NOT_STORABLE.contains(&Action::MouseBack));
++        assert!(!NOT_STORABLE.contains(&Action::NextTab));
++        assert_eq!(binding_for(&Action::None), Some(StoredBinding::Disabled));
++    }
++}
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index c47a7498..34489252 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -1,12 +1,16 @@
+ //! Editing a G-series mouse's stored profiles: the read, one edit buffer per
+ //! mouse, saves, and making a profile active.
+ //!
++//! While a stored profile is in control, the Buttons panel shows and edits
++//! that profile's bindings ([`AppState::stored_mode_bindings`],
++//! [`AppState::commit_stored_binding`]): a picked action is written into the
++//! mouse at once, the way a picked action applies at once in host mode.
++//!
+ //! The mouse is the only store: nothing here touches `config.toml`. A save
+ //! sends the sector bytes the edit started from, and the agent refuses to
+ //! write if the mouse no longer holds them, so an edit made on a stale read
+ //! can't overwrite a change made meanwhile (in G HUB, say).
+ 
+-use std::collections::BTreeMap;
+ use std::sync::Arc;
+ 
+ use gpui::Context;
+@@ -15,8 +19,17 @@ use openlogi_core::hid::{
+ };
+ use tracing::{debug, warn};
+ 
++use std::collections::BTreeMap;
++
++use openlogi_core::binding::{Action, ButtonId};
++use openlogi_core::config::OnboardMemory;
++
++use super::bindings::BindingLayer;
++use super::stored_actions::{action_for, binding_for};
+ use super::{AppState, DeviceKey, DeviceRecord, Load, StateEvent, StateEvents};
+-use crate::services::ipc::{ReadStoredProfiles, SaveStoredProfile, SelectStoredProfile};
++#[cfg(test)]
++use crate::services::ipc::SelectStoredProfile;
++use crate::services::ipc::{ReadStoredProfiles, SaveStoredProfile};
+ 
+ /// Read state of one mouse's stored profiles. See [`Load`].
+ pub type StoredProfilesLoad = Load<Arc<StoredProfiles>>;
+@@ -58,10 +71,6 @@ impl StoredProfileEdit {
+ #[derive(Default)]
+ struct Entry {
+     load: StoredProfilesLoad,
+-    /// The profile the editor shows; `None` follows the active one.
+-    shown: Option<ProfileIndex>,
+-    /// The button whose choices are open.
+-    open_button: Option<usize>,
+     read_flight: u64,
+     edit: Option<StoredProfileEdit>,
+     saving: Option<u64>,
+@@ -104,6 +113,7 @@ impl AppState {
+     }
+ 
+     /// The selected mouse's stored profiles, as last read.
++    #[cfg(test)]
+     #[must_use]
+     pub fn current_stored_profiles(&self) -> StoredProfilesLoad {
+         self.current_record()
+@@ -113,6 +123,7 @@ impl AppState {
+     }
+ 
+     /// The selected mouse's edit in progress, if any.
++    #[cfg(test)]
+     #[must_use]
+     pub fn current_stored_profile_edit(&self) -> Option<&StoredProfileEdit> {
+         self.current_record()
+@@ -128,60 +139,104 @@ impl AppState {
+             .and_then(|entry| entry.notice.as_ref())
+     }
+ 
+-    /// The profile the editor shows: the one chosen, else the active one,
+-    /// else the first.
+-    #[must_use]
+-    pub fn current_stored_profile_shown(&self) -> Option<ProfileIndex> {
++    /// The active stored profile, while it is in control and readable: its
++    /// index and the bindings of the layer the Buttons panel shows (the edit
++    /// in progress, else the read).
++    fn stored_mode(&self) -> Option<(ProfileIndex, bool)> {
++        if !self.current_onboard_supported()
++            || self.current_onboard_active() == Some(OnboardMemory::Off)
++            || self.editing_app().is_some()
++        {
++            return None;
++        }
++        self.current_gaming_layout()?;
+         let entry = self
+             .current_record()
+             .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
+         let Load::Ready(profiles) = &entry.load else {
+             return None;
+         };
+-        entry
+-            .shown
+-            .filter(|index| profiles.profiles.iter().any(|slot| slot.index == *index))
+-            .or(profiles.active)
+-            .or_else(|| profiles.profiles.first().map(|slot| slot.index))
++        let active = profiles.active?;
++        let slot = profiles.profiles.iter().find(|slot| slot.index == active)?;
++        slot.settings.as_ref().ok()?;
++        Some((active, self.binding_layer() == BindingLayer::GShift))
+     }
+ 
+-    /// The button whose choices are open in the editor.
++    /// While a stored profile is in control: what each button of the gaming
++    /// layout does in that profile, as actions, for the Buttons panel to show
++    /// instead of OpenLogi's own bindings. A button whose stored binding has no
++    /// action (profile switching, a multi-chord macro) is left out.
+     #[must_use]
+-    pub fn current_stored_open_button(&self) -> Option<usize> {
+-        self.current_record()
+-            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))
+-            .and_then(|entry| entry.open_button)
+-    }
+-
+-    /// Show profile `index` in the editor. An unsaved edit of another
+-    /// profile is dropped.
+-    pub fn show_stored_profile(&mut self, index: ProfileIndex) -> StateEvents {
+-        let events = self.for_current_device(StateEvent::OnboardChanged);
+-        if let Some(key) = self.current_record().map(DeviceRecord::device_key) {
+-            let entry = self.stored_profiles.entry(&key);
+-            entry.shown = Some(index);
+-            entry.open_button = None;
+-            entry.notice = None;
+-            if entry.edit.as_ref().is_some_and(|edit| edit.index != index) {
+-                entry.edit = None;
+-            }
+-        }
+-        events
++    pub fn stored_mode_bindings(&self) -> Option<BTreeMap<ButtonId, Action>> {
++        let (active, gshift) = self.stored_mode()?;
++        let layout = self.current_gaming_layout()?;
++        let entry = self
++            .current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
++        let Load::Ready(profiles) = &entry.load else {
++            return None;
++        };
++        let settings = match &entry.edit {
++            Some(edit) if edit.index == active => &edit.settings,
++            _ => profiles
++                .profiles
++                .iter()
++                .find(|slot| slot.index == active)?
++                .settings
++                .as_ref()
++                .ok()?,
++        };
++        let layer = if gshift {
++            &settings.shift_buttons
++        } else {
++            &settings.buttons
++        };
++        Some(
++            layout
++                .slots
++                .iter()
++                .zip(layer)
++                .filter_map(|(slot, &binding)| Some((slot.button, action_for(binding, profiles)?)))
++                .collect(),
++        )
+     }
+ 
+-    /// Open the choices of `button` in the editor, or close them (`None`, or
+-    /// the button already open).
+-    pub fn open_stored_button(&mut self, button: Option<usize>) -> StateEvents {
+-        let events = self.for_current_device(StateEvent::OnboardChanged);
+-        if let Some(key) = self.current_record().map(DeviceRecord::device_key) {
+-            let entry = self.stored_profiles.entry(&key);
+-            entry.open_button = if entry.open_button == button {
+-                None
++    /// While a stored profile is in control, write `action` for `button` into
++    /// that profile and return `Some`; `None` leaves the pick to OpenLogi's own
++    /// bindings (host mode, a per-app profile, a button outside the layout).
++    pub(super) fn commit_stored_binding(
++        &mut self,
++        button: ButtonId,
++        action: &Action,
++    ) -> Option<StateEvents> {
++        let (active, gshift) = self.stored_mode()?;
++        let index = self
++            .current_gaming_layout()?
++            .slots
++            .iter()
++            .position(|slot| slot.button == button)?;
++        let events = self.for_current_device(StateEvent::BindingsChanged);
++        let Some(binding) = binding_for(action) else {
++            let key = self.current_record().map(DeviceRecord::device_key)?;
++            self.stored_profiles.entry(&key).notice = Some(StoredProfileNotice::Failed(
++                WriteError::OnboardProfileRejected {
++                    reason: "the mouse can't store this action".into(),
++                },
++            ));
++            return Some(events);
++        };
++        let _ = self.edit_stored_profile(active, |settings| {
++            let layer = if gshift {
++                &mut settings.shift_buttons
+             } else {
+-                button
++                &mut settings.buttons
+             };
+-        }
+-        events
++            if let Some(slot) = layer.get_mut(index) {
++                *slot = binding;
++            }
++        });
++        let _ = self.save_stored_profile_edit();
++        Some(events)
+     }
+ 
+     /// Whether a save or selection for the selected mouse is in flight.
+@@ -275,17 +330,6 @@ impl AppState {
+         events
+     }
+ 
+-    /// Drop the selected mouse's edit in progress.
+-    pub fn discard_stored_profile_edit(&mut self) -> StateEvents {
+-        let events = self.for_current_device(StateEvent::OnboardChanged);
+-        if let Some(key) = self.current_record().map(DeviceRecord::device_key) {
+-            let entry = self.stored_profiles.entry(&key);
+-            entry.edit = None;
+-            entry.notice = None;
+-        }
+-        events
+-    }
+-
+     /// Save the selected mouse's edit. The answer arrives as
+     /// [`Self::apply_stored_profile_saved`].
+     pub fn save_stored_profile_edit(&mut self) -> StateEvents {
+@@ -359,6 +403,7 @@ impl AppState {
+ 
+     /// Make profile `index` the selected mouse's active profile. The answer
+     /// arrives as [`Self::apply_stored_profile_selected`].
++    #[cfg(test)]
+     pub fn select_stored_profile(&mut self, index: ProfileIndex) -> StateEvents {
+         let events = self.for_current_device(StateEvent::OnboardChanged);
+         let Some((key, route)) = self.stored_profile_target() else {
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index a67bf002..84bc1516 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -298,40 +298,3 @@ fn selecting_a_profile_asks_the_agent_and_reads_again(cx: &mut gpui::TestAppCont
+     cx.run_until_parked();
+     assert!(matches!(load(cx), Load::Ready(p) if p.active == Some(index(2))));
+ }
+-
+-#[gpui::test]
+-fn the_editor_follows_the_active_profile_until_one_is_chosen(cx: &mut gpui::TestAppContext) {
+-    let (_key, _receiver) = ready(cx);
+-    let shown = |cx: &gpui::TestAppContext| {
+-        cx.read(|cx| {
+-            AppState::try_read(cx)
+-                .expect("state")
+-                .current_stored_profile_shown()
+-        })
+-    };
+-    assert_eq!(shown(cx), Some(index(1)), "the active profile");
+-    edit_enter_to_play(cx);
+-    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.show_stored_profile(index(2))));
+-    assert_eq!(shown(cx), Some(index(2)));
+-    assert_eq!(
+-        dirty(cx),
+-        None,
+-        "switching profiles drops the other profile's unsaved edit"
+-    );
+-}
+-
+-#[gpui::test]
+-fn a_button_opens_and_closes(cx: &mut gpui::TestAppContext) {
+-    let (_key, _receiver) = ready(cx);
+-    let open = |cx: &gpui::TestAppContext| {
+-        cx.read(|cx| {
+-            AppState::try_read(cx)
+-                .expect("state")
+-                .current_stored_open_button()
+-        })
+-    };
+-    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.open_stored_button(Some(2))));
+-    assert_eq!(open(cx), Some(2));
+-    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.open_stored_button(Some(2))));
+-    assert_eq!(open(cx), None, "clicking it again closes it");
+-}
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index f298adaf..1123d8ad 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Не выкарыстоўваецца"
+ open_camera_preview = "Адкрыць папярэдні прагляд…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index 8ee00e8e..178f907a 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Nepoužívá se"
+ open_camera_preview = "Otevřít náhled…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index 0ef34982..c617e8b7 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Ikke i brug"
+ open_camera_preview = "Åbn forhåndsvisning…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index b34b0536..b769addc 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Nicht in Verwendung"
+ open_camera_preview = "Vorschau öffnen…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index 583ac5ea..f6872539 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Εκτός χρήσης"
+ open_camera_preview = "Άνοιγμα προεπισκόπησης…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index 90eb118a..f09f8ea3 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Not in Use"
+ open_camera_preview = "Open Preview…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index 7219e1e7..610ef0ba 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Sin usar"
+ open_camera_preview = "Abrir vista previa…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index 94980a22..cd2a091e 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Ei käytössä"
+ open_camera_preview = "Avaa esikatselu…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index 8663b241..28f3a54d 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Inutilisée"
+ open_camera_preview = "Ouvrir l'aperçu…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index c909ea73..73405527 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Non in uso"
+ open_camera_preview = "Apri anteprima…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index cac204ef..f4ea52d4 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "未使用"
+ open_camera_preview = "プレビューを開く…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index feb5ff9f..391c2bc2 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "사용 안 함"
+ open_camera_preview = "미리 보기 열기…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index a86f3fec..a0a754f5 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Ikke i bruk"
+ open_camera_preview = "Åpne forhåndsvisning…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index ecb69949..16bfdc7a 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Niet in gebruik"
+ open_camera_preview = "Voorbeeld openen…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index f2547757..2a035614 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Nieużywana"
+ open_camera_preview = "Otwórz podgląd…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index 5f97794b..ade2f59a 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Não está em uso"
+ open_camera_preview = "Abrir visualização…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index 6caea601..f1f12331 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Não está em utilização"
+ open_camera_preview = "Abrir pré-visualização…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index d1148d49..4280ff04 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Не используется"
+ open_camera_preview = "Открыть предпросмотр…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index 2d4c3bb1..f7b525b7 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Används inte"
+ open_camera_preview = "Öppna förhandsvisning…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index 6ce4300b..82269012 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Kullanımda Değil"
+ open_camera_preview = "Önizlemeyi Aç…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index 371cf801..27579ef6 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "Не використовується"
+ open_camera_preview = "Відкрити перегляд…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index 1ccd9637..35dc42f1 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "未使用"
+ open_camera_preview = "打开预览…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index cba5081c..ff8cbfb7 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "未使用"
+ open_camera_preview = "打開預覽…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index 17399b00..5a7b69fa 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -1062,33 +1062,8 @@ camera_idle = "未使用"
+ open_camera_preview = "打開預覽…"
+ 
+ [stored_profile]
+-title = "Stored in the mouse"
+-description = "Saved into the mouse's memory: it keeps working without OpenLogi."
+-reading = "Reading the mouse…"
+-read_failed = "Couldn't read the stored profiles: %{error}"
+-retry = "Try Again"
+-use_profile = "Use This Profile"
+-use_profile_off = "Turn On and Use This Profile"
+-in_use = "In use"
+-not_editable = "This profile can't be edited: %{reason}"
+-button = "Button %{number}"
+-originally = "Originally: %{action}"
+-mouse_button = "Mouse Button %{number}"
+-media_key = "Media Key %{code}"
+-function = "Function %{number}"
+-next_profile = "Next Profile"
+-previous_profile = "Previous Profile"
+-cycle_profiles = "Cycle Profiles"
+-battery_level = "Show Battery Level"
+-macro = "Macro: %{keys}"
+-macro_stored = "Macro Stored in the Mouse"
+-other = "Other (Kept as Stored)"
+-group_mouse = "Mouse"
+-group_media = "Media"
+-group_functions = "Functions"
+-save = "Save to Mouse"
++saving = "Saving to the mouse…"
+ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
+-unsaved = "Unsaved changes"
 -- 
 2.43.0
 
