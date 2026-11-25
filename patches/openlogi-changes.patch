@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/10] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/11] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/10] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/11] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/10] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/11] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/10] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/11] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/10] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/11] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/10] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/11] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/10] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/11] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/10] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/11] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/10] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/11] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/10] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/11] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10520,6 +10520,170 @@ index 3ebe6097..69a88428 100644
  colour_temperature = "色溫"
  applying_light_setting = "正在套用燈光設定…"
  auto_on_with_camera = "隨攝影機自動開啟"
+-- 
+2.43.0
+
+From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 17:01:15 +0000
+Subject: [PATCH 11/11] fix(desktop): stored mouse lighting only; read stored
+ profiles once onboard is known
+
+A lighting change on a mouse running a stored profile was also written
+live. The live write takes the lights into software control: it
+competed with the profile write (changes took seconds), and when
+OpenLogi quit the mouse fell back to its default light rather than the
+profile's. Such a change now goes only into the profile, and OpenLogi's
+remembered color for the mouse is cleared so the agent stops applying
+one.
+
+The stored profiles were read when the device was selected, which can
+be before the mouse is known to have onboard memory; that read was then
+skipped for good, leaving the report rate locked until something else
+read them. They are now also read when the onboard read arrives.
+---
+ crates/openlogi-core/src/config/per_device.rs |  9 +++++++
+ .../src/services/device_reads.rs              |  3 +++
+ crates/openlogi-desktop/src/state/lighting.rs | 24 +++++++++++++++----
+ .../src/state/stored_profiles.rs              |  8 ++++---
+ .../src/state/tests/stored_profiles.rs        | 13 +++++++++-
+ 5 files changed, 49 insertions(+), 8 deletions(-)
+
+diff --git a/crates/openlogi-core/src/config/per_device.rs b/crates/openlogi-core/src/config/per_device.rs
+index 3e8bf1bb..a5036835 100644
+--- a/crates/openlogi-core/src/config/per_device.rs
++++ b/crates/openlogi-core/src/config/per_device.rs
+@@ -195,6 +195,15 @@ impl Config {
+             .lighting = Some(lighting);
+     }
+ 
++    /// Forget the lighting config for `device_key`, so the agent no longer
++    /// applies a color to it. Returns whether there was one.
++    pub fn clear_lighting(&mut self, device_key: &str) -> bool {
++        self.devices
++            .get_mut(device_key)
++            .and_then(|device| device.lighting.take())
++            .is_some()
++    }
++
+     /// The saved UVC image controls for `device_key`, or `None` if never set.
+     #[must_use]
+     pub fn camera_controls(&self, device_key: &str) -> Option<CameraControls> {
+diff --git a/crates/openlogi-desktop/src/services/device_reads.rs b/crates/openlogi-desktop/src/services/device_reads.rs
+index dae050e9..bf1f6b86 100644
+--- a/crates/openlogi-desktop/src/services/device_reads.rs
++++ b/crates/openlogi-desktop/src/services/device_reads.rs
+@@ -434,6 +434,9 @@ impl DeviceReads {
+                 .update_onboard(&observed_key, flight, load)
+             {
+                 cx.emit(StateEvent::OnboardChanged(observed_key.clone()));
++                // The stored profiles can be read now that the mouse is known
++                // to have onboard memory (the first try may have come too early).
++                state.load_current_stored_profiles(cx);
+             }
+         });
+         self.onboard.insert(
+diff --git a/crates/openlogi-desktop/src/state/lighting.rs b/crates/openlogi-desktop/src/state/lighting.rs
+index a5b03aa5..11b59718 100644
+--- a/crates/openlogi-desktop/src/state/lighting.rs
++++ b/crates/openlogi-desktop/src/state/lighting.rs
+@@ -5,7 +5,7 @@ use openlogi_core::device_order::PhysicalDeviceKey;
+ use tracing::debug;
+ 
+ use super::events::StateEvents;
+-use super::{AppState, StateEvent};
++use super::{AppState, DeviceRecord, StateEvent};
+ 
+ impl AppState {
+     /// The lighting config for the active device, or the default when none is
+@@ -44,10 +44,26 @@ impl AppState {
+     /// Persist a new lighting config for the active device and push it to the
+     /// hardware (best-effort). No-op when no device is selected.
+     pub fn commit_lighting(&mut self, lighting: Lighting) -> StateEvents {
+-        // A mouse running a stored profile keeps the colour in that profile
+-        // too; the live write below shows it at once.
+-        self.commit_stored_lighting(&lighting);
+         let events = self.for_current_device(StateEvent::LightingChanged);
++        // A mouse running a stored profile keeps its lighting in that profile
++        // only. A live write as well would take the lights into software
++        // control: it competes with the profile write, and when OpenLogi quits
++        // the mouse falls back to its default light, not the profile's.
++        if self.commit_stored_lighting(&lighting) {
++            let key = self
++                .current_record()
++                .and_then(DeviceRecord::persistent_config_key)
++                .map(str::to_string);
++            if let Some(key) = key {
++                let mut had = false;
++                self.config.edit(|config| had = config.clear_lighting(&key));
++                if had {
++                    // The agent stops applying a remembered colour to the mouse.
++                    self.persist_and_reload("lighting");
++                }
++            }
++            return events;
++        }
+         let Some(record) = self.current_record() else {
+             debug!("no active device — lighting change ignored");
+             return events;
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index 93ee9d83..39d54704 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -451,9 +451,10 @@ impl AppState {
+ 
+     /// While a stored profile is in control, write `lighting` into both of its
+     /// lights, so the mouse keeps it without OpenLogi running.
+-    pub(super) fn commit_stored_lighting(&mut self, lighting: &Lighting) {
++    /// Returns whether a stored profile took it.
++    pub(super) fn commit_stored_lighting(&mut self, lighting: &Lighting) -> bool {
+         let Some((active, _)) = self.stored_mode() else {
+-            return;
++            return false;
+         };
+         let led = if lighting.enabled {
+             StoredLed::Fixed(dimmed(lighting.color, lighting.brightness))
+@@ -462,6 +463,7 @@ impl AppState {
+         };
+         let _ = self.edit_stored_profile(active, |settings| settings.leds = [led; 2]);
+         let _ = self.save_stored_profile_edit();
++        true
+     }
+ 
+     /// Switch stored profiles on or off. The answer arrives as
+@@ -527,7 +529,7 @@ impl AppState {
+     }
+ 
+     /// Read the selected mouse's stored profiles if they haven't been read.
+-    pub(super) fn load_current_stored_profiles(&mut self, cx: &mut Context<Self>) {
++    pub(crate) fn load_current_stored_profiles(&mut self, cx: &mut Context<Self>) {
+         let Some((key, _)) = self.stored_profile_target() else {
+             return;
+         };
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index 7aad3f11..57c65a4c 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -420,7 +420,18 @@ fn a_lighting_change_goes_into_both_stored_lights(cx: &mut gpui::TestAppContext)
+             state.commit_lighting(next)
+         })
+     });
+-    let save = take_save(&mut receiver);
++    let commands = drain(&mut receiver);
++    assert!(
++        !commands.iter().any(|command| matches!(command, Command::SetLighting(_))),
++        "no live write: it would take the mouse's lights into software control"
++    );
++    let save = commands
++        .into_iter()
++        .find_map(|command| match command {
++            Command::SaveStoredProfile(save) => Some(save),
++            _ => None,
++        })
++        .expect("a save was sent");
+     let expected = StoredLed::Fixed(openlogi_core::color::Rgb::new(100, 50, 0));
+     assert_eq!(
+         save.settings.leds, [expected; 2],
 -- 
 2.43.0
 
