@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/15] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/16] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/15] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/16] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/15] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/16] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/15] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/16] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/15] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/16] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/15] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/16] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/15] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/16] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/15] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/16] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/15] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/16] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/15] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/16] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/15] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/16] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/15] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/16] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/15] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/16] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/15] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/16] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/15] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/16] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11626,6 +11626,754 @@ index 105720f2..3d7d27f8 100644
              return StateEvent::InventoryChanged.into();
          }
          for record in self
+-- 
+2.43.0
+
+From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 19:47:10 +0000
+Subject: [PATCH 16/16] feat: user-set levels for the low-battery notice
+
+Settings > General gets "Warn at" and "Warn again after" under the
+low-battery notifications switch (number fields, 20 % and 30 % by
+default, OpenLogi's own levels until now). The agent's notice decides
+"low" by the warning level and "charged again" by the re-arm level,
+kept above the warning level; a device that reports no percentage keeps
+its own low/critical level. The battery colours elsewhere are
+unchanged.
+
+Not wire format: the agent reads AppSettings from config.toml.
+---
+ crates/openlogi-agent-core/src/notices.rs     | 76 ++++++++++++++-----
+ .../openlogi-agent-core/src/notices/tests.rs  | 59 ++++++++++++++
+ crates/openlogi-core/src/config/settings.rs   | 21 +++++
+ crates/openlogi-desktop/src/state/settings.rs | 17 +++++
+ .../src/windows/settings/general.rs           | 64 ++++++++++++++++
+ crates/openlogi-ui/locales/be.toml            |  4 +
+ crates/openlogi-ui/locales/cs.toml            |  4 +
+ crates/openlogi-ui/locales/da.toml            |  4 +
+ crates/openlogi-ui/locales/de.toml            |  4 +
+ crates/openlogi-ui/locales/el.toml            |  4 +
+ crates/openlogi-ui/locales/en.toml            |  4 +
+ crates/openlogi-ui/locales/es.toml            |  4 +
+ crates/openlogi-ui/locales/fi.toml            |  4 +
+ crates/openlogi-ui/locales/fr.toml            |  4 +
+ crates/openlogi-ui/locales/it.toml            |  4 +
+ crates/openlogi-ui/locales/ja.toml            |  4 +
+ crates/openlogi-ui/locales/ko.toml            |  4 +
+ crates/openlogi-ui/locales/nb.toml            |  4 +
+ crates/openlogi-ui/locales/nl.toml            |  4 +
+ crates/openlogi-ui/locales/pl.toml            |  4 +
+ crates/openlogi-ui/locales/pt-BR.toml         |  4 +
+ crates/openlogi-ui/locales/pt-PT.toml         |  4 +
+ crates/openlogi-ui/locales/ru.toml            |  4 +
+ crates/openlogi-ui/locales/sv.toml            |  4 +
+ crates/openlogi-ui/locales/tr.toml            |  4 +
+ crates/openlogi-ui/locales/uk.toml            |  4 +
+ crates/openlogi-ui/locales/zh-CN.toml         |  4 +
+ crates/openlogi-ui/locales/zh-HK.toml         |  4 +
+ crates/openlogi-ui/locales/zh-TW.toml         |  4 +
+ 29 files changed, 315 insertions(+), 18 deletions(-)
+
+diff --git a/crates/openlogi-agent-core/src/notices.rs b/crates/openlogi-agent-core/src/notices.rs
+index 84f12a17..e8795424 100644
+--- a/crates/openlogi-agent-core/src/notices.rs
++++ b/crates/openlogi-agent-core/src/notices.rs
+@@ -21,9 +21,6 @@ use tokio::time::Instant;
+ /// How long a notice shows.
+ pub const NOTICE_LIFETIME: Duration = Duration::from_secs(8);
+ 
+-/// A charge at or above which a battery that was low counts as charged again.
+-const RECHARGED_PERCENT: u8 = 30;
+-
+ struct Posted {
+     notice: Notice,
+     ends: Instant,
+@@ -165,46 +162,89 @@ impl LowBatteryWatch {
+         device: &str,
+         battery: &BatteryInfo,
+     ) -> bool {
++        let levels = Levels::of(settings);
+         if settings.low_battery_notifications {
+-            return self.observe(device, battery);
++            return self.observe_with(device, battery, levels);
+         }
+-        self.observe_muted(device, battery);
++        self.observe_muted_with(device, battery, levels);
+         false
+     }
+ 
+     /// Take in `device`'s latest reading. Answers whether to announce its low
+     /// battery now.
+-    fn observe(&mut self, device: &str, battery: &BatteryInfo) -> bool {
+-        if battery.needs_attention() {
++    fn observe_with(&mut self, device: &str, battery: &BatteryInfo, levels: Levels) -> bool {
++        if low(battery, levels) {
+             return self.announced.insert(device.to_owned());
+         }
+-        self.observe_muted(device, battery);
++        self.observe_muted_with(device, battery, levels);
+         false
+     }
+ 
++    /// [`Self::observe_with`] at the default levels.
++    #[cfg(test)]
++    fn observe(&mut self, device: &str, battery: &BatteryInfo) -> bool {
++        self.observe_with(device, battery, Levels::of(&AppSettings::default()))
++    }
++
+     /// Take in `device`'s latest reading while the user has the notices off.
+     /// A recharge still ends its discharge. A low reading is not marked as
+     /// announced, so the first low reading after the notices are back on
+     /// announces it. A reading that needs attention is never a recharge.
+-    fn observe_muted(&mut self, device: &str, battery: &BatteryInfo) {
+-        if recharged(battery) {
++    fn observe_muted_with(&mut self, device: &str, battery: &BatteryInfo, levels: Levels) {
++        if recharged(battery, levels) {
+             self.announced.remove(device);
+         }
+     }
++
++    /// [`Self::observe_muted_with`] at the default levels.
++    #[cfg(test)]
++    fn observe_muted(&mut self, device: &str, battery: &BatteryInfo) {
++        self.observe_muted_with(device, battery, Levels::of(&AppSettings::default()));
++    }
+ }
+ 
+-/// Whether a battery has been charged since it was low: it is charging now,
+-/// it reads [`RECHARGED_PERCENT`] or more, or, without a percentage, its level
+-/// is good or full again.
+-fn recharged(battery: &BatteryInfo) -> bool {
+-    let charging = matches!(
++/// The user's warning and re-arm levels, the re-arm kept above the warning
++/// so a reading can't be both low and recharged.
++#[derive(Debug, Clone, Copy)]
++struct Levels {
++    warn: u8,
++    rearm: u8,
++}
++
++impl Levels {
++    fn of(settings: &AppSettings) -> Self {
++        let warn = settings.low_battery_warn_percent.min(99);
++        Self {
++            warn,
++            rearm: settings.low_battery_rearm_percent.max(warn + 1),
++        }
++    }
++}
++
++fn charging(battery: &BatteryInfo) -> bool {
++    matches!(
+         battery.status,
+         BatteryStatus::Charging | BatteryStatus::ChargingSlow | BatteryStatus::Full
+-    );
+-    charging
++    )
++}
++
++/// Whether a battery is low by the user's level: not charging and at or below
++/// it, or, without a percentage, at a level the device calls low.
++fn low(battery: &BatteryInfo, levels: Levels) -> bool {
++    !charging(battery)
++        && battery
++            .percentage
++            .map_or_else(|| battery.needs_attention(), |charge| charge <= levels.warn)
++}
++
++/// Whether a battery has been charged since it was low: it is charging now,
++/// it reads the re-arm level or more, or, without a percentage, its level is
++/// good or full again.
++fn recharged(battery: &BatteryInfo, levels: Levels) -> bool {
++    charging(battery)
+         || battery.percentage.map_or_else(
+             || matches!(battery.level, BatteryLevel::Good | BatteryLevel::Full),
+-            |charge| charge >= RECHARGED_PERCENT,
++            |charge| charge >= levels.rearm,
+         )
+ }
+ 
+diff --git a/crates/openlogi-agent-core/src/notices/tests.rs b/crates/openlogi-agent-core/src/notices/tests.rs
+index d7ff9c67..2c21c2c4 100644
+--- a/crates/openlogi-agent-core/src/notices/tests.rs
++++ b/crates/openlogi-agent-core/src/notices/tests.rs
+@@ -285,3 +285,62 @@ async fn an_unchanged_board_answers_after_the_hold() {
+     assert_eq!(unchanged.generation, since);
+     assert_eq!(started.elapsed(), OBSERVE_HOLD);
+ }
++
++fn levels(warn: u8, rearm: u8) -> AppSettings {
++    AppSettings {
++        low_battery_warn_percent: warn,
++        low_battery_rearm_percent: rearm,
++        ..AppSettings::default()
++    }
++}
++
++#[test]
++fn the_users_warning_level_decides_what_is_low() {
++    let settings = levels(50, 70);
++    let mut watch = LowBatteryWatch::default();
++    assert!(!watch.take_reading(&settings, "mouse", &discharging(51)));
++    assert!(
++        watch.take_reading(&settings, "mouse", &discharging(50)),
++        "at the level"
++    );
++    assert!(
++        !watch.take_reading(&settings, "mouse", &discharging(45)),
++        "once per discharge"
++    );
++}
++
++#[test]
++fn the_users_rearm_level_decides_what_is_charged_again() {
++    let settings = levels(50, 70);
++    let mut watch = LowBatteryWatch::default();
++    assert!(watch.take_reading(&settings, "mouse", &discharging(40)));
++    assert!(
++        !watch.take_reading(&settings, "mouse", &discharging(65)),
++        "not yet re-armed"
++    );
++    assert!(!watch.take_reading(&settings, "mouse", &discharging(45)));
++    assert!(
++        !watch.take_reading(&settings, "mouse", &discharging(70)),
++        "re-armed, not low"
++    );
++    assert!(
++        watch.take_reading(&settings, "mouse", &discharging(50)),
++        "the next discharge"
++    );
++}
++
++#[test]
++fn a_rearm_level_under_the_warning_level_is_lifted_above_it() {
++    let settings = levels(40, 10);
++    let mut watch = LowBatteryWatch::default();
++    assert!(watch.take_reading(&settings, "mouse", &discharging(40)));
++    assert!(
++        !watch.take_reading(&settings, "mouse", &discharging(40)),
++        "low is never also recharged"
++    );
++    assert!(
++        !watch.take_reading(&settings, "mouse", &discharging(41)),
++        "41 re-arms"
++    );
++    assert!(watch.take_reading(&settings, "mouse", &discharging(39)));
++}
+diff --git a/crates/openlogi-core/src/config/settings.rs b/crates/openlogi-core/src/config/settings.rs
+index 2b2285a1..74b66c22 100644
+--- a/crates/openlogi-core/src/config/settings.rs
++++ b/crates/openlogi-core/src/config/settings.rs
+@@ -305,6 +305,15 @@ pub struct AppSettings {
+     /// for what counts as low.
+     #[serde(default = "default_true")]
+     pub low_battery_notifications: bool,
++    /// The charge, in percent, at or below which a low battery is announced.
++    /// A device that reports only a coarse level is announced when that level
++    /// is low or critical.
++    #[serde(default = "default_low_battery_warn_percent")]
++    pub low_battery_warn_percent: u8,
++    /// The charge, in percent, a device must reach (or be charging) before its
++    /// next low battery is announced. Kept above the warning level.
++    #[serde(default = "default_low_battery_rearm_percent")]
++    pub low_battery_rearm_percent: u8,
+     /// Whether the overlay briefly shows a lock key a keyboard turned on or
+     /// off. **On by default.** Caps Lock shows on every platform; Num Lock
+     /// and Scroll Lock do not show on macOS, as in Logi Options+ (see
+@@ -521,6 +530,8 @@ impl Default for AppSettings {
+             ui_radius: None,
+             mouse_profile_target: MouseProfileTarget::Pointer,
+             low_battery_notifications: true,
++            low_battery_warn_percent: default_low_battery_warn_percent(),
++            low_battery_rearm_percent: default_low_battery_rearm_percent(),
+             lock_key_notifications: true,
+             animate_desktop_switch: true,
+         }
+@@ -1202,3 +1213,13 @@ mod tests {
+         );
+     }
+ }
++
++/// The default low-battery warning level: OpenLogi's own "low".
++const fn default_low_battery_warn_percent() -> u8 {
++    20
++}
++
++/// The default charge that re-arms the warning.
++const fn default_low_battery_rearm_percent() -> u8 {
++    30
++}
+diff --git a/crates/openlogi-desktop/src/state/settings.rs b/crates/openlogi-desktop/src/state/settings.rs
+index 3d7d27f8..3ca135ae 100644
+--- a/crates/openlogi-desktop/src/state/settings.rs
++++ b/crates/openlogi-desktop/src/state/settings.rs
+@@ -393,6 +393,23 @@ impl AppState {
+     /// reload; while off it posts no notice. An already-set value writes
+     /// nothing and is still reported; disk failures restore the persisted
+     /// value.
++    /// Set the low-battery warning level and the charge that re-arms it, and
++    /// persist them. The re-arm level is kept above the warning level.
++    pub fn commit_low_battery_levels(&mut self, warn: u8, rearm: u8) -> StateEvents {
++        let warn = warn.clamp(1, 95);
++        let rearm = rearm.clamp(warn + 1, 100);
++        let current = &self.config.app_settings;
++        if current.low_battery_warn_percent == warn && current.low_battery_rearm_percent == rearm {
++            return StateEvent::SettingsChanged.into();
++        }
++        self.config.edit(|config| {
++            config.app_settings.low_battery_warn_percent = warn;
++            config.app_settings.low_battery_rearm_percent = rearm;
++        });
++        self.persist_and_reload("low-battery levels");
++        StateEvent::SettingsChanged.into()
++    }
++
+     pub fn commit_low_battery_notifications(&mut self, enabled: bool) -> StateEvents {
+         if self.config.app_settings.low_battery_notifications == enabled {
+             return StateEvent::SettingsChanged.into();
+diff --git a/crates/openlogi-desktop/src/windows/settings/general.rs b/crates/openlogi-desktop/src/windows/settings/general.rs
+index d28989eb..cbcda2d5 100644
+--- a/crates/openlogi-desktop/src/windows/settings/general.rs
++++ b/crates/openlogi-desktop/src/windows/settings/general.rs
+@@ -96,6 +96,8 @@ pub(super) fn general_page(
+ 
+     let group = group
+         .item(low_battery_notifications_item())
++        .item(low_battery_warn_item())
++        .item(low_battery_rearm_item())
+         .item(lock_key_notifications_item());
+ 
+     // Momentum scrolling's app-wide default. A mouse can set its own on its
+@@ -191,6 +193,68 @@ fn low_battery_notifications_item() -> SettingItem {
+     .description(tr!("app.low_battery_notifications_description"))
+ }
+ 
++/// The charge at or below which a low battery is announced.
++fn low_battery_warn_item() -> SettingItem {
++    SettingItem::new(
++        tr!("app.low_battery_warn_at"),
++        SettingField::number_input(
++            gpui_kit::component::setting::NumberFieldOptions {
++                min: 1.0,
++                max: 95.0,
++                step: 5.0,
++            },
++            |cx| {
++                AppState::try_read(cx).map_or(20.0, |s| {
++                    f64::from(s.app_settings().low_battery_warn_percent)
++                })
++            },
++            |value, cx| {
++                AppState::apply(cx, |state| {
++                    let rearm = state.app_settings().low_battery_rearm_percent;
++                    state.commit_low_battery_levels(percent(value), rearm)
++                });
++            },
++        ),
++    )
++    .description(tr!("app.low_battery_warn_at_description"))
++}
++
++/// The charge a device must reach before its next low battery is announced.
++fn low_battery_rearm_item() -> SettingItem {
++    SettingItem::new(
++        tr!("app.low_battery_rearm_at"),
++        SettingField::number_input(
++            gpui_kit::component::setting::NumberFieldOptions {
++                min: 2.0,
++                max: 100.0,
++                step: 5.0,
++            },
++            |cx| {
++                AppState::try_read(cx).map_or(30.0, |s| {
++                    f64::from(s.app_settings().low_battery_rearm_percent)
++                })
++            },
++            |value, cx| {
++                AppState::apply(cx, |state| {
++                    let warn = state.app_settings().low_battery_warn_percent;
++                    state.commit_low_battery_levels(warn, percent(value))
++                });
++            },
++        ),
++    )
++    .description(tr!("app.low_battery_rearm_at_description"))
++}
++
++/// A number field's value as a whole percentage.
++#[expect(
++    clippy::cast_possible_truncation,
++    clippy::cast_sign_loss,
++    reason = "clamped to 0..=100 first"
++)]
++fn percent(value: f64) -> u8 {
++    value.clamp(0.0, 100.0).round() as u8
++}
++
+ /// The switch for the overlay's lock-key indicator.
+ fn lock_key_notifications_item() -> SettingItem {
+     SettingItem::new(
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index d490cbbd..510a4760 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -54,6 +54,10 @@ enable = "Уключыць"
+ not_now = "Не зараз"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Адкрыць OpenLogi"
+ quit_openlogi = "Закрыць OpenLogi"
+ show_main_window = "Паказаць галоўнае акно"
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index 72666cc5..5c062474 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -54,6 +54,10 @@ enable = "Povolit"
+ not_now = "Teď ne"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Otevřít OpenLogi"
+ quit_openlogi = "Ukončit OpenLogi"
+ show_main_window = "Zobrazit hlavní okno"
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index 2047fd63..036d87bf 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -54,6 +54,10 @@ enable = "Aktivér"
+ not_now = "Ikke nu"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Åbn OpenLogi"
+ quit_openlogi = "Slut OpenLogi"
+ show_main_window = "Vis hovedvindue"
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index c23f0cbb..7c256c73 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -54,6 +54,10 @@ enable = "Aktivieren"
+ not_now = "Nicht jetzt"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "OpenLogi öffnen"
+ quit_openlogi = "OpenLogi beenden"
+ show_main_window = "Hauptfenster anzeigen"
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index ddeb8234..257d56e3 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -54,6 +54,10 @@ enable = "Ενεργοποίηση"
+ not_now = "Όχι τώρα"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Άνοιγμα του OpenLogi"
+ quit_openlogi = "Τερματισμός OpenLogi"
+ show_main_window = "Εμφάνιση κύριου παραθύρου"
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index 38fcbdf9..3a4aa2e0 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -54,6 +54,10 @@ enable = "Enable"
+ not_now = "Not now"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Open OpenLogi"
+ quit_openlogi = "Quit OpenLogi"
+ show_main_window = "Show Main Window"
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index 3e5b7993..b88423a7 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -54,6 +54,10 @@ enable = "Activar"
+ not_now = "Ahora no"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Abrir OpenLogi"
+ quit_openlogi = "Salir de OpenLogi"
+ show_main_window = "Mostrar ventana principal"
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index b692f153..3cffcf5d 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -54,6 +54,10 @@ enable = "Ota käyttöön"
+ not_now = "Ei nyt"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Avaa OpenLogi"
+ quit_openlogi = "Lopeta OpenLogi"
+ show_main_window = "Näytä pääikkuna"
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index aebb97cf..6719b0ab 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -54,6 +54,10 @@ enable = "Activer"
+ not_now = "Pas maintenant"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Ouvrir OpenLogi"
+ quit_openlogi = "Quitter OpenLogi"
+ show_main_window = "Afficher la fenêtre principale"
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index c2d66bd0..1d051eac 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -54,6 +54,10 @@ enable = "Abilita"
+ not_now = "Non ora"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Apri OpenLogi"
+ quit_openlogi = "Esci da OpenLogi"
+ show_main_window = "Mostra finestra principale"
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index f8725f47..3314883f 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -54,6 +54,10 @@ enable = "有効にする"
+ not_now = "今はしない"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "OpenLogi を開く"
+ quit_openlogi = "OpenLogi を終了"
+ show_main_window = "メインウィンドウを表示"
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index c9d6ed4c..a733393d 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -54,6 +54,10 @@ enable = "활성화"
+ not_now = "나중에"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "OpenLogi 열기"
+ quit_openlogi = "OpenLogi 종료"
+ show_main_window = "메인 창 표시"
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index f2ecd0c9..5feb7c3e 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -54,6 +54,10 @@ enable = "Aktiver"
+ not_now = "Ikke nå"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Åpne OpenLogi"
+ quit_openlogi = "Avslutt OpenLogi"
+ show_main_window = "Vis hovedvindu"
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index 4462e020..edfbb3ce 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -54,6 +54,10 @@ enable = "Inschakelen"
+ not_now = "Niet nu"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "OpenLogi openen"
+ quit_openlogi = "Stop OpenLogi"
+ show_main_window = "Hoofdvenster tonen"
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index 1d18c209..d6faa50b 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -54,6 +54,10 @@ enable = "Włącz"
+ not_now = "Nie teraz"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Otwórz OpenLogi"
+ quit_openlogi = "Zakończ OpenLogi"
+ show_main_window = "Pokaż okno główne"
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index cb17a173..6d9e8827 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -54,6 +54,10 @@ enable = "Ativar"
+ not_now = "Agora não"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Abrir o OpenLogi"
+ quit_openlogi = "Encerrar OpenLogi"
+ show_main_window = "Mostrar a janela principal"
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index 0e0f1433..1b4e3c62 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -54,6 +54,10 @@ enable = "Ativar"
+ not_now = "Agora não"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Abrir o OpenLogi"
+ quit_openlogi = "Sair do OpenLogi"
+ show_main_window = "Mostrar a janela principal"
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index b584a9b9..eef7e505 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -54,6 +54,10 @@ enable = "Включить"
+ not_now = "Не сейчас"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Открыть OpenLogi"
+ quit_openlogi = "Выйти из OpenLogi"
+ show_main_window = "Показать главное окно"
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index 65296cc8..241cede8 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -54,6 +54,10 @@ enable = "Aktivera"
+ not_now = "Inte nu"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Öppna OpenLogi"
+ quit_openlogi = "Avsluta OpenLogi"
+ show_main_window = "Visa huvudfönstret"
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index 2c6269b5..5ea04e73 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -54,6 +54,10 @@ enable = "Etkinleştir"
+ not_now = "Şimdi değil"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "OpenLogi'yi aç"
+ quit_openlogi = "OpenLogi'den çık"
+ show_main_window = "Ana pencereyi göster"
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index 285f3d3f..aff2e6b7 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -54,6 +54,10 @@ enable = "Увімкнути"
+ not_now = "Не зараз"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "Відкрити OpenLogi"
+ quit_openlogi = "Вийти з OpenLogi"
+ show_main_window = "Показати головне вікно"
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index ad286d0f..6cae1dc4 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -54,6 +54,10 @@ enable = "启用"
+ not_now = "暂不"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "打开 OpenLogi"
+ quit_openlogi = "退出 OpenLogi"
+ show_main_window = "显示主窗口"
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index adfde764..8609fb1a 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -54,6 +54,10 @@ enable = "啟用"
+ not_now = "暫不"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "開啟 OpenLogi"
+ quit_openlogi = "結束 OpenLogi"
+ show_main_window = "顯示主視窗"
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index 9a73472c..d79ceb75 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -54,6 +54,10 @@ enable = "啟用"
+ not_now = "暫不"
+ 
+ [app]
++low_battery_warn_at = "Warn at (%)"
++low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
++low_battery_rearm_at = "Warn again after (%)"
++low_battery_rearm_at_description = "The charge a device must reach, or be charging, before its next low battery is announced."
+ open_openlogi = "開啟 OpenLogi"
+ quit_openlogi = "結束 OpenLogi"
+ show_main_window = "顯示主視窗"
 -- 
 2.43.0
 
