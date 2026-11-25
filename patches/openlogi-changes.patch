@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/13] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/14] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/13] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/14] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/13] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/14] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/13] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/14] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/13] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/14] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/13] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/14] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/13] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/14] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/13] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/14] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/13] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/14] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/13] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/14] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/13] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/14] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/13] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/14] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/13] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/14] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11032,6 +11032,570 @@ index 45527357..70b2effc 100644
 -    );
 -    assert_eq!(shown.brightness, 50);
 -}
+-- 
+2.43.0
+
+From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 18:34:36 +0000
+Subject: [PATCH 14/14] feat(agent): devices and batteries in the Windows tray
+
+The Windows notification-area icon said only "OpenLogi" and its menu
+offered Open and Quit. Its tooltip now lists each device on its own
+line with its battery (or Offline), and the menu shows the same rows,
+greyed, above Open and Quit. The rows come from the platform-free tray
+model the macOS menu already draws (now built on Windows too), so names
+and order match the settings app; the tooltip refreshes on every change
+the agent observes.
+---
+ crates/openlogi-agent/src/lifecycle.rs    |   7 ++
+ crates/openlogi-agent/src/main.rs         |   8 +-
+ crates/openlogi-agent/src/server.rs       |   2 +
+ crates/openlogi-agent/src/tray_windows.rs | 114 ++++++++++++++++++++--
+ crates/openlogi-ui/locales/be.toml        |   1 +
+ crates/openlogi-ui/locales/cs.toml        |   1 +
+ crates/openlogi-ui/locales/da.toml        |   1 +
+ crates/openlogi-ui/locales/de.toml        |   1 +
+ crates/openlogi-ui/locales/el.toml        |   1 +
+ crates/openlogi-ui/locales/en.toml        |   1 +
+ crates/openlogi-ui/locales/es.toml        |   1 +
+ crates/openlogi-ui/locales/fi.toml        |   1 +
+ crates/openlogi-ui/locales/fr.toml        |   1 +
+ crates/openlogi-ui/locales/it.toml        |   1 +
+ crates/openlogi-ui/locales/ja.toml        |   1 +
+ crates/openlogi-ui/locales/ko.toml        |   1 +
+ crates/openlogi-ui/locales/nb.toml        |   1 +
+ crates/openlogi-ui/locales/nl.toml        |   1 +
+ crates/openlogi-ui/locales/pl.toml        |   1 +
+ crates/openlogi-ui/locales/pt-BR.toml     |   1 +
+ crates/openlogi-ui/locales/pt-PT.toml     |   1 +
+ crates/openlogi-ui/locales/ru.toml        |   1 +
+ crates/openlogi-ui/locales/sv.toml        |   1 +
+ crates/openlogi-ui/locales/tr.toml        |   1 +
+ crates/openlogi-ui/locales/uk.toml        |   1 +
+ crates/openlogi-ui/locales/zh-CN.toml     |   1 +
+ crates/openlogi-ui/locales/zh-HK.toml     |   1 +
+ crates/openlogi-ui/locales/zh-TW.toml     |   1 +
+ 28 files changed, 146 insertions(+), 9 deletions(-)
+
+diff --git a/crates/openlogi-agent/src/lifecycle.rs b/crates/openlogi-agent/src/lifecycle.rs
+index 4b81525b..610e5f2b 100644
+--- a/crates/openlogi-agent/src/lifecycle.rs
++++ b/crates/openlogi-agent/src/lifecycle.rs
+@@ -234,6 +234,13 @@ impl Wanted {
+             });
+             tokio::spawn(crate::tray::watch_attention(core.observable.subscribe()));
+         }
++        #[cfg(target_os = "windows")]
++        {
++            crate::tray_windows::set_observable(Arc::clone(&core.observable));
++            tokio::spawn(crate::tray_windows::watch_devices(
++                core.observable.subscribe(),
++            ));
++        }
+         #[cfg(target_os = "macos")]
+         armed_session::record();
+         overlay::spawn();
+diff --git a/crates/openlogi-agent/src/main.rs b/crates/openlogi-agent/src/main.rs
+index 69157ebc..6dafd34e 100644
+--- a/crates/openlogi-agent/src/main.rs
++++ b/crates/openlogi-agent/src/main.rs
+@@ -42,9 +42,10 @@ mod status_item;
+ mod takeover;
+ #[cfg(target_os = "macos")]
+ mod tray;
+-// The menu-bar menu's platform-free model. Only the macOS tray draws it so
+-// far; tests build it everywhere, since nothing in it is platform code.
+-#[cfg(any(target_os = "macos", test))]
++// The menu-bar menu's platform-free model: the macOS tray draws it whole,
++// the Windows tray its device rows; tests build it everywhere, since nothing
++// in it is platform code.
++#[cfg(any(target_os = "macos", target_os = "windows", test))]
+ mod tray_model;
+ #[cfg(target_os = "windows")]
+ mod tray_windows;
+@@ -160,6 +161,7 @@ fn main() {
+         // (message pump included); the async core keeps the main thread.
+         #[cfg(target_os = "windows")]
+         {
++            tray_windows::set_config(std::sync::Arc::new(config.clone()));
+             tray_windows::spawn(config.app_settings.show_in_menu_bar, shutdown_tx.clone());
+             // Native resume notifications feed the same event seam as macOS
+             // and Linux: inventory wakes immediately and replays volatile
+diff --git a/crates/openlogi-agent/src/server.rs b/crates/openlogi-agent/src/server.rs
+index 7b954aa4..84ea5f5c 100644
+--- a/crates/openlogi-agent/src/server.rs
++++ b/crates/openlogi-agent/src/server.rs
+@@ -126,6 +126,8 @@ impl AgentServer {
+                 // copy.
+                 #[cfg(target_os = "macos")]
+                 crate::tray::set_config(Arc::new(config.clone()));
++                #[cfg(target_os = "windows")]
++                crate::tray_windows::set_config(Arc::new(config.clone()));
+                 match saved {
+                     None => self.orchestrator.lock().await.reload_config(config),
+                     Some(saved) => self
+diff --git a/crates/openlogi-agent/src/tray_windows.rs b/crates/openlogi-agent/src/tray_windows.rs
+index ad9a9967..696b0a39 100644
+--- a/crates/openlogi-agent/src/tray_windows.rs
++++ b/crates/openlogi-agent/src/tray_windows.rs
+@@ -25,7 +25,13 @@
+     reason = "raw win32: Shell_NotifyIconW + a hidden window's message pump — localized here"
+ )]
+ use std::cell::RefCell;
+-use std::sync::atomic::{AtomicU32, Ordering};
++use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
++use std::sync::{Arc, Mutex, OnceLock};
++
++use openlogi_agent_core::observable::ObservableState;
++use openlogi_core::config::Config;
++use openlogi_ipc::Observation;
++use tokio::sync::watch;
+ 
+ use tracing::{debug, info, warn};
+ use windows_sys::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
+@@ -39,16 +45,27 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
+     AppendMenuW, CW_USEDEFAULT, CreateIconFromResourceEx, CreatePopupMenu, CreateWindowExW,
+     DefWindowProcW, DestroyMenu, DispatchMessageW, EnumWindows, GetCursorPos, GetMessageW,
+     GetWindowThreadProcessId, HICON, IDI_APPLICATION, IsIconic, IsWindowVisible, LR_DEFAULTCOLOR,
+-    LoadIconW, MF_SEPARATOR, MF_STRING, MSG, RegisterClassW, RegisterWindowMessageW, SW_RESTORE,
+-    SetForegroundWindow, ShowWindow, TPM_NONOTIFY, TPM_RETURNCMD, TPM_RIGHTBUTTON, TrackPopupMenu,
+-    TranslateMessage, WM_APP, WM_CONTEXTMENU, WM_LBUTTONUP, WM_NULL, WM_RBUTTONUP, WNDCLASSW,
+-    WS_OVERLAPPED,
++    LoadIconW, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG, PostMessageW, RegisterClassW,
++    RegisterWindowMessageW, SW_RESTORE, SetForegroundWindow, ShowWindow, TPM_NONOTIFY,
++    TPM_RETURNCMD, TPM_RIGHTBUTTON, TrackPopupMenu, TranslateMessage, WM_APP, WM_CONTEXTMENU,
++    WM_LBUTTONUP, WM_NULL, WM_RBUTTONUP, WNDCLASSW, WS_OVERLAPPED,
+ };
+ 
+ use crate::shutdown::{self, ShutdownRequestSender};
+ 
+ /// Tray callback message the icon posts to the hidden window.
+ const WM_TRAY: u32 = WM_APP + 1;
++/// Posted to the tray window to re-send the tooltip after a device change.
++const WM_REFRESH: u32 = WM_APP + 2;
++/// `NOTIFYICONDATAW::szTip` holds 128 UTF-16 units, the terminator included.
++const TIP_CAPACITY: usize = 127;
++
++/// The agent's state, for the device rows; set once the core is armed.
++static OBSERVABLE: OnceLock<Arc<ObservableState>> = OnceLock::new();
++/// The tray's copy of the config, for device names and order.
++static CONFIG: Mutex<Option<Arc<Config>>> = Mutex::new(None);
++/// The tray window, once made (`0` before), for posting refreshes to.
++static TRAY_HWND: AtomicUsize = AtomicUsize::new(0);
+ /// Menu command ids returned by `TrackPopupMenu`.
+ const ID_SHOW: usize = 1;
+ const ID_QUIT: usize = 2;
+@@ -129,6 +146,7 @@ fn run_tray_loop(shutdown_tx: ShutdownRequestSender) {
+             warn!("tray window creation failed — no tray icon");
+             return;
+         }
++        TRAY_HWND.store(hwnd as usize, Ordering::Release);
+         TASKBAR_CREATED.store(
+             RegisterWindowMessageW(wide("TaskbarCreated").as_ptr()),
+             Ordering::Relaxed,
+@@ -159,6 +177,11 @@ unsafe extern "system" fn wnd_proc(
+     lparam: LPARAM,
+ ) -> LRESULT {
+     match msg {
++        WM_REFRESH => {
++            // SAFETY: dispatched on the tray thread that owns `hwnd`.
++            unsafe { modify_tray_icon(hwnd) };
++            0
++        }
+         WM_TRAY => {
+             match lparam as u32 {
+                 WM_LBUTTONUP => open_or_focus_gui(),
+@@ -261,7 +284,7 @@ fn notify_data(hwnd: HWND) -> NOTIFYICONDATAW {
+     nid.hWnd = hwnd;
+     nid.uID = 1;
+     nid.uFlags = NIF_TIP;
+-    let tip = wide("OpenLogi");
++    let tip: Vec<u16> = tooltip_text().encode_utf16().take(TIP_CAPACITY).collect();
+     nid.szTip[..tip.len()].copy_from_slice(&tip);
+     nid
+ }
+@@ -352,6 +375,15 @@ unsafe fn show_menu(hwnd: HWND) {
+         }
+         // Built fresh on every right-click, so `t!` follows a live language
+         // switch with no rebuild plumbing.
++        //
++        // One row per device, each on its own line, for reading only.
++        let lines = device_lines();
++        for line in &lines {
++            AppendMenuW(menu, MF_STRING | MF_GRAYED, 0, wide(line).as_ptr());
++        }
++        if !lines.is_empty() {
++            AppendMenuW(menu, MF_SEPARATOR, 0, std::ptr::null());
++        }
+         AppendMenuW(
+             menu,
+             MF_STRING,
+@@ -389,6 +421,76 @@ unsafe fn show_menu(hwnd: HWND) {
+     }
+ }
+ 
++/// Hand the tray the agent's state, so its tooltip and menu list devices.
++pub fn set_observable(observable: Arc<ObservableState>) {
++    let _ = OBSERVABLE.set(observable);
++    request_refresh();
++}
++
++/// Give the tray the current config (device names and order).
++pub fn set_config(config: Arc<Config>) {
++    if let Ok(mut current) = CONFIG.lock() {
++        *current = Some(config);
++    }
++    request_refresh();
++}
++
++/// Ask the tray thread to re-send its tooltip.
++fn request_refresh() {
++    let hwnd = TRAY_HWND.load(Ordering::Acquire);
++    if hwnd != 0 {
++        // SAFETY: posting to a window of this process; a stale handle just
++        // makes the post fail.
++        unsafe { PostMessageW(hwnd as HWND, WM_REFRESH, 0, 0) };
++    }
++}
++
++/// Refresh the tooltip whenever the agent's state changes (a battery
++/// reading, a device coming or going).
++pub async fn watch_devices(mut changes: watch::Receiver<Observation>) {
++    while changes.changed().await.is_ok() {
++        request_refresh();
++    }
++}
++
++/// One line per device: its name and battery (or that it is offline).
++fn device_lines() -> Vec<String> {
++    let Some(observable) = OBSERVABLE.get() else {
++        return Vec::new();
++    };
++    let config = CONFIG
++        .lock()
++        .ok()
++        .and_then(|config| config.clone())
++        .unwrap_or_default();
++    crate::tray_model::TrayMenu::new(&observable.snapshot(), &config)
++        .devices
++        .iter()
++        .map(|row| {
++            use crate::tray_model::DeviceState;
++            match &row.state {
++                DeviceState::Battery(battery) => {
++                    format!("{}: {}", row.name, crate::tray_model::battery_text(battery))
++                }
++                DeviceState::Offline(_) => {
++                    format!("{}: {}", row.name, rust_i18n::t!("tray.offline"))
++                }
++                DeviceState::Light(_) | DeviceState::Online => row.name.clone(),
++            }
++        })
++        .collect()
++}
++
++/// "OpenLogi", then each device on its own line.
++fn tooltip_text() -> String {
++    let mut tip = String::from("OpenLogi");
++    for line in device_lines() {
++        tip.push('\n');
++        tip.push_str(&line);
++    }
++    tip
++}
++
+ /// Focus the running GUI's window, or launch the sibling GUI binary when no
+ /// GUI is running (a second launch would just exit on the `openlogi.lock`
+ /// singleton, so spawning blindly does nothing visible).
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index 5fa44883..d490cbbd 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Гарнітура па-за сетк
+ sidetone_unsupported = "Гарнітура не паведамляе пра падтрымку рэгуляванага самапраслухоўвання."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Патрэбны дазвол «Універсальны доступ»"
+ input_monitoring_needed = "Патрэбны дазвол «Маніторынг уводу»"
+ devices_unavailable = "Некаторыя прылады не адкрываюцца"
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index 21df3de7..72666cc5 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Příposlech není dostupný, když js
+ sidetone_unsupported = "Tato sluchátka nehlásí podporu nastavitelného příposlechu."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Je potřeba oprávnění Zpřístupnění"
+ input_monitoring_needed = "Je potřeba oprávnění Sledování vstupu"
+ devices_unavailable = "Některá zařízení nelze otevřít"
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index 8c0678fb..2047fd63 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Sidetone er ikke tilgængelig, mens he
+ sidetone_unsupported = "Dette headset oplyser ikke, at justerbar sidetone understøttes."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Tilladelse til Tilgængelighed kræves"
+ input_monitoring_needed = "Tilladelse til Inputovervågning kræves"
+ devices_unavailable = "Nogle enheder kan ikke åbnes"
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index ea6c7ac7..c23f0cbb 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Der Mithörton ist nicht verfügbar, s
+ sidetone_unsupported = "Dieses Headset meldet keinen einstellbaren Mithörton."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Bedienungshilfen-Berechtigung erforderlich"
+ input_monitoring_needed = "Berechtigung für Eingabeüberwachung erforderlich"
+ devices_unavailable = "Einige Geräte lassen sich nicht öffnen"
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index b1ae239c..ddeb8234 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Τα ακουστικά είναι ε
+ sidetone_unsupported = "Τα ακουστικά δεν ανέφεραν υποστήριξη ρυθμιζόμενου sidetone."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Απαιτείται η άδεια «Προσβασιμότητα»"
+ input_monitoring_needed = "Απαιτείται η άδεια «Παρακολούθηση εισόδου»"
+ devices_unavailable = "Ορισμένες συσκευές δεν ανοίγουν"
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index 2dc9f053..38fcbdf9 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Sidetone is unavailable while the head
+ sidetone_unsupported = "This headset does not report an adjustable sidetone."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Accessibility permission needed"
+ input_monitoring_needed = "Input Monitoring permission needed"
+ devices_unavailable = "Some devices can't be opened"
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index fdcbeded..3e5b7993 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "El efecto local no está disponible mi
+ sidetone_unsupported = "Estos auriculares no indican que admitan efecto local ajustable."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Se necesita el permiso de Accesibilidad"
+ input_monitoring_needed = "Se necesita el permiso de Monitorización de entrada"
+ devices_unavailable = "Algunos dispositivos no se pueden abrir"
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index 47844290..b692f153 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Kuulokkeet eivät ole yhteydessä. Siv
+ sidetone_unsupported = "Kuulokkeet eivät ilmoittaneet tukevansa säädettävää sivuääntä."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Käyttöapu-lupa tarvitaan"
+ input_monitoring_needed = "Syötteen valvonta -lupa tarvitaan"
+ devices_unavailable = "Joitain laitteita ei voi avata"
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index cd24f651..aebb97cf 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "L'effet local est indisponible tant qu
+ sidetone_unsupported = "Ce casque n'indique pas prendre en charge le réglage de l'effet local."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Autorisation Accessibilité requise"
+ input_monitoring_needed = "Autorisation Surveillance de l’entrée requise"
+ devices_unavailable = "Certains appareils ne peuvent pas être ouverts"
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index 146389ff..c2d66bd0 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "L'effetto locale non è disponibile me
+ sidetone_unsupported = "Le cuffie non segnalano il supporto dell'effetto locale regolabile."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Serve il permesso Accessibilità"
+ input_monitoring_needed = "Serve il permesso Monitoraggio input"
+ devices_unavailable = "Alcuni dispositivi non si possono aprire"
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index 0989542c..f8725f47 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "ヘッドセットがオフライン
+ sidetone_unsupported = "このヘッドセットはサイドトーン調整への対応を報告していません。"
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "「アクセシビリティ」の許可が必要です"
+ input_monitoring_needed = "「入力監視」の許可が必要です"
+ devices_unavailable = "開けないデバイスがあります"
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index 1771b770..c9d6ed4c 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "헤드셋이 오프라인이어서 측
+ sidetone_unsupported = "이 헤드셋은 측음 조절 지원 여부를 보고하지 않았습니다."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "손쉬운 사용 권한이 필요합니다"
+ input_monitoring_needed = "입력 모니터링 권한이 필요합니다"
+ devices_unavailable = "열 수 없는 기기가 있습니다"
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index 3c46d09e..f2ecd0c9 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Sidetone er utilgjengelig mens headset
+ sidetone_unsupported = "Dette headsettet oppgir ikke støtte for justerbar sidetone."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Tillatelse for Tilgjengelighet kreves"
+ input_monitoring_needed = "Tillatelse for Inndataovervåking kreves"
+ devices_unavailable = "Noen enheter kan ikke åpnes"
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index 477c29b7..4462e020 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Sidetone is niet beschikbaar zolang de
+ sidetone_unsupported = "Deze headset meldt geen ondersteuning voor instelbare sidetone."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Toegankelijkheidstoestemming nodig"
+ input_monitoring_needed = "Toestemming voor invoermonitoring nodig"
+ devices_unavailable = "Sommige apparaten kunnen niet worden geopend"
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index 22aee20a..1d18c209 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Zestaw słuchawkowy jest offline. Side
+ sidetone_unsupported = "Ten zestaw słuchawkowy nie zgłosił obsługi regulowanego sidetone."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Wymagane uprawnienie Dostępność"
+ input_monitoring_needed = "Wymagane uprawnienie Monitorowanie wprowadzania"
+ devices_unavailable = "Nie można otworzyć niektórych urządzeń"
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index c89927db..cb17a173 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "O tom lateral fica indisponível enqua
+ sidetone_unsupported = "O headset não informa suporte a tom lateral ajustável."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Permissão de Acessibilidade necessária"
+ input_monitoring_needed = "Permissão de Monitoramento de Entrada necessária"
+ devices_unavailable = "Alguns dispositivos não podem ser abertos"
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index 93c6750f..0e0f1433 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "O tom lateral está indisponível enqu
+ sidetone_unsupported = "Os auscultadores não indicam suporte para tom lateral ajustável."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "É necessária a permissão de Acessibilidade"
+ input_monitoring_needed = "É necessária a permissão de Monitorização de entrada"
+ devices_unavailable = "Não é possível abrir alguns dispositivos"
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index 455ca5f9..b584a9b9 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Местный эффект недос
+ sidetone_unsupported = "Гарнитура не сообщает о поддержке регулируемого местного эффекта."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Нужно разрешение «Универсальный доступ»"
+ input_monitoring_needed = "Нужно разрешение «Мониторинг ввода»"
+ devices_unavailable = "Некоторые устройства не открываются"
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index 706aba83..65296cc8 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Sidoton är inte tillgänglig när hea
+ sidetone_unsupported = "Headsetet uppger inte stöd för justerbar sidoton."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Behörighet för Hjälpmedel krävs"
+ input_monitoring_needed = "Behörighet för Inmatningsövervakning krävs"
+ devices_unavailable = "Vissa enheter kan inte öppnas"
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index 3aaedd47..2c6269b5 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Kulaklık çevrimdışı olduğundan y
+ sidetone_unsupported = "Bu kulaklık ayarlanabilir yan ton desteği bildirmiyor."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Erişilebilirlik izni gerekli"
+ input_monitoring_needed = "Girdi İzleme izni gerekli"
+ devices_unavailable = "Bazı aygıtlar açılamıyor"
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index 0523737b..285f3d3f 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "Самопрослуховування
+ sidetone_unsupported = "Ця гарнітура не повідомила про підтримку регульованого самопрослуховування."
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "Потрібен дозвіл «Доступність»"
+ input_monitoring_needed = "Потрібен дозвіл «Моніторинг вводу»"
+ devices_unavailable = "Деякі пристрої не відкриваються"
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index 0fb6eb25..ad286d0f 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "耳机离线，侧音不可用。"
+ sidetone_unsupported = "此耳机未报告可调侧音支持。"
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "需要“辅助功能”权限"
+ input_monitoring_needed = "需要“输入监控”权限"
+ devices_unavailable = "有设备无法打开"
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index 52a62083..adfde764 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "耳機離線，側音無法使用。"
+ sidetone_unsupported = "此耳機未回報可調整側音支援。"
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "需要「輔助使用」權限"
+ input_monitoring_needed = "需要「輸入監控」權限"
+ devices_unavailable = "有裝置無法開啟"
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index 69a88428..9a73472c 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -1017,6 +1017,7 @@ device_offline_sidetone_is_unavailable = "耳機離線，側音無法使用。"
+ sidetone_unsupported = "此耳機未回報可調整側音支援。"
+ 
+ [tray]
++offline = "Offline"
+ accessibility_needed = "需要「輔助使用」權限"
+ input_monitoring_needed = "需要「輸入監控」權限"
+ devices_unavailable = "有裝置無法開啟"
 -- 
 2.43.0
 
