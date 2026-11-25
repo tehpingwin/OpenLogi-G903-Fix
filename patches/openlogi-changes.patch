@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 1/8] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 1/9] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 2/8] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 2/9] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 3/8] feat(agent): read, save and select stored G-series
+Subject: [PATCH 3/9] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 4/8] feat(desktop): state for editing stored G-series profiles
+Subject: [PATCH 4/9] feat(desktop): state for editing stored G-series profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
 mouse, saves it with the sector bytes it started from, and selects a
@@ -4228,7 +4228,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 5/8] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 5/9] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5853,7 +5853,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 6/8] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 6/9] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8123,7 +8123,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 7/8] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 7/9] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9336,7 +9336,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 8/8] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 8/9] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9662,6 +9662,244 @@ index 66ca1003..150624c9 100644
 +        second.base, fresh_base,
 +        "saved on the bytes the mouse holds now"
 +    );
++}
+-- 
+2.43.0
+
+From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 15:31:59 +0000
+Subject: [PATCH 9/9] feat(desktop): stored DPI levels and starting DPI
+
+While a stored profile is in control, the Pointer tab's DPI presets are
+the profile's DPI levels and the DPI value is the level it starts at;
+edits are written into the profile like the report rate. Before, DPI
+changes only set the live DPI, which the mouse replaced with the stored
+value on its next profile load (after a profile-list write, sleep or a
+profile switch).
+---
+ crates/openlogi-desktop/src/state/dpi.rs      |  11 ++
+ .../src/state/stored_profiles.rs              | 104 ++++++++++++++++++
+ .../src/state/tests/stored_profiles.rs        |  34 ++++++
+ 3 files changed, 149 insertions(+)
+
+diff --git a/crates/openlogi-desktop/src/state/dpi.rs b/crates/openlogi-desktop/src/state/dpi.rs
+index 01c93624..9621425b 100644
+--- a/crates/openlogi-desktop/src/state/dpi.rs
++++ b/crates/openlogi-desktop/src/state/dpi.rs
+@@ -57,6 +57,10 @@ impl AppState {
+     /// No-op when no device is selected (binding panel won't expose the
+     /// editor in that state).
+     pub fn commit_dpi_presets(&mut self, presets: Vec<Dpi>) -> StateEvents {
++        // While a stored profile is in control, the presets are its DPI levels.
++        if let Some(events) = self.commit_stored_dpi_presets(&presets) {
++            return events;
++        }
+         let events = self.for_current_device(StateEvent::DpiChanged);
+         let Some(key) = self
+             .current_record()
+@@ -75,6 +79,9 @@ impl AppState {
+     /// when no device is selected. UI helper.
+     #[must_use]
+     pub fn dpi_presets(&self) -> Vec<Dpi> {
++        if let Some(levels) = self.stored_dpi_levels() {
++            return levels;
++        }
+         self.current_record()
+             .and_then(DeviceRecord::persistent_config_key)
+             .map_or_else(Default::default, |key| self.config.dpi_presets(key))
+@@ -132,6 +139,10 @@ impl AppState {
+     /// `dpi` only if the device took it. With no device selected, or none
+     /// reachable to write, the value is shown and kept in memory only.
+     pub fn commit_dpi(&mut self, dpi: Dpi) -> StateEvents {
++        // While a stored profile is in control, the DPI goes into the profile.
++        if let Some(events) = self.commit_stored_dpi(dpi) {
++            return events;
++        }
+         let events = self.for_current_device(StateEvent::DpiChanged);
+         self.pointer.dpi = dpi;
+         let Some(record) = self.current_record() else {
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index 39e59d41..43d566bd 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -23,6 +23,7 @@ use std::collections::BTreeMap;
+ 
+ use openlogi_core::binding::{Action, ButtonId};
+ use openlogi_core::config::OnboardMemory;
++use openlogi_core::hid::{Dpi, STORED_DPI_LEVELS};
+ 
+ use super::bindings::BindingLayer;
+ use super::stored_actions::{action_for, binding_for};
+@@ -308,6 +309,104 @@ impl AppState {
+         Some(events)
+     }
+ 
++    /// The active stored profile's DPI levels, while a stored profile is in
++    /// control: shown as the DPI presets.
++    #[must_use]
++    pub fn stored_dpi_levels(&self) -> Option<Vec<Dpi>> {
++        let (active, _) = self.stored_mode()?;
++        let entry = self
++            .current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
++        let settings = entry.settings(active)?;
++        Some(
++            settings
++                .dpi
++                .iter()
++                .filter(|&&v| v != 0)
++                .map(|&v| Dpi::new(v))
++                .collect(),
++        )
++    }
++
++    /// The DPI the active stored profile starts at (its default level).
++    #[must_use]
++    pub fn stored_current_dpi(&self) -> Option<Dpi> {
++        let (active, _) = self.stored_mode()?;
++        let entry = self
++            .current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
++        let settings = entry.settings(active)?;
++        let value = *settings.dpi.get(usize::from(settings.default_dpi_level))?;
++        (value != 0).then(|| Dpi::new(value))
++    }
++
++    /// Show the stored profile's DPI in the DPI editor.
++    pub(super) fn sync_stored_dpi(&mut self) {
++        if let Some(dpi) = self.stored_current_dpi() {
++            self.pointer.dpi = dpi;
++        }
++    }
++
++    /// While a stored profile is in control, make `dpi` the profile's DPI and
++    /// return `Some`: one of its levels becomes the default level, any other
++    /// value replaces the default level's. `None` leaves the pick to the live
++    /// DPI write.
++    pub(super) fn commit_stored_dpi(&mut self, dpi: Dpi) -> Option<StateEvents> {
++        let (active, _) = self.stored_mode()?;
++        let value = u16::try_from(u32::from(dpi)).ok()?;
++        let events = self.for_current_device(StateEvent::DpiChanged);
++        self.pointer.dpi = dpi;
++        let _ = self.edit_stored_profile(active, |settings| {
++            if let Some(level) = settings.dpi.iter().position(|&v| v == value) {
++                settings.default_dpi_level = u8::try_from(level).unwrap_or(0);
++            } else if let Some(slot) = settings
++                .dpi
++                .get_mut(usize::from(settings.default_dpi_level))
++            {
++                *slot = value;
++            }
++        });
++        let _ = self.save_stored_profile_edit();
++        Some(events)
++    }
++
++    /// While a stored profile is in control, make `presets` the profile's DPI
++    /// levels (the first five) and return `Some`. The default level follows
++    /// its DPI if that is still a level, else the first; a DPI-shift level
++    /// that no longer exists is dropped.
++    pub(super) fn commit_stored_dpi_presets(&mut self, presets: &[Dpi]) -> Option<StateEvents> {
++        let (active, _) = self.stored_mode()?;
++        let events = self.for_current_device(StateEvent::DpiChanged);
++        let values: Vec<u16> = presets
++            .iter()
++            .filter_map(|&dpi| u16::try_from(u32::from(dpi)).ok())
++            .filter(|&v| v != 0)
++            .take(STORED_DPI_LEVELS)
++            .collect();
++        if values.is_empty() {
++            return Some(events); // a profile needs a level; the editor keeps the last one
++        }
++        let _ = self.edit_stored_profile(active, |settings| {
++            let current = settings
++                .dpi
++                .get(usize::from(settings.default_dpi_level))
++                .copied();
++            let mut levels = [0; STORED_DPI_LEVELS];
++            levels[..values.len()].copy_from_slice(&values);
++            settings.default_dpi_level = current
++                .and_then(|c| values.iter().position(|&v| v == c))
++                .and_then(|i| u8::try_from(i).ok())
++                .unwrap_or(0);
++            settings.shift_dpi_level = settings
++                .shift_dpi_level
++                .filter(|&level| usize::from(level) < values.len());
++            settings.dpi = levels;
++        });
++        let _ = self.save_stored_profile_edit();
++        self.sync_stored_dpi();
++        Some(events)
++    }
++
+     /// Switch stored profiles on or off. The answer arrives as
+     /// [`Self::apply_stored_profiles_enabled`].
+     pub fn set_stored_profiles_enabled(
+@@ -424,10 +523,14 @@ impl AppState {
+                 if entry.edit.as_ref().is_some_and(|edit| !edit.is_dirty()) {
+                     entry.edit = None;
+                 }
++                if state.is_current_device(&key) {
++                    state.sync_stored_dpi();
++                }
+                 for event in [
+                     StateEvent::OnboardChanged,
+                     StateEvent::BindingsChanged,
+                     StateEvent::ReportRateChanged,
++                    StateEvent::DpiChanged,
+                 ] {
+                     cx.emit(event(key.clone()));
+                 }
+@@ -569,6 +672,7 @@ impl AppState {
+             StateEvent::OnboardChanged,
+             StateEvent::BindingsChanged,
+             StateEvent::ReportRateChanged,
++            StateEvent::DpiChanged,
+         ] {
+             cx.emit(event(key.clone()));
+         }
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index 150624c9..70b2effc 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -373,3 +373,37 @@ fn a_change_made_while_saving_is_saved_after_the_read(cx: &mut gpui::TestAppCont
+         "saved on the bytes the mouse holds now"
+     );
+ }
++
++#[gpui::test]
++fn a_dpi_change_goes_into_the_stored_profile(cx: &mut gpui::TestAppContext) {
++    let (_key, mut receiver) = ready(cx);
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            state.commit_dpi(openlogi_core::hid::Dpi::new(2400))
++        })
++    });
++    let save = take_save(&mut receiver);
++    assert_eq!(
++        save.settings.dpi,
++        [2400, 0, 0, 0, 0],
++        "the default level's value"
++    );
++    assert_eq!(save.settings.default_dpi_level, 0);
++    let shown = cx.read(|cx| AppState::try_read(cx).expect("state").stored_current_dpi());
++    assert_eq!(shown, Some(openlogi_core::hid::Dpi::new(2400)));
++}
++
++#[gpui::test]
++fn dpi_presets_become_the_stored_levels(cx: &mut gpui::TestAppContext) {
++    let (_key, mut receiver) = ready(cx);
++    let presets = [800, 1800, 3200].map(openlogi_core::hid::Dpi::new).to_vec();
++    let _ = cx.update(|cx| AppState::update(cx, |state, _| state.commit_dpi_presets(presets)));
++    let save = take_save(&mut receiver);
++    assert_eq!(save.settings.dpi, [800, 1800, 3200, 0, 0]);
++    assert_eq!(
++        save.settings.default_dpi_level, 1,
++        "1800 stays the starting DPI"
++    );
++    let shown = cx.read(|cx| AppState::try_read(cx).expect("state").dpi_presets());
++    assert_eq!(shown.len(), 3);
 +}
 -- 
 2.43.0
