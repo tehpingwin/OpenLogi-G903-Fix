@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 1/6] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 1/7] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 2/6] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 2/7] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 3/6] feat(agent): read, save and select stored G-series
+Subject: [PATCH 3/7] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 4/6] feat(desktop): state for editing stored G-series profiles
+Subject: [PATCH 4/7] feat(desktop): state for editing stored G-series profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
 mouse, saves it with the sector bytes it started from, and selects a
@@ -4228,7 +4228,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 5/6] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 5/7] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5853,7 +5853,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 6/6] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 6/7] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8117,6 +8117,1219 @@ index 17399b00..5a7b69fa 100644
  selected = "Profile %{number} is in use."
  failed = "Not saved: %{error}"
 -unsaved = "Unsaved changes"
+-- 
+2.43.0
+
+From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 14:28:50 +0000
+Subject: [PATCH 7/7] feat: stored report rate, and switching stored profiles
+ on and off
+
+While a stored profile is in control, the Pointer tab's report rate shows
+that profile's rate and a pick is written into it (it was locked).
+
+The Onboard Memory card gets a row of switches, one per stored profile,
+and Enable All: a guarded write of the profile list's on/off flags. The
+profile in use can't be switched off, and one profile always stays on.
+A profile switched on then appears among the In control choices.
+
+Wire: Agent::set_stored_profiles_enabled appended (part of
+PROTOCOL_VERSION 47, still unreleased).
+---
+ crates/openlogi-agent/src/bin/mock_agent.rs   |  12 ++
+ crates/openlogi-agent/src/server.rs           |  15 +++
+ .../src/cmd/fixture/record_profile/tests.rs   |   9 ++
+ crates/openlogi-desktop/src/app/detail.rs     |  99 ++++++++++++++-
+ .../src/features/mouse/stored_status.rs       |   1 +
+ .../src/features/pointer/report_rate.rs       |  20 +--
+ crates/openlogi-desktop/src/runtime.rs        |   7 ++
+ crates/openlogi-desktop/src/services/ipc.rs   |  10 +-
+ .../src/services/ipc/request.rs               |  30 +++++
+ crates/openlogi-desktop/src/state/onboard.rs  |   1 +
+ .../openlogi-desktop/src/state/report_rate.rs |   4 +
+ .../src/state/stored_profiles.rs              | 114 +++++++++++++++++-
+ .../src/state/tests/stored_profiles.rs        |   2 +-
+ crates/openlogi-device/src/lib.rs             |   4 +-
+ crates/openlogi-device/src/write.rs           |   2 +-
+ crates/openlogi-device/src/write/onboard.rs   |   5 +-
+ .../openlogi-device/src/write/onboard/edit.rs |  76 +++++++++++-
+ .../src/write/onboard/edit/tests.rs           |  33 +++++
+ .../src/feature/onboard_profiles.rs           |   4 +-
+ .../src/feature/onboard_profiles/profile.rs   |  24 ++++
+ .../feature/onboard_profiles/profile/tests.rs |  13 ++
+ crates/openlogi-ipc/src/ipc.rs                |  11 +-
+ crates/openlogi-ui/locales/be.toml            |   5 +
+ crates/openlogi-ui/locales/cs.toml            |   5 +
+ crates/openlogi-ui/locales/da.toml            |   5 +
+ crates/openlogi-ui/locales/de.toml            |   5 +
+ crates/openlogi-ui/locales/el.toml            |   5 +
+ crates/openlogi-ui/locales/en.toml            |   5 +
+ crates/openlogi-ui/locales/es.toml            |   5 +
+ crates/openlogi-ui/locales/fi.toml            |   5 +
+ crates/openlogi-ui/locales/fr.toml            |   5 +
+ crates/openlogi-ui/locales/it.toml            |   5 +
+ crates/openlogi-ui/locales/ja.toml            |   5 +
+ crates/openlogi-ui/locales/ko.toml            |   5 +
+ crates/openlogi-ui/locales/nb.toml            |   5 +
+ crates/openlogi-ui/locales/nl.toml            |   5 +
+ crates/openlogi-ui/locales/pl.toml            |   5 +
+ crates/openlogi-ui/locales/pt-BR.toml         |   5 +
+ crates/openlogi-ui/locales/pt-PT.toml         |   5 +
+ crates/openlogi-ui/locales/ru.toml            |   5 +
+ crates/openlogi-ui/locales/sv.toml            |   5 +
+ crates/openlogi-ui/locales/tr.toml            |   5 +
+ crates/openlogi-ui/locales/uk.toml            |   5 +
+ crates/openlogi-ui/locales/zh-CN.toml         |   5 +
+ crates/openlogi-ui/locales/zh-HK.toml         |   5 +
+ crates/openlogi-ui/locales/zh-TW.toml         |   5 +
+ 46 files changed, 589 insertions(+), 27 deletions(-)
+
+diff --git a/crates/openlogi-agent/src/bin/mock_agent.rs b/crates/openlogi-agent/src/bin/mock_agent.rs
+index 6304e90d..4baa243e 100644
+--- a/crates/openlogi-agent/src/bin/mock_agent.rs
++++ b/crates/openlogi-agent/src/bin/mock_agent.rs
+@@ -1219,6 +1219,18 @@ impl Agent for MockAgent {
+         })
+     }
+ 
++    async fn set_stored_profiles_enabled(
++        self,
++        _: Context,
++        route: DeviceRoute,
++        _changes: Vec<(openlogi_core::hid::ProfileIndex, bool)>,
++    ) -> Result<(), WriteError> {
++        info!(%route, "set_stored_profiles_enabled (no onboard memory in the mock)");
++        Err(WriteError::FeatureUnsupported {
++            feature_hex: 0x8100,
++        })
++    }
++
+     async fn unpair_device(self, _: Context, route: DeviceRoute) -> Result<(), PairingFailure> {
+         let result = self.state.lock().await.unpair(&route);
+         info!(%route, ok = result.is_ok(), "unpair_device");
+diff --git a/crates/openlogi-agent/src/server.rs b/crates/openlogi-agent/src/server.rs
+index ad36386b..7b954aa4 100644
+--- a/crates/openlogi-agent/src/server.rs
++++ b/crates/openlogi-agent/src/server.rs
+@@ -349,6 +349,21 @@ impl Agent for AgentServer {
+             .await
+     }
+ 
++    async fn set_stored_profiles_enabled(
++        self,
++        _: Context,
++        route: DeviceRoute,
++        changes: Vec<(openlogi_core::hid::ProfileIndex, bool)>,
++    ) -> Result<(), WriteError> {
++        let backup = onboard_backup::sink(&route);
++        self.shared
++            .device(&route)
++            .run(HidppOperation::WriteOnboard, move |c| async move {
++                openlogi_hid::set_stored_profiles_enabled_on(&c, &changes, &backup).await
++            })
++            .await
++    }
++
+     async fn request_accessibility_prompt(self, _: Context) {
+         Hook::prompt_accessibility();
+     }
+diff --git a/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs b/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs
+index 31e8eaef..5c451339 100644
+--- a/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs
++++ b/crates/openlogi-cli/src/cmd/fixture/record_profile/tests.rs
+@@ -207,6 +207,15 @@ impl Agent for TestAgent {
+         unreachable!("profile capture does not select stored profiles")
+     }
+ 
++    async fn set_stored_profiles_enabled(
++        self,
++        _: TarpcContext,
++        _route: DeviceRoute,
++        _changes: Vec<(openlogi_core::hid::ProfileIndex, bool)>,
++    ) -> Result<(), WriteError> {
++        unreachable!("profile capture does not change stored profiles")
++    }
++
+     async fn unpair_device(
+         self,
+         _: TarpcContext,
+diff --git a/crates/openlogi-desktop/src/app/detail.rs b/crates/openlogi-desktop/src/app/detail.rs
+index f8615979..b4cee5f9 100644
+--- a/crates/openlogi-desktop/src/app/detail.rs
++++ b/crates/openlogi-desktop/src/app/detail.rs
+@@ -505,21 +505,108 @@ fn onboard_card(pal: Palette, cx: &mut Context<AppView>) -> Option<impl IntoElem
+     } else {
+         tr!("pointer.onboard_profile_description")
+     };
++    let switches = reading
++        .as_ref()
++        .filter(|r| !r.profiles.is_empty())
++        .map(|r| {
++            setting_row(
++                tr!("stored_profile.profiles_on_mouse"),
++                tr!("stored_profile.profiles_on_mouse_description"),
++                stored_profile_switches(r, state.current_stored_profile_busy(), pal),
++                pal,
++            )
++        });
++    let failure = match state.current_stored_profile_notice() {
++        Some(crate::state::StoredProfileNotice::Failed(error)) => Some(
++            div()
++                .text_caption()
++                .text_color(pal.text_muted)
++                .child(tr!("stored_profile.failed", error => error.to_string())),
++        ),
++        _ => None,
++    };
+     Some(
+         PanelCard::new(
+             tr!("pointer.onboard_memory"),
+             Icon::empty().path("action-icons/mouse.svg"),
+-            v_flex().gap_4().child(setting_row(
+-                tr!("pointer.onboard_active"),
+-                memory_description,
+-                onboard_memory_control(memory, openlogi.into_iter().chain(profiles).collect(), cx),
+-                pal,
+-            )),
++            v_flex()
++                .gap_4()
++                .child(setting_row(
++                    tr!("pointer.onboard_active"),
++                    memory_description,
++                    onboard_memory_control(
++                        memory,
++                        openlogi.into_iter().chain(profiles).collect(),
++                        cx,
++                    ),
++                    pal,
++                ))
++                .children(switches)
++                .children(failure),
+         )
+         .fill(),
+     )
+ }
+ 
++/// One switch per stored profile, and "Enable all". The profile in use, and
++/// the last profile left on, can't be switched off: the mouse needs one.
++fn stored_profile_switches(
++    reading: &openlogi_core::hid::OnboardState,
++    busy: bool,
++    pal: Palette,
++) -> impl IntoElement {
++    let on = reading.profiles.iter().filter(|p| p.enabled).count();
++    let pills = reading.profiles.iter().map(|p| {
++        let index = p.index;
++        let enabled = p.enabled;
++        let locked = enabled && (Some(index) == reading.active_profile || on <= 1);
++        let label = p.name.clone().unwrap_or_else(|| {
++            tr!("pointer.onboard_profile_number", number => index.to_string()).to_string()
++        });
++        crate::ui::components::Pill::new(
++            ("stored-profile-switch", usize::from(index.get().get())),
++            label,
++        )
++        .selected(enabled)
++        .disabled(busy || locked)
++        .on_click(move |_, _, cx| {
++            AppState::apply(cx, |state| {
++                state.set_stored_profiles_enabled(vec![(index, !enabled)])
++            });
++        })
++    });
++    let off: Vec<_> = reading
++        .profiles
++        .iter()
++        .filter(|p| !p.enabled)
++        .map(|p| (p.index, true))
++        .collect();
++    let all_on = off.is_empty();
++    v_flex()
++        .gap_2()
++        .child(h_flex().gap_2().flex_wrap().children(pills))
++        .child(
++            h_flex().child(
++                crate::ui::components::control_button("stored-profiles-enable-all")
++                    .label(tr!("stored_profile.enable_all"))
++                    .disabled(busy || all_on)
++                    .on_click(move |_, _, cx| {
++                        AppState::apply(cx, |state| state.set_stored_profiles_enabled(off.clone()));
++                    }),
++            ),
++        )
++        .child(
++            div()
++                .text_caption()
++                .text_color(pal.text_muted)
++                .child(if busy {
++                    tr!("stored_profile.saving")
++                } else {
++                    SharedString::default()
++                }),
++        )
++}
++
+ fn setting_row(
+     title: impl Into<SharedString>,
+     description: impl Into<SharedString>,
+diff --git a/crates/openlogi-desktop/src/features/mouse/stored_status.rs b/crates/openlogi-desktop/src/features/mouse/stored_status.rs
+index fab7a4a8..162f8daa 100644
+--- a/crates/openlogi-desktop/src/features/mouse/stored_status.rs
++++ b/crates/openlogi-desktop/src/features/mouse/stored_status.rs
+@@ -14,6 +14,7 @@ fn text(notice: &StoredProfileNotice) -> SharedString {
+         StoredProfileNotice::Selected(index) => {
+             tr!("stored_profile.selected", number = index.get())
+         }
++        StoredProfileNotice::ProfilesChanged => tr!("stored_profile.profiles_changed"),
+         StoredProfileNotice::Failed(error) => {
+             tr!("stored_profile.failed", error = error.to_string())
+         }
+diff --git a/crates/openlogi-desktop/src/features/pointer/report_rate.rs b/crates/openlogi-desktop/src/features/pointer/report_rate.rs
+index 507f01d5..e61c1094 100644
+--- a/crates/openlogi-desktop/src/features/pointer/report_rate.rs
++++ b/crates/openlogi-desktop/src/features/pointer/report_rate.rs
+@@ -21,8 +21,11 @@ pub(super) struct ReportRateFacts {
+     key: DeviceKey,
+     load: ReportRateLoad,
+     reachable: bool,
+-    /// A G-series mouse's stored profile owns the rate.
++    /// A G-series mouse's stored profile owns the rate and can't be edited.
+     locked: bool,
++    /// While a stored profile is in control, its rate in hertz: shown as the
++    /// selection, and a pick is written into the profile.
++    stored: Option<u16>,
+ }
+ 
+ impl ReportRateFacts {
+@@ -39,6 +42,7 @@ impl ReportRateFacts {
+             load: state.current_report_rate_load(),
+             reachable: record.route.is_some(),
+             locked: state.current_report_rate_locked(),
++            stored: state.stored_report_rate(),
+         })
+     }
+ }
+@@ -55,16 +59,16 @@ pub(super) fn report_rate_section(
+         load,
+         reachable,
+         locked,
++        stored,
+     } = facts?;
+     let body: AnyElement = match load {
+         ReportRateLoad::Ready(info) => h_flex()
+             .gap_2()
+             .flex_wrap()
+-            .children(
+-                info.supported
+-                    .iter()
+-                    .map(|&rate| rate_pill(rate, rate == info.current, locked)),
+-            )
++            .children(info.supported.iter().map(|&rate| {
++                let selected = stored.map_or(rate == info.current, |hz| rate.into_inner() == hz);
++                rate_pill(rate, selected, locked)
++            }))
+             .into_any_element(),
+         ReportRateLoad::Unknown | ReportRateLoad::Loading if !reachable => return None,
+         ReportRateLoad::Unknown | ReportRateLoad::Loading => {
+@@ -94,7 +98,9 @@ pub(super) fn report_rate_section(
+                 div()
+                     .text_caption()
+                     .text_color(pal.text_muted)
+-                    .child(if locked {
++                    .child(if stored.is_some() {
++                        tr!("stored_profile.report_rate")
++                    } else if locked {
+                         tr!("pointer.report_rate_onboard")
+                     } else {
+                         tr!("pointer.report_rate_description")
+diff --git a/crates/openlogi-desktop/src/runtime.rs b/crates/openlogi-desktop/src/runtime.rs
+index ad3d7b25..b82558c3 100644
+--- a/crates/openlogi-desktop/src/runtime.rs
++++ b/crates/openlogi-desktop/src/runtime.rs
+@@ -386,6 +386,13 @@ impl Runtime {
+                     });
+                 });
+             }
++            ipc::GuiUpdate::StoredProfilesEnabled { key, result } => {
++                cx.update(|cx| {
++                    AppState::update(cx, |state, cx| {
++                        state.apply_stored_profiles_enabled(&key, result, cx);
++                    });
++                });
++            }
+             ipc::GuiUpdate::StoredProfileSelected { key, index, result } => {
+                 cx.update(|cx| {
+                     AppState::update(cx, |state, cx| {
+diff --git a/crates/openlogi-desktop/src/services/ipc.rs b/crates/openlogi-desktop/src/services/ipc.rs
+index 24a184f5..e598d9df 100644
+--- a/crates/openlogi-desktop/src/services/ipc.rs
++++ b/crates/openlogi-desktop/src/services/ipc.rs
+@@ -80,7 +80,8 @@ pub use request::{
+     ReadStoredProfiles, ReloadConfig, RenameEasySwitchHost, RequestAccessibilityPrompt,
+     RetryConnection, SaveStoredProfile, SetBacklight, SetDisableKeys, SetDpi, SetFnLock,
+     SetForceSensing, SetLight, SetLightManualPower, SetLighting, SetPointerSpeed, SetReportRate,
+-    SetSidetone, SetSmartShift, StartFlowPairing, StartPairing, StopFlowPairing, UnpairDevice,
++    SetSidetone, SetSmartShift, SetStoredProfilesEnabled, StartFlowPairing, StartPairing,
++    StopFlowPairing, UnpairDevice,
+ };
+ 
+ /// Complete identity of one Disable Keys write/reload transaction.
+@@ -210,6 +211,13 @@ pub enum GuiUpdate {
+         /// What the save did.
+         result: Result<StoredProfileSave, WriteError>,
+     },
++    /// The answer to a [`SetStoredProfilesEnabled`].
++    StoredProfilesEnabled {
++        /// The mouse.
++        key: DeviceKey,
++        /// Whether the profile list changed.
++        result: Result<(), WriteError>,
++    },
+     /// The answer to a [`SelectStoredProfile`].
+     StoredProfileSelected {
+         /// The mouse.
+diff --git a/crates/openlogi-desktop/src/services/ipc/request.rs b/crates/openlogi-desktop/src/services/ipc/request.rs
+index 89dacaca..9a18472d 100644
+--- a/crates/openlogi-desktop/src/services/ipc/request.rs
++++ b/crates/openlogi-desktop/src/services/ipc/request.rs
+@@ -775,6 +775,35 @@ impl Request for SelectStoredProfile {
+     }
+ }
+ 
++/// Switch stored profiles on or off, answered as
++/// [`GuiUpdate::StoredProfilesEnabled`].
++pub struct SetStoredProfilesEnabled {
++    pub route: DeviceRoute,
++    pub key: DeviceKey,
++    pub changes: Vec<(ProfileIndex, bool)>,
++}
++
++impl Request for SetStoredProfilesEnabled {
++    type Answer = Result<(), WriteError>;
++
++    async fn call(&self, client: &AgentClient) -> Result<Self::Answer, RpcError> {
++        client
++            .set_stored_profiles_enabled(
++                context::current(),
++                self.route.clone(),
++                self.changes.clone(),
++            )
++            .await
++    }
++
++    fn deliver(self, outcome: Result<Self::Answer, Unavailable>, updates: &UpdateSender) {
++        let _ = updates.send(GuiUpdate::StoredProfilesEnabled {
++            key: self.key,
++            result: or_unavailable(outcome),
++        });
++    }
++}
++
+ /// Have the agent re-read the `config.toml` the GUI just saved
+ /// ([`openlogi_ipc::Agent::reload_saved_config`]).
+ ///
+@@ -1253,6 +1282,7 @@ commands! {
+     ReadStoredProfiles,
+     SaveStoredProfile,
+     SelectStoredProfile,
++    SetStoredProfilesEnabled,
+     ReloadConfig,
+     RequestAccessibilityPrompt,
+     RetryConnection,
+diff --git a/crates/openlogi-desktop/src/state/onboard.rs b/crates/openlogi-desktop/src/state/onboard.rs
+index 149e055a..1a76a103 100644
+--- a/crates/openlogi-desktop/src/state/onboard.rs
++++ b/crates/openlogi-desktop/src/state/onboard.rs
+@@ -71,6 +71,7 @@ impl AppState {
+     pub fn current_report_rate_locked(&self) -> bool {
+         self.current_onboard_supported()
+             && self.current_onboard_active() != Some(OnboardMemory::Off)
++            && self.stored_report_rate().is_none()
+     }
+ 
+     pub fn commit_onboard_memory(&mut self, memory: OnboardMemory) -> StateEvents {
+diff --git a/crates/openlogi-desktop/src/state/report_rate.rs b/crates/openlogi-desktop/src/state/report_rate.rs
+index 39e2d9bd..4c4d9cd0 100644
+--- a/crates/openlogi-desktop/src/state/report_rate.rs
++++ b/crates/openlogi-desktop/src/state/report_rate.rs
+@@ -49,6 +49,10 @@ impl AppState {
+     /// that lists `rate` — the panel only offers listed rates, so that last
+     /// case is a click from before the list changed.
+     pub fn commit_report_rate(&mut self, rate: ReportRate) -> StateEvents {
++        // While a stored profile is in control, the rate goes into the profile.
++        if let Some(events) = self.commit_stored_report_rate(rate.into_inner()) {
++            return events;
++        }
+         if !self.current_report_rate_supported() {
+             return self.for_current_device(StateEvent::ReportRateChanged);
+         }
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index 34489252..b841cff2 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -29,7 +29,7 @@ use super::stored_actions::{action_for, binding_for};
+ use super::{AppState, DeviceKey, DeviceRecord, Load, StateEvent, StateEvents};
+ #[cfg(test)]
+ use crate::services::ipc::SelectStoredProfile;
+-use crate::services::ipc::{ReadStoredProfiles, SaveStoredProfile};
++use crate::services::ipc::{ReadStoredProfiles, SaveStoredProfile, SetStoredProfilesEnabled};
+ 
+ /// Read state of one mouse's stored profiles. See [`Load`].
+ pub type StoredProfilesLoad = Load<Arc<StoredProfiles>>;
+@@ -43,6 +43,8 @@ pub enum StoredProfileNotice {
+     NothingToSave,
+     /// The profile is active now.
+     Selected(ProfileIndex),
++    /// The profile list changed (profiles switched on or off).
++    ProfilesChanged,
+     /// Refused or failed; the error says whether anything changed.
+     Failed(WriteError),
+ }
+@@ -75,6 +77,7 @@ struct Entry {
+     edit: Option<StoredProfileEdit>,
+     saving: Option<u64>,
+     selecting: Option<ProfileIndex>,
++    toggling: bool,
+     notice: Option<StoredProfileNotice>,
+ }
+ 
+@@ -149,7 +152,6 @@ impl AppState {
+         {
+             return None;
+         }
+-        self.current_gaming_layout()?;
+         let entry = self
+             .current_record()
+             .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
+@@ -239,12 +241,118 @@ impl AppState {
+         Some(events)
+     }
+ 
++    /// The active stored profile's report rate in hertz, while a stored
++    /// profile is in control.
++    #[must_use]
++    pub fn stored_report_rate(&self) -> Option<u16> {
++        let (active, _) = self.stored_mode()?;
++        let entry = self
++            .current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
++        let Load::Ready(profiles) = &entry.load else {
++            return None;
++        };
++        let interval = match &entry.edit {
++            Some(edit) if edit.index == active => edit.settings.report_interval_ms,
++            _ => {
++                profiles
++                    .profiles
++                    .iter()
++                    .find(|slot| slot.index == active)?
++                    .settings
++                    .as_ref()
++                    .ok()?
++                    .report_interval_ms
++            }
++        };
++        (interval > 0).then(|| 1000 / u16::from(interval))
++    }
++
++    /// While a stored profile is in control, write `hertz` into it and
++    /// return `Some`; `None` leaves the pick to the live report-rate write.
++    pub(super) fn commit_stored_report_rate(&mut self, hertz: u16) -> Option<StateEvents> {
++        let (active, _) = self.stored_mode()?;
++        let events = self.for_current_device(StateEvent::ReportRateChanged);
++        let interval = match hertz {
++            1000 => 1,
++            500 => 2,
++            250 => 4,
++            125 => 8,
++            _ => {
++                let key = self.current_record().map(DeviceRecord::device_key)?;
++                self.stored_profiles.entry(&key).notice = Some(StoredProfileNotice::Failed(
++                    WriteError::OnboardProfileRejected {
++                        reason: format!("a stored profile can't hold {hertz} Hz"),
++                    },
++                ));
++                return Some(events);
++            }
++        };
++        let _ = self.edit_stored_profile(active, |settings| settings.report_interval_ms = interval);
++        let _ = self.save_stored_profile_edit();
++        Some(events)
++    }
++
++    /// Switch stored profiles on or off. The answer arrives as
++    /// [`Self::apply_stored_profiles_enabled`].
++    pub fn set_stored_profiles_enabled(
++        &mut self,
++        changes: Vec<(ProfileIndex, bool)>,
++    ) -> StateEvents {
++        let events = self.for_current_device(StateEvent::OnboardChanged);
++        let Some((key, route)) = self.stored_profile_target() else {
++            return events;
++        };
++        let entry = self.stored_profiles.entry(&key);
++        if changes.is_empty() || entry.toggling || entry.saving.is_some() {
++            return events;
++        }
++        entry.toggling = true;
++        entry.notice = None;
++        if !self.send_ipc(SetStoredProfilesEnabled {
++            route,
++            key: key.clone(),
++            changes,
++        }) {
++            let entry = self.stored_profiles.entry(&key);
++            entry.toggling = false;
++            entry.notice = Some(StoredProfileNotice::Failed(WriteError::AgentUnavailable));
++        }
++        events
++    }
++
++    /// The agent's answer to a profile on/off change; the mouse is read again
++    /// either way, so the Onboard Memory choices follow.
++    pub fn apply_stored_profiles_enabled(
++        &mut self,
++        key: &DeviceKey,
++        result: Result<(), WriteError>,
++        cx: &mut Context<Self>,
++    ) {
++        let entry = self.stored_profiles.entry(key);
++        if !entry.toggling {
++            return;
++        }
++        entry.toggling = false;
++        entry.notice = Some(match result {
++            Ok(()) => StoredProfileNotice::ProfilesChanged,
++            Err(error) => StoredProfileNotice::Failed(error),
++        });
++        cx.emit(StateEvent::OnboardChanged(key.clone()));
++        self.pointer.reads.refresh_onboard(key);
++        if self.is_current_device(key) {
++            self.read_stored_profiles(cx);
++        }
++    }
++
+     /// Whether a save or selection for the selected mouse is in flight.
+     #[must_use]
+     pub fn current_stored_profile_busy(&self) -> bool {
+         self.current_record()
+             .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))
+-            .is_some_and(|entry| entry.saving.is_some() || entry.selecting.is_some())
++            .is_some_and(|entry| {
++                entry.saving.is_some() || entry.selecting.is_some() || entry.toggling
++            })
+     }
+ 
+     /// Read the selected mouse's stored profiles if they haven't been read.
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index 84bc1516..66ca1003 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -203,7 +203,7 @@ fn an_unchanged_edit_sends_nothing(cx: &mut gpui::TestAppContext) {
+     let (_key, mut receiver) = ready(cx);
+     let _ = cx.update(|cx| {
+         AppState::update(cx, |state, _| {
+-            state.edit_stored_profile(index(1), |_| {});
++            let _ = state.edit_stored_profile(index(1), |_| {});
+             state.save_stored_profile_edit()
+         })
+     });
+diff --git a/crates/openlogi-device/src/lib.rs b/crates/openlogi-device/src/lib.rs
+index d93d778f..4db42998 100644
+--- a/crates/openlogi-device/src/lib.rs
++++ b/crates/openlogi-device/src/lib.rs
+@@ -101,8 +101,8 @@ pub use write::{
+     set_report_rate_on, set_scroll_inversion, set_scroll_inversion_on, set_scroll_resolution,
+     set_scroll_resolution_on, set_scroll_wheel_mode, set_scroll_wheel_mode_on, set_sidetone,
+     set_sidetone_on, set_smartshift, set_smartshift_on, set_smartshift_sensitivity,
+-    set_smartshift_torque, toggle_smartshift, toggle_smartshift_on, update_backlight,
+-    update_backlight_on, watch_button_spy, watch_litra, write_key_image_on,
++    set_smartshift_torque, set_stored_profiles_enabled_on, toggle_smartshift, toggle_smartshift_on,
++    update_backlight, update_backlight_on, watch_button_spy, watch_litra, write_key_image_on,
+ };
+ 
+ /// Scripted transport helpers for tests in higher layers.
+diff --git a/crates/openlogi-device/src/write.rs b/crates/openlogi-device/src/write.rs
+index 48197217..438e07ad 100644
+--- a/crates/openlogi-device/src/write.rs
++++ b/crates/openlogi-device/src/write.rs
+@@ -92,7 +92,7 @@ pub use litra::{
+ };
+ pub use onboard::{
+     Backup, get_onboard, get_onboard_on, read_stored_profiles_on, save_stored_profile_on,
+-    select_stored_profile_on,
++    select_stored_profile_on, set_stored_profiles_enabled_on,
+ };
+ pub use openlogi_core::hid::{DisableKeysMask, DisableKeysState};
+ pub use openlogi_core::hid::{
+diff --git a/crates/openlogi-device/src/write/onboard.rs b/crates/openlogi-device/src/write/onboard.rs
+index 0c981dc4..fe8c2c69 100644
+--- a/crates/openlogi-device/src/write/onboard.rs
++++ b/crates/openlogi-device/src/write/onboard.rs
+@@ -3,7 +3,10 @@
+ 
+ mod edit;
+ 
+-pub use edit::{Backup, read_stored_profiles_on, save_stored_profile_on, select_stored_profile_on};
++pub use edit::{
++    Backup, read_stored_profiles_on, save_stored_profile_on, select_stored_profile_on,
++    set_stored_profiles_enabled_on,
++};
+ 
+ use std::sync::Arc;
+ 
+diff --git a/crates/openlogi-device/src/write/onboard/edit.rs b/crates/openlogi-device/src/write/onboard/edit.rs
+index 4d4c23a2..492b4846 100644
+--- a/crates/openlogi-device/src/write/onboard/edit.rs
++++ b/crates/openlogi-device/src/write/onboard/edit.rs
+@@ -16,8 +16,8 @@ use hidpp::{
+     device::Device,
+     feature::onboard_profiles::{
+         self, Binding, MacroError, MacroStep, OnboardProfilesFeature, OnboardProfilesInfo,
+-        ProfileError, StoredProfile, directory_with_enabled, factory_bindings, read_stored_macro,
+-        sector_checksum_ok,
++        ProfileError, StoredProfile, directory_with_enabled, directory_with_flags,
++        factory_bindings, read_stored_macro, sector_checksum_ok,
+     },
+ };
+ use tracing::{debug, warn};
+@@ -121,6 +121,26 @@ pub async fn select_stored_profile_on(
+         .await
+ }
+ 
++/// Switches stored profiles on or off in the profile list. The active
++/// profile can't be switched off, and at least one profile stays on.
++pub async fn set_stored_profiles_enabled_on(
++    shared: &SharedChannel,
++    changes: &[(ProfileIndex, bool)],
++    backup: Backup<'_>,
++) -> Result<(), WriteError> {
++    let changes: Vec<(NonZeroU8, bool)> = changes
++        .iter()
++        .map(|&(index, on)| (index.get(), on))
++        .collect();
++    set_stored_profiles_enabled_on_channel(
++        shared.channel(),
++        shared.device_index(),
++        &changes,
++        backup,
++    )
++    .await
++}
++
+ async fn open(
+     channel: &Arc<HidppChannel>,
+     index: u8,
+@@ -403,5 +423,57 @@ async fn select_stored_profile_on_channel(
+ 
+ mod convert;
+ 
++async fn set_stored_profiles_enabled_on_channel(
++    channel: &Arc<HidppChannel>,
++    index: u8,
++    changes: &[(NonZeroU8, bool)],
++    backup: Backup<'_>,
++) -> Result<(), WriteError> {
++    let onboard = open(channel, index).await?;
++    let info = onboard.get_info().await.map_err(read_err)?;
++    let entries = onboard.read_directory(&info).await.map_err(read_err)?;
++    if entries.iter().any(|entry| entry.sector >= FIRST_ROM_SECTOR) {
++        return Err(WriteError::OnboardProfileRejected {
++            reason: "the mouse runs its factory profiles; there is no profile list to change"
++                .into(),
++        });
++    }
++    let active = onboard.get_current_profile().await.map_err(read_err)?;
++    if changes
++        .iter()
++        .any(|&(profile, on)| !on && Some(profile) == active)
++    {
++        return Err(WriteError::OnboardProfileRejected {
++            reason: "the profile in use can't be switched off".into(),
++        });
++    }
++    let on_after = entries
++        .iter()
++        .filter(|entry| {
++            changes
++                .iter()
++                .find(|(profile, _)| *profile == entry.index)
++                .map_or(entry.enabled, |&(_, on)| on)
++        })
++        .count();
++    if on_after == 0 {
++        return Err(WriteError::OnboardProfileRejected {
++            reason: "at least one profile has to stay on".into(),
++        });
++    }
++    let directory = read_stable(&onboard, &info, USER_DIRECTORY).await?;
++    let updated = directory_with_flags(&directory, changes).map_err(|e| rejected(&e))?;
++    guarded_write(
++        &onboard,
++        &info,
++        USER_DIRECTORY,
++        &directory,
++        &updated,
++        backup,
++    )
++    .await?;
++    Ok(())
++}
++
+ #[cfg(test)]
+ mod tests;
+diff --git a/crates/openlogi-device/src/write/onboard/edit/tests.rs b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+index e12769a6..9cccae68 100644
+--- a/crates/openlogi-device/src/write/onboard/edit/tests.rs
++++ b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+@@ -384,3 +384,36 @@ async fn wire_settings_round_trip_and_cannot_resize_layers() {
+         assert_eq!(convert::settings_from_wire(&short, &decoded), decoded);
+     }
+ }
++
++#[tokio::test]
++async fn profiles_switch_on_and_off_but_the_active_one_stays_on() {
++    let rig = Rig::new().await;
++    let backup = rig.backup();
++    set_stored_profiles_enabled_on_channel(
++        &rig.channel,
++        0xff,
++        &[(nz(2), true), (nz(3), true)],
++        &backup,
++    )
++    .await
++    .unwrap();
++    let dir = rig.mouse.sector(0);
++    assert_eq!((dir[2], dir[6], dir[10], dir[14]), (1, 1, 1, 0));
++    set_stored_profiles_enabled_on_channel(&rig.channel, 0xff, &[(nz(3), false)], &backup)
++        .await
++        .unwrap();
++    assert_eq!(rig.mouse.sector(0)[10], 0);
++    let active_off =
++        set_stored_profiles_enabled_on_channel(&rig.channel, 0xff, &[(nz(1), false)], &backup)
++            .await;
++    assert!(matches!(
++        active_off,
++        Err(WriteError::OnboardProfileRejected { .. })
++    ));
++    assert_eq!(
++        rig.mouse.sector(0)[2],
++        1,
++        "profile 1 is in use and stays on"
++    );
++    assert_eq!(rig.backups.lock().unwrap().len(), 2, "one backup per write");
++}
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
+index fabd126e..ee06668a 100644
+--- a/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles.rs
+@@ -33,8 +33,8 @@ mod profile;
+ 
+ pub use profile::{
+     Binding, DPI_LEVELS, LED_ZONES, LedEffect, MacroError, MacroStep, ProfileError, StoredProfile,
+-    crc16, directory_with_enabled, factory_bindings, profile_format_supported, read_stored_macro,
+-    seal_sector, sector_checksum_ok,
++    crc16, directory_with_enabled, directory_with_flags, factory_bindings,
++    profile_format_supported, read_stored_macro, seal_sector, sector_checksum_ok,
+ };
+ 
+ /// Implements the `OnboardProfiles` / `0x8100` feature.
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
+index 40d77c1b..66ccfea9 100644
+--- a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile.rs
+@@ -578,6 +578,30 @@ pub fn directory_with_enabled(
+     Ok(out)
+ }
+ 
++/// The profile directory `dir` with the on/off flags in `changes` applied,
++/// checksum renewed. Only those entries' flag bytes change. Refuses an entry
++/// the directory doesn't hold (an empty `ffff` slot).
++pub fn directory_with_flags(
++    dir: &[u8],
++    changes: &[(NonZeroU8, bool)],
++) -> Result<Vec<u8>, ProfileError> {
++    if !sector_checksum_ok(dir) {
++        return Err(ProfileError::Checksum);
++    }
++    let mut out = dir.to_vec();
++    for &(index, enabled) in changes {
++        let entry = 4 * usize::from(index.get() - 1);
++        if entry + 3 >= dir.len().saturating_sub(2) || dir[entry..entry + 2] == [0xff, 0xff] {
++            return Err(ProfileError::Implausible(
++                "the profile list has no such profile",
++            ));
++        }
++        out[entry + 2] = u8::from(enabled);
++    }
++    seal_sector(&mut out);
++    Ok(out)
++}
++
+ /// One step of a macro stored in onboard memory (macro format 1).
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+ #[cfg_attr(feature = "serde", derive(serde::Serialize))]
+diff --git a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs
+index 55b0e5e0..7ff999c5 100644
+--- a/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs
++++ b/crates/openlogi-hidpp/src/feature/onboard_profiles/profile/tests.rs
+@@ -320,3 +320,16 @@ fn reads_the_stored_macros() {
+         Err(MacroError::Unreadable)
+     );
+ }
++
++#[test]
++fn profile_flags_change_only_their_bytes() {
++    let n = |i| NonZeroU8::new(i).unwrap();
++    let out =
++        directory_with_flags(&DIRECTORY, &[(n(2), true), (n(3), true), (n(1), false)]).unwrap();
++    assert_eq!(changed(&DIRECTORY, &out), [2, 6, 10, 253, 254]);
++    assert_eq!((out[2], out[6], out[10]), (0, 1, 1));
++    assert!(
++        directory_with_flags(&DIRECTORY, &[(n(6), true)]).is_err(),
++        "only five profiles"
++    );
++}
+diff --git a/crates/openlogi-ipc/src/ipc.rs b/crates/openlogi-ipc/src/ipc.rs
+index e4951993..90d6dbce 100644
+--- a/crates/openlogi-ipc/src/ipc.rs
++++ b/crates/openlogi-ipc/src/ipc.rs
+@@ -199,7 +199,8 @@ pub use succession::Identity;
+ ///      OnboardBackupFailed, OnboardWriteNotStored}` and
+ ///      `HidppOperation::WriteOnboard` appended — editing a G-series mouse's
+ ///      stored `0x8100` profiles. `Agent::{read_stored_profiles,
+-///      save_stored_profile, select_stored_profile}` appended, with
++///      save_stored_profile, select_stored_profile,
++///      set_stored_profiles_enabled}` appended, with
+ ///      `StoredProfiles` and the types it carries.
+ pub const PROTOCOL_VERSION: u32 = 47;
+ 
+@@ -1297,4 +1298,12 @@ pub trait Agent {
+         route: DeviceRoute,
+         index: ProfileIndex,
+     ) -> Result<(), WriteError>;
++    /// Switch stored profiles on or off in the mouse's profile list. The
++    /// profile in use can't be switched off, and one profile always stays on.
++    ///
++    /// Appended last — method order is wire format.
++    async fn set_stored_profiles_enabled(
++        route: DeviceRoute,
++        changes: Vec<(ProfileIndex, bool)>,
++    ) -> Result<(), WriteError>;
+ }
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index 1123d8ad..dd2eccd2 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index 178f907a..31c4ce2e 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index c617e8b7..80efa081 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index b769addc..87f9362d 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index f6872539..00faf05b 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index f09f8ea3..87a85b45 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index 610ef0ba..70f14750 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index cd2a091e..a6e3f1c7 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index 28f3a54d..50776a6b 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index 73405527..6e97f64a 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index f4ea52d4..5e3a3874 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index 391c2bc2..630a59ea 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index a0a754f5..b8da6e8c 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index 16bfdc7a..9d757a40 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index 2a035614..579ee8c5 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index ade2f59a..e07cce7d 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index f1f12331..306e8668 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index 4280ff04..195d97ab 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index f7b525b7..5b88282d 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index 82269012..c36bbf8e 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index 27579ef6..1e30e073 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index 35dc42f1..e94f02f2 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index ff8cbfb7..e6905f76 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index 5a7b69fa..3ebe6097 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -1067,3 +1067,8 @@ saved = "Saved to the mouse."
+ nothing_to_save = "Nothing changed."
+ selected = "Profile %{number} is in use."
+ failed = "Not saved: %{error}"
++report_rate = "Saved into the stored profile in use."
++profiles_on_mouse = "Profiles on the mouse"
++profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
++enable_all = "Enable All"
++profiles_changed = "The profile list was saved to the mouse."
 -- 
 2.43.0
 
