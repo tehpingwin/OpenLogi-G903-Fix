@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 1/7] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 1/8] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 2/7] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 2/8] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 3/7] feat(agent): read, save and select stored G-series
+Subject: [PATCH 3/8] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 4/7] feat(desktop): state for editing stored G-series profiles
+Subject: [PATCH 4/8] feat(desktop): state for editing stored G-series profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
 mouse, saves it with the sector bytes it started from, and selects a
@@ -4228,7 +4228,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 5/7] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 5/8] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5853,7 +5853,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 6/7] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 6/8] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8123,7 +8123,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 7/7] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 7/8] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9330,6 +9330,339 @@ index 5a7b69fa..3ebe6097 100644
 +profiles_on_mouse_description = "Profiles that are off can't be chosen above and are skipped by the mouse's profile button. The profile in use stays on."
 +enable_all = "Enable All"
 +profiles_changed = "The profile list was saved to the mouse."
+-- 
+2.43.0
+
+From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 14:55:16 +0000
+Subject: [PATCH 8/8] fix(desktop): show a stored-profile change at once, and
+ keep quick ones
+
+After a save the editor dropped the edit and showed the read from
+before the save until the mouse was read again, so a new report rate
+or binding appeared only after a second click. It now shows what the
+save wrote until the read confirms it.
+
+A change made while a save is in flight is kept and saved right after
+the read, on the bytes the mouse holds by then, instead of being sent
+on a stale base or dropped.
+
+The report-rate row and the button labels are told when stored
+settings change (they only listened for their own events).
+---
+ .../src/state/stored_profiles.rs              | 148 +++++++++++++-----
+ .../src/state/tests/stored_profiles.rs        |  75 +++++++++
+ 2 files changed, 183 insertions(+), 40 deletions(-)
+
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index b841cff2..39e59d41 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -79,6 +79,45 @@ struct Entry {
+     selecting: Option<ProfileIndex>,
+     toggling: bool,
+     notice: Option<StoredProfileNotice>,
++    /// The settings of the save in flight.
++    in_flight: Option<(ProfileIndex, StoredProfileSettings)>,
++    /// What the last save wrote, shown until the next read confirms it: the
++    /// read from before the save is stale until then.
++    applied: Option<(ProfileIndex, StoredProfileSettings)>,
++    /// An edit made while a save was in flight, saved once the mouse has been
++    /// read again (on the bytes the mouse holds by then).
++    resave: bool,
++}
++
++impl Entry {
++    /// What profile `index` holds without the edit: what the last save wrote
++    /// (until a read confirms it), else the read.
++    fn known(&self, index: ProfileIndex) -> Option<&StoredProfileSettings> {
++        if let Some((applied, settings)) = &self.applied
++            && *applied == index
++        {
++            return Some(settings);
++        }
++        let Load::Ready(profiles) = &self.load else {
++            return None;
++        };
++        profiles
++            .profiles
++            .iter()
++            .find(|slot| slot.index == index)?
++            .settings
++            .as_ref()
++            .ok()
++    }
++
++    /// What profile `index` does as far as the editor knows: the edit, else
++    /// [`Self::known`].
++    fn settings(&self, index: ProfileIndex) -> Option<&StoredProfileSettings> {
++        match &self.edit {
++            Some(edit) if edit.index == index => Some(&edit.settings),
++            _ => self.known(index),
++        }
++    }
+ }
+ 
+ /// Every mouse's stored-profile editor state.
+@@ -178,16 +217,7 @@ impl AppState {
+         let Load::Ready(profiles) = &entry.load else {
+             return None;
+         };
+-        let settings = match &entry.edit {
+-            Some(edit) if edit.index == active => &edit.settings,
+-            _ => profiles
+-                .profiles
+-                .iter()
+-                .find(|slot| slot.index == active)?
+-                .settings
+-                .as_ref()
+-                .ok()?,
+-        };
++        let settings = entry.settings(active)?;
+         let layer = if gshift {
+             &settings.shift_buttons
+         } else {
+@@ -249,22 +279,7 @@ impl AppState {
+         let entry = self
+             .current_record()
+             .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
+-        let Load::Ready(profiles) = &entry.load else {
+-            return None;
+-        };
+-        let interval = match &entry.edit {
+-            Some(edit) if edit.index == active => edit.settings.report_interval_ms,
+-            _ => {
+-                profiles
+-                    .profiles
+-                    .iter()
+-                    .find(|slot| slot.index == active)?
+-                    .settings
+-                    .as_ref()
+-                    .ok()?
+-                    .report_interval_ms
+-            }
+-        };
++        let interval = entry.settings(active)?.report_interval_ms;
+         (interval > 0).then(|| 1000 / u16::from(interval))
+     }
+ 
+@@ -392,7 +407,33 @@ impl AppState {
+                     return; // a newer read is in flight
+                 }
+                 entry.load = load_from(result);
+-                cx.emit(StateEvent::OnboardChanged(key.clone()));
++                entry.applied = None;
++                // An edit still open was made on top of what the mouse holds
++                // now: take the fresh bytes as its base.
++                if let (Load::Ready(profiles), Some(edit)) = (&entry.load, entry.edit.as_mut())
++                    && let Some(slot) = profiles
++                        .profiles
++                        .iter()
++                        .find(|slot| slot.index == edit.index)
++                    && let Ok(settings) = &slot.settings
++                {
++                    edit.base = slot.base.clone();
++                    edit.original = settings.clone();
++                }
++                let resave = std::mem::take(&mut entry.resave);
++                if entry.edit.as_ref().is_some_and(|edit| !edit.is_dirty()) {
++                    entry.edit = None;
++                }
++                for event in [
++                    StateEvent::OnboardChanged,
++                    StateEvent::BindingsChanged,
++                    StateEvent::ReportRateChanged,
++                ] {
++                    cx.emit(event(key.clone()));
++                }
++                if resave && state.is_current_device(&key) {
++                    let _ = state.save_stored_profile_edit();
++                }
+             });
+         })
+         .detach();
+@@ -421,14 +462,18 @@ impl AppState {
+             let Some(slot) = profiles.profiles.iter().find(|slot| slot.index == index) else {
+                 return events;
+             };
+-            let Ok(settings) = &slot.settings else {
++            if slot.settings.is_err() {
+                 return events; // shown, but not editable
++            }
++            let base = slot.base.clone();
++            let Some(known) = entry.known(index).cloned() else {
++                return events;
+             };
+             entry.edit = Some(StoredProfileEdit {
+                 index,
+-                settings: settings.clone(),
+-                original: settings.clone(),
+-                base: slot.base.clone(),
++                settings: known.clone(),
++                original: known,
++                base,
+             });
+         }
+         if let Some(current) = entry.edit.as_mut() {
+@@ -451,10 +496,14 @@ impl AppState {
+             entry.notice = Some(StoredProfileNotice::NothingToSave);
+             return events;
+         };
+-        if entry.saving.is_some() {
++        if entry.saving.is_some() || entry.applied.is_some() {
++            // The bytes this edit would be based on are about to change: save
++            // it once the mouse has been read again.
++            entry.resave = true;
+             return events;
+         }
+         entry.saving = Some(request);
++        entry.in_flight = Some((edit.index, edit.settings.clone()));
+         entry.notice = None;
+         if !self.send_ipc(SaveStoredProfile {
+             route,
+@@ -466,6 +515,7 @@ impl AppState {
+         }) {
+             let entry = self.stored_profiles.entry(&key);
+             entry.saving = None;
++            entry.in_flight = None;
+             entry.notice = Some(StoredProfileNotice::Failed(WriteError::AgentUnavailable));
+         }
+         events
+@@ -486,24 +536,42 @@ impl AppState {
+             return; // an answer to a save this state no longer waits for
+         }
+         entry.saving = None;
++        let sent = entry.in_flight.take();
+         entry.notice = Some(match result {
+-            Ok(StoredProfileSave::Saved) => {
+-                entry.edit = None;
+-                StoredProfileNotice::Saved
+-            }
+-            Ok(StoredProfileSave::Unchanged) => {
+-                entry.edit = None;
+-                StoredProfileNotice::NothingToSave
++            Ok(outcome) => {
++                if let Some((index, settings)) = sent {
++                    // Edited further while saving: keep that, measured against
++                    // what is in the mouse now, and save it after the read.
++                    match entry.edit.as_mut() {
++                        Some(edit) if edit.index == index && edit.settings != settings => {
++                            edit.original = settings.clone();
++                            entry.resave = true;
++                        }
++                        _ => entry.edit = None,
++                    }
++                    entry.applied = Some((index, settings));
++                }
++                match outcome {
++                    StoredProfileSave::Saved => StoredProfileNotice::Saved,
++                    StoredProfileSave::Unchanged => StoredProfileNotice::NothingToSave,
++                }
+             }
+             Err(error) => {
+                 warn!(%error, key = %key, "stored profile not saved");
++                entry.resave = false;
+                 if matches!(error, WriteError::OnboardMemoryChanged) {
+                     entry.edit = None; // its base is stale: the next read starts fresh
+                 }
+                 StoredProfileNotice::Failed(error)
+             }
+         });
+-        cx.emit(StateEvent::OnboardChanged(key.clone()));
++        for event in [
++            StateEvent::OnboardChanged,
++            StateEvent::BindingsChanged,
++            StateEvent::ReportRateChanged,
++        ] {
++            cx.emit(event(key.clone()));
++        }
+         if self.is_current_device(key) {
+             self.read_stored_profiles(cx);
+         }
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index 66ca1003..150624c9 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -298,3 +298,78 @@ fn selecting_a_profile_asks_the_agent_and_reads_again(cx: &mut gpui::TestAppCont
+     cx.run_until_parked();
+     assert!(matches!(load(cx), Load::Ready(p) if p.active == Some(index(2))));
+ }
++
++fn rate(cx: &gpui::TestAppContext) -> Option<u16> {
++    cx.read(|cx| AppState::try_read(cx).expect("state").stored_report_rate())
++}
++
++#[gpui::test]
++fn a_saved_rate_shows_at_once_not_after_the_next_click(cx: &mut gpui::TestAppContext) {
++    let (key, mut receiver) = ready(cx);
++    assert_eq!(rate(cx), Some(125));
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            let _ = state.edit_stored_profile(index(1), |s| s.report_interval_ms = 1);
++            state.save_stored_profile_edit()
++        })
++    });
++    assert_eq!(rate(cx), Some(1000), "shown while saving");
++    let save = take_save(&mut receiver);
++    cx.update(|cx| {
++        AppState::update(cx, |state, cx| {
++            state.apply_stored_profile_saved(&key, save.request, Ok(StoredProfileSave::Saved), cx);
++        });
++    });
++    assert_eq!(
++        rate(cx),
++        Some(1000),
++        "shown after the save, before the read confirms it"
++    );
++    let mut confirmed = profiles(1);
++    if let Ok(settings) = &mut confirmed.profiles[0].settings {
++        settings.report_interval_ms = 1;
++    }
++    answer_read(&mut receiver, Ok(confirmed));
++    cx.run_until_parked();
++    assert_eq!(rate(cx), Some(1000), "and after it");
++}
++
++#[gpui::test]
++fn a_change_made_while_saving_is_saved_after_the_read(cx: &mut gpui::TestAppContext) {
++    let (key, mut receiver) = ready(cx);
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            let _ = state.edit_stored_profile(index(1), |s| s.report_interval_ms = 1);
++            state.save_stored_profile_edit()
++        })
++    });
++    let first = take_save(&mut receiver);
++    // A second click while the first save is still on its way.
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            let _ = state.edit_stored_profile(index(1), |s| s.report_interval_ms = 2);
++            state.save_stored_profile_edit()
++        })
++    });
++    assert_eq!(rate(cx), Some(500));
++    cx.update(|cx| {
++        AppState::update(cx, |state, cx| {
++            state.apply_stored_profile_saved(&key, first.request, Ok(StoredProfileSave::Saved), cx);
++        });
++    });
++    assert_eq!(rate(cx), Some(500), "the newer pick stays on screen");
++    let mut after_first = profiles(1);
++    let fresh_base = vec![9; 255];
++    after_first.profiles[0].base = fresh_base.clone();
++    if let Ok(settings) = &mut after_first.profiles[0].settings {
++        settings.report_interval_ms = 1;
++    }
++    answer_read(&mut receiver, Ok(after_first));
++    cx.run_until_parked();
++    let second = take_save(&mut receiver);
++    assert_eq!(second.settings.report_interval_ms, 2);
++    assert_eq!(
++        second.base, fresh_base,
++        "saved on the bytes the mouse holds now"
++    );
++}
 -- 
 2.43.0
 
