@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/17] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/18] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/17] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/18] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/17] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/18] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/17] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/18] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/17] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/18] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/17] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/18] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/17] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/18] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/17] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/18] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/17] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/18] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/17] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/18] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/17] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/18] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/17] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/18] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/17] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/18] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/17] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/18] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/17] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/18] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11632,7 +11632,7 @@ index 105720f2..3d7d27f8 100644
 From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 19:47:10 +0000
-Subject: [PATCH 16/17] feat: user-set levels for the low-battery notice
+Subject: [PATCH 16/18] feat: user-set levels for the low-battery notice
 
 Settings > General gets "Warn at" and "Warn again after" under the
 low-battery notifications switch (number fields, 20 % and 30 % by
@@ -12380,7 +12380,7 @@ index 9a73472c..d79ceb75 100644
 From c22b3b199f3baf5cb1cbd943460bcd762c710866 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:17:44 +0000
-Subject: [PATCH 17/17] feat: user-set time on screen for the low-battery
+Subject: [PATCH 17/18] feat: user-set time on screen for the low-battery
  notice
 
 Settings > General gets "Show the warning for (seconds)" under the
@@ -12917,6 +12917,973 @@ index d79ceb75..edbc6d5f 100644
  low_battery_warn_at = "Warn at (%)"
  low_battery_warn_at_description = "A device's battery is announced as low at or below this charge."
  low_battery_rearm_at = "Warn again after (%)"
+-- 
+2.43.0
+
+From 0d452ce5b32ac1cff0f543e07a8bbb5a32239ad0 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 20:50:38 +0000
+Subject: [PATCH 18/18] feat: choose the display the low-battery notice appears
+ on
+
+Settings > General gets "Show notices on": the display with the
+pointer (as before), the main display, or Display 1-4 by Windows'
+numbering (\\.\DISPLAYn; a number with no display behind it falls back to
+the main one). The choice travels to the overlay with the notices, like
+the locale, and the Windows placement picks that monitor. macOS and
+Linux keep their placement.
+
+Wire: NoticeObservation::display appended (part of PROTOCOL_VERSION 47,
+still unreleased); goldens updated.
+---
+ crates/openlogi-agent-core/src/notices.rs     | 23 ++++--
+ .../openlogi-agent-core/src/notices/tests.rs  |  8 +-
+ .../openlogi-agent-core/src/orchestrator.rs   |  1 +
+ crates/openlogi-core/src/config.rs            |  6 +-
+ crates/openlogi-core/src/config/settings.rs   | 21 ++++++
+ crates/openlogi-desktop/src/state/settings.rs | 14 ++++
+ .../src/windows/settings/general.rs           | 63 ++++++++++++++++
+ crates/openlogi-ipc/src/ipc.rs                |  5 ++
+ crates/openlogi-ipc/tests/wire_format.rs      |  6 +-
+ crates/openlogi-overlay/src/ipc.rs            |  1 +
+ crates/openlogi-overlay/src/ipc/tests.rs      |  1 +
+ crates/openlogi-overlay/src/main.rs           |  1 +
+ crates/openlogi-overlay/src/notice.rs         | 25 +++++++
+ .../src/platform/windows/native.rs            | 75 +++++++++++++++++--
+ crates/openlogi-ui/locales/be.toml            |  5 ++
+ crates/openlogi-ui/locales/cs.toml            |  5 ++
+ crates/openlogi-ui/locales/da.toml            |  5 ++
+ crates/openlogi-ui/locales/de.toml            |  5 ++
+ crates/openlogi-ui/locales/el.toml            |  5 ++
+ crates/openlogi-ui/locales/en.toml            |  5 ++
+ crates/openlogi-ui/locales/es.toml            |  5 ++
+ crates/openlogi-ui/locales/fi.toml            |  5 ++
+ crates/openlogi-ui/locales/fr.toml            |  5 ++
+ crates/openlogi-ui/locales/it.toml            |  5 ++
+ crates/openlogi-ui/locales/ja.toml            |  5 ++
+ crates/openlogi-ui/locales/ko.toml            |  5 ++
+ crates/openlogi-ui/locales/nb.toml            |  5 ++
+ crates/openlogi-ui/locales/nl.toml            |  5 ++
+ crates/openlogi-ui/locales/pl.toml            |  5 ++
+ crates/openlogi-ui/locales/pt-BR.toml         |  5 ++
+ crates/openlogi-ui/locales/pt-PT.toml         |  5 ++
+ crates/openlogi-ui/locales/ru.toml            |  5 ++
+ crates/openlogi-ui/locales/sv.toml            |  5 ++
+ crates/openlogi-ui/locales/tr.toml            |  5 ++
+ crates/openlogi-ui/locales/uk.toml            |  5 ++
+ crates/openlogi-ui/locales/zh-CN.toml         |  5 ++
+ crates/openlogi-ui/locales/zh-HK.toml         |  5 ++
+ crates/openlogi-ui/locales/zh-TW.toml         |  5 ++
+ 38 files changed, 351 insertions(+), 19 deletions(-)
+
+diff --git a/crates/openlogi-agent-core/src/notices.rs b/crates/openlogi-agent-core/src/notices.rs
+index d663bb3d..3fd91cbc 100644
+--- a/crates/openlogi-agent-core/src/notices.rs
++++ b/crates/openlogi-agent-core/src/notices.rs
+@@ -12,7 +12,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
+ use std::sync::{Mutex, MutexGuard, PoisonError};
+ use std::time::Duration;
+ 
+-use openlogi_core::config::AppSettings;
++use openlogi_core::config::{AppSettings, NoticeDisplay};
+ use openlogi_core::device::{BatteryInfo, BatteryLevel, BatteryStatus};
+ use openlogi_ipc::{Generation, Notice, NoticeKind, NoticeObservation, OBSERVE_HOLD};
+ use tokio::sync::watch;
+@@ -30,8 +30,9 @@ struct Posted {
+ enum Locale {
+     /// Keep the one the last post set: an ending notice says nothing about it.
+     Keep,
+-    /// Set the one a new post was made in (`None` follows the overlay host).
+-    Set(Option<String>),
++    /// Set the one a new post was made in (`None` follows the overlay host),
++    /// and the display it shows on.
++    Set(Option<String>, NoticeDisplay),
+ }
+ 
+ /// The notices the overlay should be showing, and the cell it observes.
+@@ -48,6 +49,7 @@ impl Default for NoticeBoard {
+             generation: 1,
+             notices: Vec::new(),
+             language: None,
++            display: NoticeDisplay::default(),
+         });
+         Self {
+             next_id: AtomicU64::new(1),
+@@ -61,12 +63,18 @@ impl NoticeBoard {
+     /// Show `kind` for [`NOTICE_LIFETIME`], in the UI locale `language`
+     /// (`None` follows the overlay host's system locale).
+     pub fn post(&self, kind: NoticeKind, language: Option<String>) {
+-        self.post_for(kind, language, NOTICE_LIFETIME);
++        self.post_for(kind, language, NOTICE_LIFETIME, NoticeDisplay::default());
+     }
+ 
+     /// [`Self::post`] for `lifetime` instead (the low-battery notice stays as
+     /// long as the user set).
+-    pub fn post_for(&self, kind: NoticeKind, language: Option<String>, lifetime: Duration) {
++    pub fn post_for(
++        &self,
++        kind: NoticeKind,
++        language: Option<String>,
++        lifetime: Duration,
++        display: NoticeDisplay,
++    ) {
+         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
+         let now = Instant::now();
+         let mut posted = self.posted();
+@@ -77,7 +85,7 @@ impl NoticeBoard {
+             notice: Notice { id, kind },
+             ends: now + lifetime,
+         });
+-        self.publish(&posted, Locale::Set(language));
++        self.publish(&posted, Locale::Set(language, display));
+     }
+ 
+     /// Serve one [`Agent::observe_notices`](openlogi_ipc::Agent::observe_notices):
+@@ -121,8 +129,9 @@ impl NoticeBoard {
+     fn publish(&self, posted: &[Posted], locale: Locale) {
+         let notices: Vec<Notice> = posted.iter().map(|posted| posted.notice.clone()).collect();
+         self.published.send_modify(|observed| {
+-            if let Locale::Set(language) = locale {
++            if let Locale::Set(language, display) = locale {
+                 observed.language = language;
++                observed.display = display;
+             }
+             observed.notices = notices;
+             observed.generation += 1;
+diff --git a/crates/openlogi-agent-core/src/notices/tests.rs b/crates/openlogi-agent-core/src/notices/tests.rs
+index 2cf709c5..3662278b 100644
+--- a/crates/openlogi-agent-core/src/notices/tests.rs
++++ b/crates/openlogi-agent-core/src/notices/tests.rs
+@@ -348,7 +348,12 @@ fn a_rearm_level_under_the_warning_level_is_lifted_above_it() {
+ #[tokio::test(start_paused = true)]
+ async fn a_notice_posted_for_longer_stays_longer() {
+     let board = NoticeBoard::default();
+-    board.post_for(low_battery("MX"), None, Duration::from_secs(30));
++    board.post_for(
++        low_battery("MX"),
++        None,
++        Duration::from_secs(30),
++        openlogi_core::config::NoticeDisplay::Primary,
++    );
+     let shown = board.observe(0).await;
+     tokio::time::advance(NOTICE_LIFETIME + Duration::from_secs(1)).await;
+     let later = board.observe(0).await;
+@@ -357,6 +362,7 @@ async fn a_notice_posted_for_longer_stays_longer() {
+         1,
+         "still on screen after the usual time"
+     );
++    assert_eq!(later.display, openlogi_core::config::NoticeDisplay::Primary);
+     tokio::time::advance(Duration::from_secs(30)).await;
+     let ended = board.observe(shown.generation).await;
+     assert!(ended.notices.is_empty(), "gone once its own time is up");
+diff --git a/crates/openlogi-agent-core/src/orchestrator.rs b/crates/openlogi-agent-core/src/orchestrator.rs
+index 9db1cc7a..580cb5be 100644
+--- a/crates/openlogi-agent-core/src/orchestrator.rs
++++ b/crates/openlogi-agent-core/src/orchestrator.rs
+@@ -1839,6 +1839,7 @@ impl Orchestrator {
+                 },
+                 self.config.app_settings.language.clone(),
+                 lifetime,
++                self.config.app_settings.notice_display,
+             );
+         }
+     }
+diff --git a/crates/openlogi-core/src/config.rs b/crates/openlogi-core/src/config.rs
+index a4f6096b..799ed248 100644
+--- a/crates/openlogi-core/src/config.rs
++++ b/crates/openlogi-core/src/config.rs
+@@ -56,9 +56,9 @@ pub use settings::LightSettings;
+ pub use settings::{
+     AppIcon, AppSettings, Appearance, AssetSourcePreference, CameraControls, CameraStreamMode,
+     DeviceViewMode, GKeyOwner, GamingKeyMode, GlideShape, Lighting, MomentumParams,
+-    MomentumScrolling, MouseProfileTarget, OnboardMemory, SMARTSHIFT_AUTO_DISENGAGE_DEFAULT,
+-    SMARTSHIFT_MIN_AUTO_DISENGAGE, ScrollResolution, SmartShift, ThumbwheelSensitivity, UiScale,
+-    VerticalScrollSensitivity, WheelMode,
++    MomentumScrolling, MouseProfileTarget, NoticeDisplay, OnboardMemory,
++    SMARTSHIFT_AUTO_DISENGAGE_DEFAULT, SMARTSHIFT_MIN_AUTO_DISENGAGE, ScrollResolution, SmartShift,
++    ThumbwheelSensitivity, UiScale, VerticalScrollSensitivity, WheelMode,
+ };
+ 
+ use crate::app::AppAliases;
+diff --git a/crates/openlogi-core/src/config/settings.rs b/crates/openlogi-core/src/config/settings.rs
+index a785c1f9..1ea45193 100644
+--- a/crates/openlogi-core/src/config/settings.rs
++++ b/crates/openlogi-core/src/config/settings.rs
+@@ -317,6 +317,9 @@ pub struct AppSettings {
+     /// How long the low-battery notice stays on screen, in seconds.
+     #[serde(default = "default_low_battery_notice_seconds")]
+     pub low_battery_notice_seconds: u16,
++    /// Which display the overlay's notices appear on.
++    #[serde(default)]
++    pub notice_display: NoticeDisplay,
+     /// Whether the overlay briefly shows a lock key a keyboard turned on or
+     /// off. **On by default.** Caps Lock shows on every platform; Num Lock
+     /// and Scroll Lock do not show on macOS, as in Logi Options+ (see
+@@ -536,6 +539,7 @@ impl Default for AppSettings {
+             low_battery_warn_percent: default_low_battery_warn_percent(),
+             low_battery_rearm_percent: default_low_battery_rearm_percent(),
+             low_battery_notice_seconds: default_low_battery_notice_seconds(),
++            notice_display: NoticeDisplay::default(),
+             lock_key_notifications: true,
+             animate_desktop_switch: true,
+         }
+@@ -1232,3 +1236,20 @@ const fn default_low_battery_rearm_percent() -> u8 {
+ const fn default_low_battery_notice_seconds() -> u16 {
+     8
+ }
++
++/// Which display the overlay's notices appear on.
++///
++/// Crosses the agent↔overlay IPC in `NoticeObservation`: variant order is
++/// wire format.
++#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
++#[serde(rename_all = "snake_case")]
++pub enum NoticeDisplay {
++    /// The display the pointer is on when the notice appears.
++    #[default]
++    Pointer,
++    /// The display the system calls primary.
++    Primary,
++    /// The display the system numbers `n` (`\\.\DISPLAYn` on Windows), or the
++    /// primary one when there is no such display.
++    Numbered(u8),
++}
+diff --git a/crates/openlogi-desktop/src/state/settings.rs b/crates/openlogi-desktop/src/state/settings.rs
+index ea12351d..b6c9b6de 100644
+--- a/crates/openlogi-desktop/src/state/settings.rs
++++ b/crates/openlogi-desktop/src/state/settings.rs
+@@ -410,6 +410,20 @@ impl AppState {
+         StateEvent::SettingsChanged.into()
+     }
+ 
++    /// Set the display the overlay's notices appear on, and persist it.
++    pub fn commit_notice_display(
++        &mut self,
++        display: openlogi_core::config::NoticeDisplay,
++    ) -> StateEvents {
++        if self.config.app_settings.notice_display == display {
++            return StateEvent::SettingsChanged.into();
++        }
++        self.config
++            .edit(|config| config.app_settings.notice_display = display);
++        self.persist_and_reload("notice display");
++        StateEvent::SettingsChanged.into()
++    }
++
+     /// Set how long the low-battery notice stays on screen, and persist it.
+     pub fn commit_low_battery_notice_seconds(&mut self, seconds: u16) -> StateEvents {
+         let seconds = seconds.clamp(2, 600);
+diff --git a/crates/openlogi-desktop/src/windows/settings/general.rs b/crates/openlogi-desktop/src/windows/settings/general.rs
+index 2acf0011..0ef198ee 100644
+--- a/crates/openlogi-desktop/src/windows/settings/general.rs
++++ b/crates/openlogi-desktop/src/windows/settings/general.rs
+@@ -99,6 +99,7 @@ pub(super) fn general_page(
+         .item(low_battery_warn_item())
+         .item(low_battery_rearm_item())
+         .item(low_battery_notice_seconds_item())
++        .item(notice_display_item())
+         .item(lock_key_notifications_item());
+ 
+     // Momentum scrolling's app-wide default. A mouse can set its own on its
+@@ -271,6 +272,68 @@ fn low_battery_notice_seconds_item() -> SettingItem {
+     .description(tr!("app.low_battery_notice_seconds_description"))
+ }
+ 
++/// The displays offered by number. Windows numbers them from 1; a number
++/// with no display behind it falls back to the main display.
++const NUMBERED_DISPLAYS: u8 = 4;
++
++fn notice_display_key(display: openlogi_core::config::NoticeDisplay) -> SharedString {
++    use openlogi_core::config::NoticeDisplay;
++    match display {
++        NoticeDisplay::Pointer => "pointer".into(),
++        NoticeDisplay::Primary => "primary".into(),
++        NoticeDisplay::Numbered(number) => format!("display-{number}").into(),
++    }
++}
++
++fn notice_display_from_key(key: &str) -> openlogi_core::config::NoticeDisplay {
++    use openlogi_core::config::NoticeDisplay;
++    match key {
++        "primary" => NoticeDisplay::Primary,
++        _ => key
++            .strip_prefix("display-")
++            .and_then(|number| number.parse().ok())
++            .map_or(NoticeDisplay::Pointer, NoticeDisplay::Numbered),
++    }
++}
++
++/// The display the overlay's notices appear on.
++fn notice_display_item() -> SettingItem {
++    use openlogi_core::config::NoticeDisplay;
++    let mut options: Vec<(SharedString, SharedString)> = vec![
++        (
++            notice_display_key(NoticeDisplay::Pointer),
++            tr!("app.notice_display_pointer"),
++        ),
++        (
++            notice_display_key(NoticeDisplay::Primary),
++            tr!("app.notice_display_primary"),
++        ),
++    ];
++    options.extend((1..=NUMBERED_DISPLAYS).map(|number| {
++        (
++            notice_display_key(NoticeDisplay::Numbered(number)),
++            tr!("app.notice_display_number", number => number),
++        )
++    }));
++    SettingItem::new(
++        tr!("app.notice_display"),
++        SettingField::dropdown(
++            options,
++            |cx| {
++                notice_display_key(
++                    AppState::try_read(cx)
++                        .map_or_else(NoticeDisplay::default, |s| s.app_settings().notice_display),
++                )
++            },
++            |key, cx| {
++                let display = notice_display_from_key(&key);
++                AppState::apply(cx, |state| state.commit_notice_display(display));
++            },
++        ),
++    )
++    .description(tr!("app.notice_display_description"))
++}
++
+ /// A number field's value as whole seconds.
+ #[expect(
+     clippy::cast_possible_truncation,
+diff --git a/crates/openlogi-ipc/src/ipc.rs b/crates/openlogi-ipc/src/ipc.rs
+index 90d6dbce..0539ece3 100644
+--- a/crates/openlogi-ipc/src/ipc.rs
++++ b/crates/openlogi-ipc/src/ipc.rs
+@@ -202,6 +202,8 @@ pub use succession::Identity;
+ ///      save_stored_profile, select_stored_profile,
+ ///      set_stored_profiles_enabled}` appended, with
+ ///      `StoredProfiles` and the types it carries.
++// v47 (cont.): `NoticeObservation::display` appended — the display the
++// overlay's notices appear on.
+ pub const PROTOCOL_VERSION: u32 = 47;
+ 
+ /// Environment variable through which the agent hands a supervised helper the
+@@ -943,6 +945,9 @@ pub struct NoticeObservation {
+     /// Configured UI locale, or `None` to follow the overlay host's system
+     /// locale.
+     pub language: Option<String>,
++    /// The display to show the notices on. Appended last — field order is
++    /// wire format.
++    pub display: openlogi_core::config::NoticeDisplay,
+ }
+ 
+ /// Why an Actions Ring interaction command was rejected.
+diff --git a/crates/openlogi-ipc/tests/wire_format.rs b/crates/openlogi-ipc/tests/wire_format.rs
+index fed9c1de..39e6f790 100644
+--- a/crates/openlogi-ipc/tests/wire_format.rs
++++ b/crates/openlogi-ipc/tests/wire_format.rs
+@@ -434,16 +434,18 @@ fn notices() {
+                 },
+             }],
+             language: Some("de".into()),
++            display: openlogi_core::config::NoticeDisplay::Pointer,
+         },
+-        "0301020001024d5800010f010001026465",
++        "0301020001024d5800010f01000102646500",
+     );
+     assert_wire(
+         &NoticeObservation {
+             generation: 1,
+             notices: Vec::new(),
+             language: None,
++            display: openlogi_core::config::NoticeDisplay::Numbered(2),
+         },
+-        "010000",
++        "0100000202",
+     );
+ }
+ 
+diff --git a/crates/openlogi-overlay/src/ipc.rs b/crates/openlogi-overlay/src/ipc.rs
+index f246f4c9..0876f7b6 100644
+--- a/crates/openlogi-overlay/src/ipc.rs
++++ b/crates/openlogi-overlay/src/ipc.rs
+@@ -168,6 +168,7 @@ const fn no_notices() -> NoticeObservation {
+         generation: 0,
+         notices: Vec::new(),
+         language: None,
++        display: openlogi_core::config::NoticeDisplay::Pointer,
+     }
+ }
+ 
+diff --git a/crates/openlogi-overlay/src/ipc/tests.rs b/crates/openlogi-overlay/src/ipc/tests.rs
+index 1bb7e1c7..b7b5c657 100644
+--- a/crates/openlogi-overlay/src/ipc/tests.rs
++++ b/crates/openlogi-overlay/src/ipc/tests.rs
+@@ -255,6 +255,7 @@ fn low_battery_notice() -> NoticeObservation {
+             },
+         }],
+         language: None,
++        display: openlogi_core::config::NoticeDisplay::Pointer,
+     }
+ }
+ 
+diff --git a/crates/openlogi-overlay/src/main.rs b/crates/openlogi-overlay/src/main.rs
+index 802f060a..ab5ed141 100644
+--- a/crates/openlogi-overlay/src/main.rs
++++ b/crates/openlogi-overlay/src/main.rs
+@@ -90,6 +90,7 @@ fn main() -> Result<()> {
+         cx.spawn(async move |cx| {
+             while let Some(observed) = notices.recv().await {
+                 openlogi_core::locale::activate(observed.language.as_deref());
++                notice::set_display(observed.display);
+                 // Connect before the shelf records the list as shown, so a
+                 // list that could not be shown is still new the next time.
+                 if !observed.notices.is_empty()
+diff --git a/crates/openlogi-overlay/src/notice.rs b/crates/openlogi-overlay/src/notice.rs
+index 1a0dc266..44670079 100644
+--- a/crates/openlogi-overlay/src/notice.rs
++++ b/crates/openlogi-overlay/src/notice.rs
+@@ -139,6 +139,31 @@ pub(crate) fn bottom_centre(
+     desired.clamp(&area.origin, &max)
+ }
+ 
++/// The display the agent last asked notices to show on.
++static DISPLAY: std::sync::Mutex<openlogi_core::config::NoticeDisplay> =
++    std::sync::Mutex::new(openlogi_core::config::NoticeDisplay::Pointer);
++
++/// Record the display the agent asks notices to show on.
++pub(crate) fn set_display(display: openlogi_core::config::NoticeDisplay) {
++    if let Ok(mut current) = DISPLAY.lock() {
++        *current = display;
++    }
++}
++
++/// The display notices show on.
++#[cfg_attr(
++    not(target_os = "windows"),
++    expect(
++        dead_code,
++        reason = "only the Windows placement chooses a display so far"
++    )
++)]
++pub(crate) fn display() -> openlogi_core::config::NoticeDisplay {
++    DISPLAY
++        .lock()
++        .map_or_else(|_| openlogi_core::config::NoticeDisplay::Pointer, |d| *d)
++}
++
+ /// Appearance shared by the platform-specific notice placements.
+ pub(crate) fn notice_window_options() -> WindowOptions {
+     WindowOptions {
+diff --git a/crates/openlogi-overlay/src/platform/windows/native.rs b/crates/openlogi-overlay/src/platform/windows/native.rs
+index 9df10a36..29c436a6 100644
+--- a/crates/openlogi-overlay/src/platform/windows/native.rs
++++ b/crates/openlogi-overlay/src/platform/windows/native.rs
+@@ -5,16 +5,18 @@
+ 
+ use anyhow::{Context as _, Result, ensure};
+ use gpui::{App, Bounds, DevicePixels, DisplayId, Pixels, Point, Size, Window, point, size};
++use openlogi_core::config::NoticeDisplay;
+ use raw_window_handle::{HasWindowHandle as _, RawWindowHandle};
+ use tracing::{debug, warn};
+ use windows_sys::Win32::Foundation::{HWND, POINT, RECT};
++use windows_sys::Win32::Foundation::{LPARAM, TRUE};
+ use windows_sys::Win32::Graphics::Dwm::{
+     DWMWA_BORDER_COLOR, DWMWA_COLOR_NONE, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_DONOTROUND,
+     DwmSetWindowAttribute,
+ };
+ use windows_sys::Win32::Graphics::Gdi::{
+-    GetMonitorInfoW, MONITOR_DEFAULTTONEAREST, MONITOR_DEFAULTTOPRIMARY, MONITORINFO,
+-    MonitorFromPoint, MonitorFromWindow,
++    EnumDisplayMonitors, GetMonitorInfoW, HDC, HMONITOR, MONITOR_DEFAULTTONEAREST,
++    MONITOR_DEFAULTTOPRIMARY, MONITORINFO, MONITORINFOEXW, MonitorFromPoint, MonitorFromWindow,
+ };
+ use windows_sys::Win32::UI::HiDpi::{GetDpiForMonitor, GetDpiForWindow, MDT_EFFECTIVE_DPI};
+ use windows_sys::Win32::UI::WindowsAndMessaging::{
+@@ -27,7 +29,7 @@ use super::{NoticePlacement, RingPlacement};
+ 
+ impl RingPlacement {
+     pub(crate) fn capture(_cx: &mut App, edge: Pixels) -> Result<Self> {
+-        let sample = sample_monitor()?;
++        let sample = sample_monitor(NoticeDisplay::Pointer)?;
+         Ok(Self {
+             display_id: sample.display_id,
+             cursor: sample.cursor,
+@@ -46,7 +48,7 @@ impl RingPlacement {
+ 
+ impl NoticePlacement {
+     pub(crate) fn capture(_cx: &mut App, size: Size<Pixels>) -> Result<Self> {
+-        let sample = sample_monitor()?;
++        let sample = sample_monitor(crate::notice::display())?;
+         Ok(Self {
+             display_id: sample.display_id,
+             display: sample.display,
+@@ -63,6 +65,54 @@ impl NoticePlacement {
+     }
+ }
+ 
++/// The monitor Windows names `\\.\DISPLAY{number}`, if there is one.
++#[expect(
++    unsafe_code,
++    reason = "read-only Win32 monitor enumeration with checked outputs"
++)]
++fn numbered_monitor(number: u8) -> Option<HMONITOR> {
++    struct Search {
++        name: Vec<u16>,
++        found: Option<HMONITOR>,
++    }
++    unsafe extern "system" fn visit(monitor: HMONITOR, _: HDC, _: *mut RECT, data: LPARAM) -> i32 {
++        // SAFETY: `data` is the `Search` passed below, alive for the whole
++        // enumeration; the info struct is sized for the extended form.
++        unsafe {
++            let search = &mut *(data as *mut Search);
++            let mut info: MONITORINFOEXW = std::mem::zeroed();
++            info.monitorInfo.cbSize = std::mem::size_of::<MONITORINFOEXW>() as u32;
++            if GetMonitorInfoW(monitor, (&raw mut info).cast::<MONITORINFO>()) != 0 {
++                let len = info
++                    .szDevice
++                    .iter()
++                    .position(|&c| c == 0)
++                    .unwrap_or(info.szDevice.len());
++                if info.szDevice[..len] == search.name[..] {
++                    search.found = Some(monitor);
++                    return 0; // stop
++                }
++            }
++        }
++        TRUE
++    }
++    let mut search = Search {
++        name: format!("\\\\.\\DISPLAY{number}").encode_utf16().collect(),
++        found: None,
++    };
++    // SAFETY: a null HDC and clip enumerate every monitor; `search` outlives
++    // the call, which only hands it back to `visit`.
++    unsafe {
++        EnumDisplayMonitors(
++            std::ptr::null_mut(),
++            std::ptr::null(),
++            Some(visit),
++            (&raw mut search) as LPARAM,
++        );
++    }
++    search.found
++}
++
+ /// One reading of the cursor and the monitor under it.
+ struct MonitorSample {
+     display_id: DisplayId,
+@@ -79,12 +129,25 @@ struct MonitorSample {
+     unsafe_code,
+     reason = "read-only Win32 cursor and monitor queries with checked outputs"
+ )]
+-fn sample_monitor() -> Result<MonitorSample> {
++fn sample_monitor(choice: NoticeDisplay) -> Result<MonitorSample> {
+     let mut cursor = POINT::default();
+     // SAFETY: cursor is writable for the duration of the call. This GPUI
+     // process is PerMonitorV2-aware, so GetCursorPos returns physical pixels.
+     let has_cursor = unsafe { GetCursorPos(&raw mut cursor) } != 0;
+-    let monitor = if has_cursor {
++    let chosen = match choice {
++        NoticeDisplay::Pointer => None,
++        // SAFETY: a null HWND plus DEFAULTTOPRIMARY selects the primary.
++        NoticeDisplay::Primary => {
++            Some(unsafe { MonitorFromWindow(std::ptr::null_mut(), MONITOR_DEFAULTTOPRIMARY) })
++        }
++        NoticeDisplay::Numbered(number) => Some(numbered_monitor(number).unwrap_or_else(|| {
++            // SAFETY: as above; no such display, so the primary one.
++            unsafe { MonitorFromWindow(std::ptr::null_mut(), MONITOR_DEFAULTTOPRIMARY) }
++        })),
++    };
++    let monitor = if let Some(monitor) = chosen {
++        monitor
++    } else if has_cursor {
+         // SAFETY: POINT is passed by value. Use this same sample for both
+         // selection and positioning, never a second cursor read.
+         unsafe { MonitorFromPoint(cursor, MONITOR_DEFAULTTONEAREST) }
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index a205e411..a3f13c75 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -54,6 +54,11 @@ enable = "Уключыць"
+ not_now = "Не зараз"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index f882dcab..bdaedecb 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -54,6 +54,11 @@ enable = "Povolit"
+ not_now = "Teď ne"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index f894db01..94036b24 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -54,6 +54,11 @@ enable = "Aktivér"
+ not_now = "Ikke nu"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index 3d471401..11e82b58 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -54,6 +54,11 @@ enable = "Aktivieren"
+ not_now = "Nicht jetzt"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index 1f411a10..7adf8008 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -54,6 +54,11 @@ enable = "Ενεργοποίηση"
+ not_now = "Όχι τώρα"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index c64c2378..04c73d5a 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -54,6 +54,11 @@ enable = "Enable"
+ not_now = "Not now"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index fd358e80..8c398143 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -54,6 +54,11 @@ enable = "Activar"
+ not_now = "Ahora no"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index b6fd1c22..400604bb 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -54,6 +54,11 @@ enable = "Ota käyttöön"
+ not_now = "Ei nyt"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index 9e9a50bd..e8dcf881 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -54,6 +54,11 @@ enable = "Activer"
+ not_now = "Pas maintenant"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index 8354f027..70a5577e 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -54,6 +54,11 @@ enable = "Abilita"
+ not_now = "Non ora"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index fdd98c16..86941643 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -54,6 +54,11 @@ enable = "有効にする"
+ not_now = "今はしない"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index fe546296..69adf5bc 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -54,6 +54,11 @@ enable = "활성화"
+ not_now = "나중에"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index ae0be013..223facc7 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -54,6 +54,11 @@ enable = "Aktiver"
+ not_now = "Ikke nå"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index f5d2bc2a..e16ed9c7 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -54,6 +54,11 @@ enable = "Inschakelen"
+ not_now = "Niet nu"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index f1f3bfe9..8b333d79 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -54,6 +54,11 @@ enable = "Włącz"
+ not_now = "Nie teraz"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index e93e786a..d58d7f5e 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -54,6 +54,11 @@ enable = "Ativar"
+ not_now = "Agora não"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index ffe20fe4..b076d560 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -54,6 +54,11 @@ enable = "Ativar"
+ not_now = "Agora não"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index 81707ed4..e72629fa 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -54,6 +54,11 @@ enable = "Включить"
+ not_now = "Не сейчас"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index 55ac7925..99fca2b3 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -54,6 +54,11 @@ enable = "Aktivera"
+ not_now = "Inte nu"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index a406fdd0..e4246b9e 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -54,6 +54,11 @@ enable = "Etkinleştir"
+ not_now = "Şimdi değil"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index bbe02f3b..7f3f2d9c 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -54,6 +54,11 @@ enable = "Увімкнути"
+ not_now = "Не зараз"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index 3389e38d..58159ea1 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -54,6 +54,11 @@ enable = "启用"
+ not_now = "暂不"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index 7b22374f..aa1d4446 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -54,6 +54,11 @@ enable = "啟用"
+ not_now = "暫不"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index edbc6d5f..489b5b84 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -54,6 +54,11 @@ enable = "啟用"
+ not_now = "暫不"
+ 
+ [app]
++notice_display = "Show notices on"
++notice_display_description = "Where the low-battery warning appears. Windows numbers your displays in Settings > System > Display (Identify)."
++notice_display_pointer = "The display with the mouse pointer"
++notice_display_primary = "The main display"
++notice_display_number = "Display %{number}"
+ low_battery_notice_seconds = "Show the warning for (seconds)"
+ low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
+ low_battery_warn_at = "Warn at (%)"
 -- 
 2.43.0
 
