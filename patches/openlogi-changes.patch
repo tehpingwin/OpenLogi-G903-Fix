@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/11] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/12] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/11] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/12] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/11] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/12] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/11] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/12] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/11] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/12] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/11] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/12] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/11] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/12] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/11] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/12] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/11] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/12] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/11] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/12] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/11] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/12] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10684,6 +10684,90 @@ index 7aad3f11..57c65a4c 100644
      let expected = StoredLed::Fixed(openlogi_core::color::Rgb::new(100, 50, 0));
      assert_eq!(
          save.settings.leds, [expected; 2],
+-- 
+2.43.0
+
+From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 17:27:25 +0000
+Subject: [PATCH 12/12] fix(desktop): tell a stored color's pick and brightness
+ apart without config
+
+With OpenLogi's remembered mouse color cleared, the Lighting tab had
+nothing to compare the stored color (brightness folded in) against: it
+showed the dimmed color at 100 %, and each brightness change would have
+dimmed it again. The last pick is now kept in memory for this.
+---
+ .../src/state/stored_profiles.rs                 | 16 ++++++++++++----
+ .../src/state/tests/stored_profiles.rs           |  4 +++-
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index 39d54704..a208ee0c 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -99,6 +99,10 @@ struct Entry {
+     /// An edit made while a save was in flight, saved once the mouse has been
+     /// read again (on the bytes the mouse holds by then).
+     resave: bool,
++    /// The lighting last picked for the stored profile, kept in memory only:
++    /// the profile stores the color with the brightness folded in, so this
++    /// is what tells the picked color and brightness apart again.
++    picked_lighting: Option<Lighting>,
+ }
+ 
+ impl Entry {
+@@ -428,12 +432,13 @@ impl AppState {
+         let entry = self
+             .current_record()
+             .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
++        let picked = entry.picked_lighting.as_ref().unwrap_or(configured);
+         match entry.settings(active)?.leds[0] {
+-            // What OpenLogi last set, if the mouse holds exactly that.
+-            StoredLed::Fixed(color) if color == dimmed(configured.color, configured.brightness) => {
++            // What was last picked, if the mouse holds exactly that.
++            StoredLed::Fixed(color) if color == dimmed(picked.color, picked.brightness) => {
+                 Some(Lighting {
+                     enabled: true,
+-                    ..configured.clone()
++                    ..picked.clone()
+                 })
+             }
+             StoredLed::Fixed(color) => Some(Lighting {
+@@ -443,7 +448,7 @@ impl AppState {
+             }),
+             StoredLed::Off => Some(Lighting {
+                 enabled: false,
+-                ..configured.clone()
++                ..picked.clone()
+             }),
+             _ => None,
+         }
+@@ -461,6 +466,9 @@ impl AppState {
+         } else {
+             StoredLed::Off
+         };
++        if let Some(key) = self.current_record().map(DeviceRecord::device_key) {
++            self.stored_profiles.entry(&key).picked_lighting = Some(lighting.clone());
++        }
+         let _ = self.edit_stored_profile(active, |settings| settings.leds = [led; 2]);
+         let _ = self.save_stored_profile_edit();
+         true
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index 57c65a4c..45527357 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -422,7 +422,9 @@ fn a_lighting_change_goes_into_both_stored_lights(cx: &mut gpui::TestAppContext)
+     });
+     let commands = drain(&mut receiver);
+     assert!(
+-        !commands.iter().any(|command| matches!(command, Command::SetLighting(_))),
++        !commands
++            .iter()
++            .any(|command| matches!(command, Command::SetLighting(_))),
+         "no live write: it would take the mouse's lights into software control"
+     );
+     let save = commands
 -- 
 2.43.0
 
