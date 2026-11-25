@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/18] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/19] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/18] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/19] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/18] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/19] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/18] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/19] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/18] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/19] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/18] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/19] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/18] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/19] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/18] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/19] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/18] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/19] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/18] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/19] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/18] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/19] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/18] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/19] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/18] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/19] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/18] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/19] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/18] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/19] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11632,7 +11632,7 @@ index 105720f2..3d7d27f8 100644
 From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 19:47:10 +0000
-Subject: [PATCH 16/18] feat: user-set levels for the low-battery notice
+Subject: [PATCH 16/19] feat: user-set levels for the low-battery notice
 
 Settings > General gets "Warn at" and "Warn again after" under the
 low-battery notifications switch (number fields, 20 % and 30 % by
@@ -12380,7 +12380,7 @@ index 9a73472c..d79ceb75 100644
 From c22b3b199f3baf5cb1cbd943460bcd762c710866 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:17:44 +0000
-Subject: [PATCH 17/18] feat: user-set time on screen for the low-battery
+Subject: [PATCH 17/19] feat: user-set time on screen for the low-battery
  notice
 
 Settings > General gets "Show the warning for (seconds)" under the
@@ -12923,7 +12923,7 @@ index d79ceb75..edbc6d5f 100644
 From 0d452ce5b32ac1cff0f543e07a8bbb5a32239ad0 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:50:38 +0000
-Subject: [PATCH 18/18] feat: choose the display the low-battery notice appears
+Subject: [PATCH 18/19] feat: choose the display the low-battery notice appears
  on
 
 Settings > General gets "Show notices on": the display with the
@@ -13884,6 +13884,150 @@ index edbc6d5f..489b5b84 100644
  low_battery_notice_seconds = "Show the warning for (seconds)"
  low_battery_notice_seconds_description = "How long the low-battery notice stays on screen."
  low_battery_warn_at = "Warn at (%)"
+-- 
+2.43.0
+
+From 8eb9887b864a64d0c27a48dd1cb290cb8a9f35a2 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 22:06:04 +0000
+Subject: [PATCH 19/19] feat(agent): the Windows tray keeps a device's last
+ battery when it is offline
+
+An offline device read "Name: Offline". It now reads "Name: 56%
+(Offline)" with the last battery it reported, remembered across agent
+runs in state_dir()/tray-battery.json (a device asleep since before the
+agent started has no reading in the snapshot).
+---
+ crates/openlogi-agent/src/tray_windows.rs | 82 ++++++++++++++++++++---
+ 1 file changed, 74 insertions(+), 8 deletions(-)
+
+diff --git a/crates/openlogi-agent/src/tray_windows.rs b/crates/openlogi-agent/src/tray_windows.rs
+index 696b0a39..b2f2a318 100644
+--- a/crates/openlogi-agent/src/tray_windows.rs
++++ b/crates/openlogi-agent/src/tray_windows.rs
+@@ -25,9 +25,12 @@
+     reason = "raw win32: Shell_NotifyIconW + a hidden window's message pump — localized here"
+ )]
+ use std::cell::RefCell;
++use std::collections::HashMap;
+ use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
+ use std::sync::{Arc, Mutex, OnceLock};
+ 
++use openlogi_core::device::BatteryInfo;
++
+ use openlogi_agent_core::observable::ObservableState;
+ use openlogi_core::config::Config;
+ use openlogi_ipc::Observation;
+@@ -66,6 +69,10 @@ static OBSERVABLE: OnceLock<Arc<ObservableState>> = OnceLock::new();
+ static CONFIG: Mutex<Option<Arc<Config>>> = Mutex::new(None);
+ /// The tray window, once made (`0` before), for posting refreshes to.
+ static TRAY_HWND: AtomicUsize = AtomicUsize::new(0);
++/// Each device's last battery reading, by its device link, so a device that
++/// is offline (even since before the agent started) still shows it.
++static LAST_BATTERY: Mutex<Option<HashMap<String, BatteryInfo>>> = Mutex::new(None);
++const LAST_BATTERY_FILE: &str = "tray-battery.json";
+ /// Menu command ids returned by `TrackPopupMenu`.
+ const ID_SHOW: usize = 1;
+ const ID_QUIT: usize = 2;
+@@ -453,8 +460,11 @@ pub async fn watch_devices(mut changes: watch::Receiver<Observation>) {
+     }
+ }
+ 
+-/// One line per device: its name and battery (or that it is offline).
++/// One line per device: its name and battery, and "(Offline)" for a device
++/// out of reach, with the last battery it reported.
+ fn device_lines() -> Vec<String> {
++    use crate::tray_model::{DeviceState, battery_text};
++
+     let Some(observable) = OBSERVABLE.get() else {
+         return Vec::new();
+     };
+@@ -463,22 +473,78 @@ fn device_lines() -> Vec<String> {
+         .ok()
+         .and_then(|config| config.clone())
+         .unwrap_or_default();
+-    crate::tray_model::TrayMenu::new(&observable.snapshot(), &config)
+-        .devices
++    let rows = crate::tray_model::TrayMenu::new(&observable.snapshot(), &config).devices;
++    let Ok(mut remembered) = LAST_BATTERY.lock() else {
++        return Vec::new();
++    };
++    let last = remembered.get_or_insert_with(load_last_battery);
++    let mut changed = false;
++    let offline = rust_i18n::t!("tray.offline");
++    let lines = rows
+         .iter()
+         .map(|row| {
+-            use crate::tray_model::DeviceState;
++            let key = format!("{:?}", row.settings);
+             match &row.state {
+                 DeviceState::Battery(battery) => {
+-                    format!("{}: {}", row.name, crate::tray_model::battery_text(battery))
++                    changed |= remember(last, &key, battery);
++                    format!("{}: {}", row.name, battery_text(battery))
+                 }
+-                DeviceState::Offline(_) => {
+-                    format!("{}: {}", row.name, rust_i18n::t!("tray.offline"))
++                DeviceState::Offline(Some(battery)) => {
++                    changed |= remember(last, &key, battery);
++                    format!("{}: {} ({offline})", row.name, battery_text(battery))
+                 }
++                DeviceState::Offline(None) => match last.get(&key) {
++                    Some(battery) => format!("{}: {} ({offline})", row.name, battery_text(battery)),
++                    None => format!("{}: {offline}", row.name),
++                },
+                 DeviceState::Light(_) | DeviceState::Online => row.name.clone(),
+             }
+         })
+-        .collect()
++        .collect();
++    if changed {
++        save_last_battery(last);
++    }
++    lines
++}
++
++/// Keep `battery` as `key`'s last reading; whether that changed anything.
++fn remember(last: &mut HashMap<String, BatteryInfo>, key: &str, battery: &BatteryInfo) -> bool {
++    if last.get(key) == Some(battery) {
++        return false;
++    }
++    last.insert(key.to_owned(), battery.clone());
++    true
++}
++
++fn last_battery_path() -> Option<std::path::PathBuf> {
++    openlogi_core::paths::state_dir()
++        .ok()
++        .map(|dir| dir.join(LAST_BATTERY_FILE))
++}
++
++/// The readings saved by an earlier run; empty when there are none.
++fn load_last_battery() -> HashMap<String, BatteryInfo> {
++    last_battery_path()
++        .and_then(|path| std::fs::read(path).ok())
++        .and_then(|bytes| serde_json::from_slice(&bytes).ok())
++        .unwrap_or_default()
++}
++
++fn save_last_battery(last: &HashMap<String, BatteryInfo>) {
++    let Some(path) = last_battery_path() else {
++        return;
++    };
++    let saved = path
++        .parent()
++        .map_or(Ok(()), std::fs::create_dir_all)
++        .and_then(|()| {
++            serde_json::to_vec(last)
++                .map_err(std::io::Error::other)
++                .and_then(|bytes| std::fs::write(&path, bytes))
++        });
++    if let Err(error) = saved {
++        warn!(%error, "could not save the tray's last battery readings");
++    }
+ }
+ 
+ /// "OpenLogi", then each device on its own line.
 -- 
 2.43.0
 
