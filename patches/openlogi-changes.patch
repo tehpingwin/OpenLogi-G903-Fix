@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 1/9] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/10] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 2/9] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/10] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 3/9] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/10] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,8 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 4/9] feat(desktop): state for editing stored G-series profiles
+Subject: [PATCH 04/10] feat(desktop): state for editing stored G-series
+ profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
 mouse, saves it with the sector bytes it started from, and selects a
@@ -4228,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 5/9] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/10] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5853,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 6/9] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/10] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8123,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 7/9] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/10] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9336,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 8/9] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/10] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9669,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 9/9] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/10] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9901,6 +9902,624 @@ index 150624c9..70b2effc 100644
 +    let shown = cx.read(|cx| AppState::try_read(cx).expect("state").dpi_presets());
 +    assert_eq!(shown.len(), 3);
 +}
+-- 
+2.43.0
+
+From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Wed, 25 Nov 2026 16:21:43 +0000
+Subject: [PATCH 10/10] feat(desktop): any RGB color, and a mouse's lighting in
+ its stored profile
+
+The Lighting tab gets a Custom Color picker beside the swatches (the
+kit's ColorPicker): any color, applied like a swatch.
+
+While a stored profile is in control, a lighting change is also written
+into both of the profile's lights (brightness folded into the color: a
+stored fixed color has none of its own), so the mouse keeps it without
+OpenLogi. The tab shows the profile's lighting: the color as picked
+when the mouse holds exactly that, else the stored color.
+---
+ .../src/features/lighting/keyboard_rgb.rs     | 62 ++++++++++++++++++-
+ crates/openlogi-desktop/src/state/lighting.rs | 10 ++-
+ .../src/state/stored_profiles.rs              | 61 +++++++++++++++++-
+ .../src/state/tests/stored_profiles.rs        | 28 +++++++++
+ crates/openlogi-ui/locales/be.toml            |  1 +
+ crates/openlogi-ui/locales/cs.toml            |  1 +
+ crates/openlogi-ui/locales/da.toml            |  1 +
+ crates/openlogi-ui/locales/de.toml            |  1 +
+ crates/openlogi-ui/locales/el.toml            |  1 +
+ crates/openlogi-ui/locales/en.toml            |  1 +
+ crates/openlogi-ui/locales/es.toml            |  1 +
+ crates/openlogi-ui/locales/fi.toml            |  1 +
+ crates/openlogi-ui/locales/fr.toml            |  1 +
+ crates/openlogi-ui/locales/it.toml            |  1 +
+ crates/openlogi-ui/locales/ja.toml            |  1 +
+ crates/openlogi-ui/locales/ko.toml            |  1 +
+ crates/openlogi-ui/locales/nb.toml            |  1 +
+ crates/openlogi-ui/locales/nl.toml            |  1 +
+ crates/openlogi-ui/locales/pl.toml            |  1 +
+ crates/openlogi-ui/locales/pt-BR.toml         |  1 +
+ crates/openlogi-ui/locales/pt-PT.toml         |  1 +
+ crates/openlogi-ui/locales/ru.toml            |  1 +
+ crates/openlogi-ui/locales/sv.toml            |  1 +
+ crates/openlogi-ui/locales/tr.toml            |  1 +
+ crates/openlogi-ui/locales/uk.toml            |  1 +
+ crates/openlogi-ui/locales/zh-CN.toml         |  1 +
+ crates/openlogi-ui/locales/zh-HK.toml         |  1 +
+ crates/openlogi-ui/locales/zh-TW.toml         |  1 +
+ 28 files changed, 180 insertions(+), 5 deletions(-)
+
+diff --git a/crates/openlogi-desktop/src/features/lighting/keyboard_rgb.rs b/crates/openlogi-desktop/src/features/lighting/keyboard_rgb.rs
+index c2514375..d12ba456 100644
+--- a/crates/openlogi-desktop/src/features/lighting/keyboard_rgb.rs
++++ b/crates/openlogi-desktop/src/features/lighting/keyboard_rgb.rs
+@@ -1,16 +1,19 @@
+ //! RGB keyboard lighting controls.
+ //!
+-//! A palette of color swatches, an on/off toggle, and a brightness slider,
++//! A palette of color swatches with a custom color picker for any RGB color,
++//! an on/off toggle, and a brightness slider,
+ //! persisted per device via [`AppState::commit_lighting`] and pushed to the
+ //! keyboard through `openlogi_agent_core::hardware::set_lighting_in_background`
+ //! (the agent, over IPC — the GUI has no device I/O of its own).
+ 
+ use crate::ui::theme::FocusRingStyle as _;
++use gpui::{AppContext as _, Entity, Hsla};
+ use gpui::{
+     Context, InteractiveElement, IntoElement, ParentElement, Render, Role,
+     StatefulInteractiveElement as _, Styled, Subscription, Toggled, Window, div, px, rgb,
+ };
+ use gpui_kit::base::Button as BaseButton;
++use gpui_kit::component::color_picker::{ColorPicker, ColorPickerEvent, ColorPickerState};
+ use gpui_kit::component::{Selectable as _, h_flex, slider::Slider, v_flex};
+ use openlogi_core::color::Rgb;
+ use openlogi_core::config::Lighting;
+@@ -43,9 +46,26 @@ const PALETTE: &[Rgb] = &[
+ 
+ pub struct LightingPanel {
+     brightness: CommitSlider<u8>,
++    /// The custom color picker, made on the first render (it needs the window).
++    picker: Option<(Entity<ColorPickerState>, Subscription)>,
+     _state_obs: Subscription,
+ }
+ 
++fn hsla_of(color: Rgb) -> Hsla {
++    Hsla::from(rgb(color.packed()))
++}
++
++#[expect(
++    clippy::cast_possible_truncation,
++    clippy::cast_sign_loss,
++    reason = "each channel is clamped to 0..=1 and scaled to 0..=255 first"
++)]
++fn rgb_of(color: Hsla) -> Rgb {
++    let rgba = color.to_rgb();
++    let channel = |v: f32| (v.clamp(0., 1.) * 255.).round() as u8;
++    Rgb::new(channel(rgba.r), channel(rgba.g), channel(rgba.b))
++}
++
+ impl LightingPanel {
+     pub fn new(cx: &mut Context<Self>) -> Self {
+         let initial = AppState::try_read(cx).map_or(100, |s| s.lighting().brightness);
+@@ -68,6 +88,7 @@ impl LightingPanel {
+             AppState::repaint_on(cx, |event| matches!(event, StateEvent::LightingChanged(_)));
+         Self {
+             brightness,
++            picker: None,
+             _state_obs: state_obs,
+         }
+     }
+@@ -88,6 +109,36 @@ impl Render for LightingPanel {
+             .map(|&color| swatch(color, &lighting, pal))
+             .collect();
+ 
++        // Any RGB color: picking one applies it like a swatch.
++        let picker = match &self.picker {
++            Some((picker, _)) => picker.clone(),
++            None => {
++                let picker = cx.new(|cx| {
++                    ColorPickerState::new(window, cx).default_value(hsla_of(lighting.color))
++                });
++                let subscription = cx.subscribe(&picker, |_, _, event: &ColorPickerEvent, cx| {
++                    if let ColorPickerEvent::Change(Some(color)) = event {
++                        let color = rgb_of(*color);
++                        AppState::apply(cx, |state| {
++                            let mut next = state.lighting();
++                            next.enabled = true;
++                            next.color = color;
++                            state.commit_lighting(next)
++                        });
++                    }
++                });
++                self.picker = Some((picker.clone(), subscription));
++                picker
++            }
++        };
++        // Follow the device's color (a swatch, a device switch) without
++        // announcing it as a pick.
++        if picker.read(cx).value().map(rgb_of) != Some(lighting.color) {
++            picker.update(cx, |picker, cx| {
++                picker.set_value(hsla_of(lighting.color), window, cx)
++            });
++        }
++
+         v_flex()
+             .gap_3()
+             .w_full()
+@@ -110,7 +161,14 @@ impl Render for LightingPanel {
+             ))
+             // The rings' clear gaps already space the faces; a full gap on top
+             // would spread the row.
+-            .child(h_flex().gap_1().flex_wrap().children(swatches))
++            .child(
++                h_flex()
++                    .gap_1()
++                    .flex_wrap()
++                    .items_center()
++                    .children(swatches)
++                    .child(ColorPicker::new(&picker).label(tr!("lighting.custom_color"))),
++            )
+             .child(
+                 SliderRow::new(
+                     tr!("camera.brightness"),
+diff --git a/crates/openlogi-desktop/src/state/lighting.rs b/crates/openlogi-desktop/src/state/lighting.rs
+index df14c6a5..a5b03aa5 100644
+--- a/crates/openlogi-desktop/src/state/lighting.rs
++++ b/crates/openlogi-desktop/src/state/lighting.rs
+@@ -12,12 +12,15 @@ impl AppState {
+     /// stored / no device is selected.
+     #[must_use]
+     pub fn lighting(&self) -> Lighting {
+-        self.current_record()
++        let configured = self
++            .current_record()
+             .and_then(|record| {
+                 let key = record.persistent_config_key()?;
+                 self.lighting_for(key, &record.route_key)
+             })
+-            .unwrap_or_default()
++            .unwrap_or_default();
++        // A mouse running a stored profile shows that profile's lighting.
++        self.stored_lighting(&configured).unwrap_or(configured)
+     }
+     /// The stored lighting config for `key` on `route_key`, or `None` when
+     /// unset (or overridden to unset on that link).
+@@ -41,6 +44,9 @@ impl AppState {
+     /// Persist a new lighting config for the active device and push it to the
+     /// hardware (best-effort). No-op when no device is selected.
+     pub fn commit_lighting(&mut self, lighting: Lighting) -> StateEvents {
++        // A mouse running a stored profile keeps the colour in that profile
++        // too; the live write below shows it at once.
++        self.commit_stored_lighting(&lighting);
+         let events = self.for_current_device(StateEvent::LightingChanged);
+         let Some(record) = self.current_record() else {
+             debug!("no active device — lighting change ignored");
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index 43d566bd..93ee9d83 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -22,8 +22,10 @@ use tracing::{debug, warn};
+ use std::collections::BTreeMap;
+ 
+ use openlogi_core::binding::{Action, ButtonId};
++use openlogi_core::color::Rgb;
++use openlogi_core::config::Lighting;
+ use openlogi_core::config::OnboardMemory;
+-use openlogi_core::hid::{Dpi, STORED_DPI_LEVELS};
++use openlogi_core::hid::{Dpi, STORED_DPI_LEVELS, StoredLed};
+ 
+ use super::bindings::BindingLayer;
+ use super::stored_actions::{action_for, binding_for};
+@@ -35,6 +37,15 @@ use crate::services::ipc::{ReadStoredProfiles, SaveStoredProfile, SetStoredProfi
+ /// Read state of one mouse's stored profiles. See [`Load`].
+ pub type StoredProfilesLoad = Load<Arc<StoredProfiles>>;
+ 
++/// `color` at `brightness` percent: a stored fixed colour has no brightness
++/// of its own, so it is folded into the channels.
++fn dimmed(color: Rgb, brightness: u8) -> Rgb {
++    let (r, g, b) = color.components();
++    let scale =
++        |v: u8| u8::try_from(u16::from(v) * u16::from(brightness.min(100)) / 100).unwrap_or(v);
++    Rgb::new(scale(r), scale(g), scale(b))
++}
++
+ /// How the last save or selection ended, for the editor to report.
+ #[derive(Clone, Debug, PartialEq, Eq)]
+ pub enum StoredProfileNotice {
+@@ -407,6 +418,52 @@ impl AppState {
+         Some(events)
+     }
+ 
++    /// While a stored profile is in control, its lighting as the Lighting tab
++    /// shows it: a fixed colour (brightness folded in, as the mouse stores it)
++    /// or off. `None` for an effect the tab has no control for (cycling,
++    /// breathing): the tab then shows OpenLogi's own setting.
++    #[must_use]
++    pub fn stored_lighting(&self, configured: &Lighting) -> Option<Lighting> {
++        let (active, _) = self.stored_mode()?;
++        let entry = self
++            .current_record()
++            .and_then(|record| self.stored_profiles.entries.get(&record.device_key()))?;
++        match entry.settings(active)?.leds[0] {
++            // What OpenLogi last set, if the mouse holds exactly that.
++            StoredLed::Fixed(color) if color == dimmed(configured.color, configured.brightness) => {
++                Some(Lighting {
++                    enabled: true,
++                    ..configured.clone()
++                })
++            }
++            StoredLed::Fixed(color) => Some(Lighting {
++                enabled: true,
++                color,
++                brightness: 100,
++            }),
++            StoredLed::Off => Some(Lighting {
++                enabled: false,
++                ..configured.clone()
++            }),
++            _ => None,
++        }
++    }
++
++    /// While a stored profile is in control, write `lighting` into both of its
++    /// lights, so the mouse keeps it without OpenLogi running.
++    pub(super) fn commit_stored_lighting(&mut self, lighting: &Lighting) {
++        let Some((active, _)) = self.stored_mode() else {
++            return;
++        };
++        let led = if lighting.enabled {
++            StoredLed::Fixed(dimmed(lighting.color, lighting.brightness))
++        } else {
++            StoredLed::Off
++        };
++        let _ = self.edit_stored_profile(active, |settings| settings.leds = [led; 2]);
++        let _ = self.save_stored_profile_edit();
++    }
++
+     /// Switch stored profiles on or off. The answer arrives as
+     /// [`Self::apply_stored_profiles_enabled`].
+     pub fn set_stored_profiles_enabled(
+@@ -531,6 +588,7 @@ impl AppState {
+                     StateEvent::BindingsChanged,
+                     StateEvent::ReportRateChanged,
+                     StateEvent::DpiChanged,
++                    StateEvent::LightingChanged,
+                 ] {
+                     cx.emit(event(key.clone()));
+                 }
+@@ -673,6 +731,7 @@ impl AppState {
+             StateEvent::BindingsChanged,
+             StateEvent::ReportRateChanged,
+             StateEvent::DpiChanged,
++            StateEvent::LightingChanged,
+         ] {
+             cx.emit(event(key.clone()));
+         }
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index 70b2effc..7aad3f11 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -407,3 +407,31 @@ fn dpi_presets_become_the_stored_levels(cx: &mut gpui::TestAppContext) {
+     let shown = cx.read(|cx| AppState::try_read(cx).expect("state").dpi_presets());
+     assert_eq!(shown.len(), 3);
+ }
++
++#[gpui::test]
++fn a_lighting_change_goes_into_both_stored_lights(cx: &mut gpui::TestAppContext) {
++    let (_key, mut receiver) = ready(cx);
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            let mut next = state.lighting();
++            next.enabled = true;
++            next.color = openlogi_core::color::Rgb::new(200, 100, 0);
++            next.brightness = 50;
++            state.commit_lighting(next)
++        })
++    });
++    let save = take_save(&mut receiver);
++    let expected = StoredLed::Fixed(openlogi_core::color::Rgb::new(100, 50, 0));
++    assert_eq!(
++        save.settings.leds, [expected; 2],
++        "brightness folded into the colour"
++    );
++    let shown = cx.read(|cx| AppState::try_read(cx).expect("state").lighting());
++    assert!(shown.enabled);
++    assert_eq!(
++        shown.color,
++        openlogi_core::color::Rgb::new(200, 100, 0),
++        "the colour as picked, not as dimmed"
++    );
++    assert_eq!(shown.brightness, 50);
++}
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index dd2eccd2..5fa44883 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Тэмпература колеру"
+ applying_light_setting = "Прымяненне налады святла…"
+ auto_on_with_camera = "Аўтаўключэнне з камерай"
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index 31c4ce2e..21df3de7 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Teplota barev"
+ applying_light_setting = "Používání nastavení světla…"
+ auto_on_with_camera = "Automaticky zapínat s kamerou"
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index 80efa081..8c0678fb 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Farvetemperatur"
+ applying_light_setting = "Anvender lysindstilling…"
+ auto_on_with_camera = "Tænd automatisk med kameraet"
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index 87f9362d..ea6c7ac7 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Farbtemperatur"
+ applying_light_setting = "Beleuchtungseinstellung wird angewendet…"
+ auto_on_with_camera = "Automatisch mit Kamera einschalten"
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index 00faf05b..b1ae239c 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Θερμοκρασία χρώματος"
+ applying_light_setting = "Εφαρμογή ρύθμισης φωτισμού…"
+ auto_on_with_camera = "Αυτόματη ενεργοποίηση με την κάμερα"
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index 87a85b45..2dc9f053 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Color temperature"
+ applying_light_setting = "Applying light setting…"
+ auto_on_with_camera = "Auto-on with camera"
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index 70f14750..fdcbeded 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Temperatura de color"
+ applying_light_setting = "Aplicando el ajuste de luz…"
+ auto_on_with_camera = "Encendido automático con la cámara"
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index a6e3f1c7..47844290 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Värilämpötila"
+ applying_light_setting = "Otetaan valaistusasetusta käyttöön…"
+ auto_on_with_camera = "Sytytä automaattisesti kameran kanssa"
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index 50776a6b..cd24f651 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Température de couleur"
+ applying_light_setting = "Application du réglage d’éclairage…"
+ auto_on_with_camera = "Allumage automatique avec la caméra"
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index 6e97f64a..146389ff 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Temperatura colore"
+ applying_light_setting = "Applicazione impostazione luce…"
+ auto_on_with_camera = "Accensione automatica con la fotocamera"
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index 5e3a3874..0989542c 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "色温度"
+ applying_light_setting = "ライト設定を適用中…"
+ auto_on_with_camera = "カメラ使用時に自動点灯"
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index 630a59ea..1771b770 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "색온도"
+ applying_light_setting = "조명 설정 적용 중…"
+ auto_on_with_camera = "카메라 사용 시 자동 켜기"
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index b8da6e8c..3c46d09e 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Fargetemperatur"
+ applying_light_setting = "Bruker lysinnstilling…"
+ auto_on_with_camera = "Slå på automatisk med kameraet"
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index 9d757a40..477c29b7 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Kleurtemperatuur"
+ applying_light_setting = "Verlichtingsinstelling toepassen…"
+ auto_on_with_camera = "Automatisch aan met camera"
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index 579ee8c5..22aee20a 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Temperatura barwowa"
+ applying_light_setting = "Stosowanie ustawienia oświetlenia…"
+ auto_on_with_camera = "Automatycznie z kamerą"
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index e07cce7d..c89927db 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Temperatura da cor"
+ applying_light_setting = "Aplicando configuração da luz…"
+ auto_on_with_camera = "Acender com a câmera"
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index 306e8668..93c6750f 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Temperatura da cor"
+ applying_light_setting = "A aplicar a definição da luz…"
+ auto_on_with_camera = "Acender com a câmara"
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index 195d97ab..455ca5f9 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Цветовая температура"
+ applying_light_setting = "Применение настройки освещения…"
+ auto_on_with_camera = "Автовключение с камерой"
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index 5b88282d..706aba83 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Färgtemperatur"
+ applying_light_setting = "Tillämpar ljusinställning…"
+ auto_on_with_camera = "Tänd automatiskt med kameran"
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index c36bbf8e..3aaedd47 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Renk sıcaklığı"
+ applying_light_setting = "Işık ayarı uygulanıyor…"
+ auto_on_with_camera = "Kamerayla otomatik aç"
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index 1e30e073..0523737b 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "Температура кольору"
+ applying_light_setting = "Застосування налаштування світла…"
+ auto_on_with_camera = "Автоувімкнення разом із камерою"
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index e94f02f2..0fb6eb25 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "色温"
+ applying_light_setting = "正在应用灯光设置…"
+ auto_on_with_camera = "随摄像头自动开启"
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index e6905f76..52a62083 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "色溫"
+ applying_light_setting = "正在套用燈光設定…"
+ auto_on_with_camera = "隨攝影機自動開啟"
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index 3ebe6097..69a88428 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -741,6 +741,7 @@ stream_note = "Applies to this preview only. Other apps choose their own resolut
+ usb_link_limited = "Connected at %{speed}, but this camera supports %{capable}. On the faster link it may offer more resolutions and frame rates. Plug it straight into a USB 3 port, without a hub, using a USB 3 cable."
+ 
+ [lighting]
++custom_color = "Custom Color"
+ colour_temperature = "色溫"
+ applying_light_setting = "正在套用燈光設定…"
+ auto_on_with_camera = "隨攝影機自動開啟"
 -- 
 2.43.0
 
