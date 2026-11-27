@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/21] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/22] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/21] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/22] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/21] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/22] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/21] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/22] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/21] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/22] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/21] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/22] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/21] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/22] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/21] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/22] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/21] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/22] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/21] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/22] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/21] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/22] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/21] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/22] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/21] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/22] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/21] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/22] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/21] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/22] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11632,7 +11632,7 @@ index 105720f2..3d7d27f8 100644
 From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 19:47:10 +0000
-Subject: [PATCH 16/21] feat: user-set levels for the low-battery notice
+Subject: [PATCH 16/22] feat: user-set levels for the low-battery notice
 
 Settings > General gets "Warn at" and "Warn again after" under the
 low-battery notifications switch (number fields, 20 % and 30 % by
@@ -12380,7 +12380,7 @@ index 9a73472c..d79ceb75 100644
 From c22b3b199f3baf5cb1cbd943460bcd762c710866 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:17:44 +0000
-Subject: [PATCH 17/21] feat: user-set time on screen for the low-battery
+Subject: [PATCH 17/22] feat: user-set time on screen for the low-battery
  notice
 
 Settings > General gets "Show the warning for (seconds)" under the
@@ -12923,7 +12923,7 @@ index d79ceb75..edbc6d5f 100644
 From 0d452ce5b32ac1cff0f543e07a8bbb5a32239ad0 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:50:38 +0000
-Subject: [PATCH 18/21] feat: choose the display the low-battery notice appears
+Subject: [PATCH 18/22] feat: choose the display the low-battery notice appears
  on
 
 Settings > General gets "Show notices on": the display with the
@@ -13890,7 +13890,7 @@ index edbc6d5f..489b5b84 100644
 From 8eb9887b864a64d0c27a48dd1cb290cb8a9f35a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 22:06:04 +0000
-Subject: [PATCH 19/21] feat(agent): the Windows tray keeps a device's last
+Subject: [PATCH 19/22] feat(agent): the Windows tray keeps a device's last
  battery when it is offline
 
 An offline device read "Name: Offline". It now reads "Name: 56%
@@ -14034,7 +14034,7 @@ index 696b0a39..b2f2a318 100644
 From 76e5d21f5757ccb9f484024ec40e8ee5a8de2562 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Thu, 26 Nov 2026 23:49:57 +0000
-Subject: [PATCH 20/21] perf: a stored-profile save costs a fifth of the round
+Subject: [PATCH 20/22] perf: a stored-profile save costs a fifth of the round
  trips
 
 Every read is 16 round trips for a 255-byte sector over the wireless
@@ -14533,7 +14533,7 @@ index 9cccae68..237b293e 100644
 From 0d8c06d482116720ac27f293e5af9a8df18e8a00 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 10:00:56 +0000
-Subject: [PATCH 21/21] feat: remember when each device was last charged
+Subject: [PATCH 21/22] feat: remember when each device was last charged
 
 The agent records, per device, the highest charge of its last charge
 and the day (local time): a charge is seen when the device reports
@@ -15220,6 +15220,433 @@ index 489b5b84..9292d963 100644
  
  [device]
 +last_charged = "Last charged to %{percent}% on %{date}"
+ no_devices_connected = "沒有已連線的裝置"
+ devices = "裝置"
+ device_count_plural = "%{count} 個裝置"
+-- 
+2.43.0
+
+From dc362172516966b7d423f7c70a6430b27fd24d99 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Fri, 27 Nov 2026 10:29:53 +0000
+Subject: [PATCH 22/22] feat(desktop): the device list shows when a device was
+ last charged
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A device row's connection line ends in "· Charged to 98% on 25 Nov
+2026" once the agent has seen a charge. The text is shared with the
+device page (widgets::last_charged).
+---
+ crates/openlogi-desktop/src/app/detail.rs  | 27 +++++-----------------
+ crates/openlogi-desktop/src/app/home.rs    |  7 ++++++
+ crates/openlogi-desktop/src/app/widgets.rs | 20 ++++++++++++++++
+ crates/openlogi-ui/locales/be.toml         |  1 +
+ crates/openlogi-ui/locales/cs.toml         |  1 +
+ crates/openlogi-ui/locales/da.toml         |  1 +
+ crates/openlogi-ui/locales/de.toml         |  1 +
+ crates/openlogi-ui/locales/el.toml         |  1 +
+ crates/openlogi-ui/locales/en.toml         |  1 +
+ crates/openlogi-ui/locales/es.toml         |  1 +
+ crates/openlogi-ui/locales/fi.toml         |  1 +
+ crates/openlogi-ui/locales/fr.toml         |  1 +
+ crates/openlogi-ui/locales/it.toml         |  1 +
+ crates/openlogi-ui/locales/ja.toml         |  1 +
+ crates/openlogi-ui/locales/ko.toml         |  1 +
+ crates/openlogi-ui/locales/nb.toml         |  1 +
+ crates/openlogi-ui/locales/nl.toml         |  1 +
+ crates/openlogi-ui/locales/pl.toml         |  1 +
+ crates/openlogi-ui/locales/pt-BR.toml      |  1 +
+ crates/openlogi-ui/locales/pt-PT.toml      |  1 +
+ crates/openlogi-ui/locales/ru.toml         |  1 +
+ crates/openlogi-ui/locales/sv.toml         |  1 +
+ crates/openlogi-ui/locales/tr.toml         |  1 +
+ crates/openlogi-ui/locales/uk.toml         |  1 +
+ crates/openlogi-ui/locales/zh-CN.toml      |  1 +
+ crates/openlogi-ui/locales/zh-HK.toml      |  1 +
+ crates/openlogi-ui/locales/zh-TW.toml      |  1 +
+ 27 files changed, 57 insertions(+), 21 deletions(-)
+
+diff --git a/crates/openlogi-desktop/src/app/detail.rs b/crates/openlogi-desktop/src/app/detail.rs
+index 1abdf77a..81975b87 100644
+--- a/crates/openlogi-desktop/src/app/detail.rs
++++ b/crates/openlogi-desktop/src/app/detail.rs
+@@ -1167,9 +1167,12 @@ fn device_details_card(pal: Palette, cx: &mut Context<AppView>) -> impl IntoElem
+                     .when_some(record.battery.as_ref(), |this, battery| {
+                         this.child(BatteryIndicator::summary(battery))
+                     })
+-                    .when_some(last_charged(&record), |this, text| {
+-                        this.child(div().text_caption().text_color(pal.text_muted).child(text))
+-                    })
++                    .when_some(
++                        super::widgets::last_charged(&record, "device.last_charged"),
++                        |this, text| {
++                            this.child(div().text_caption().text_color(pal.text_muted).child(text))
++                        },
++                    )
+                     .child(device_description_list(record, pal))
+                     .into_any_element()
+             },
+@@ -1182,24 +1185,6 @@ fn device_details_card(pal: Palette, cx: &mut Context<AppView>) -> impl IntoElem
+     )
+ }
+ 
+-/// "Last charged to 98% on 25 Nov 2026", from the records the agent keeps.
+-fn last_charged(record: &crate::state::DeviceRecord) -> Option<SharedString> {
+-    const MONTHS: [&str; 12] = [
+-        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+-    ];
+-    let log = openlogi_core::charges::ChargeLog::load();
+-    let (percent, date) = log.last(&record.config_key)?;
+-    let mut parts = date.split('-');
+-    let (year, month, day) = (parts.next()?, parts.next()?, parts.next()?);
+-    let month = MONTHS.get(month.parse::<usize>().ok()?.checked_sub(1)?)?;
+-    let day = day.trim_start_matches('0');
+-    Some(tr!(
+-        "device.last_charged",
+-        percent => percent.to_string(),
+-        date => format!("{day} {month} {year}")
+-    ))
+-}
+-
+ fn configuration_card(pal: Palette, cx: &mut Context<AppView>) -> impl IntoElement {
+     let device_enabled = AppState::try_read(cx)
+         .and_then(|state| {
+diff --git a/crates/openlogi-desktop/src/app/home.rs b/crates/openlogi-desktop/src/app/home.rs
+index 590b986f..3a087ffd 100644
+--- a/crates/openlogi-desktop/src/app/home.rs
++++ b/crates/openlogi-desktop/src/app/home.rs
+@@ -635,6 +635,13 @@ fn connection_view(
+         .child("·")
+         .child(transport_icon(record, saved_transport, pal).size_3())
+         .child(div().min_w_0().truncate().child(connection_summary(record)))
++        .when_some(
++            super::widgets::last_charged(record, "device.charged_short"),
++            |row, charged| {
++                row.child("·")
++                    .child(div().min_w_0().truncate().child(charged))
++            },
++        )
+ }
+ 
+ /// The device photo, scaled to fit its container (object-fit contain), or a
+diff --git a/crates/openlogi-desktop/src/app/widgets.rs b/crates/openlogi-desktop/src/app/widgets.rs
+index b9d5eac2..b68cc651 100644
+--- a/crates/openlogi-desktop/src/app/widgets.rs
++++ b/crates/openlogi-desktop/src/app/widgets.rs
+@@ -262,6 +262,26 @@ pub(super) fn connection_summary(record: &DeviceRecord) -> String {
+     }
+ }
+ 
++/// When `record` was last charged, from the records the agent keeps, in the
++/// string `key` (`%{percent}`, `%{date}`): "Last charged to 98% on 25 Nov 2026"
++/// on the device page, "Charged to 98% on 25 Nov 2026" in the device list.
++pub(super) fn last_charged(record: &DeviceRecord, key: &str) -> Option<SharedString> {
++    const MONTHS: [&str; 12] = [
++        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
++    ];
++    let log = openlogi_core::charges::ChargeLog::load();
++    let (percent, date) = log.last(&record.config_key)?;
++    let mut parts = date.split('-');
++    let (year, month, day) = (parts.next()?, parts.next()?, parts.next()?);
++    let month = MONTHS.get(month.parse::<usize>().ok()?.checked_sub(1)?)?;
++    let day = day.trim_start_matches('0');
++    Some(tr!(
++        key,
++        percent => percent.to_string(),
++        date => format!("{day} {month} {year}")
++    ))
++}
++
+ pub(super) fn kind_label(kind: DeviceKind) -> String {
+     tr!(kind.translation_key()).to_string()
+ }
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index 3d855750..06173ffc 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Прылады не падключаны"
+ devices = "Прылады"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index c49d3a54..bab64df0 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Žádná připojená zařízení"
+ devices = "Zařízení"
+ device_count_plural = "Počet zařízení: %{count}"
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index 9fac547e..bba63183 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Ingen enhed tilsluttet"
+ devices = "Enheder"
+ device_count_plural = "%{count} enheder"
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index 19e4b562..a59b71de 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Kein Gerät verbunden"
+ devices = "Geräte"
+ device_count_plural = "%{count} Geräte"
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index cc1ebc73..7f217a9e 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Καμία συσκευή δεν είναι συνδεδεμένη"
+ devices = "Συσκευές"
+ device_count_plural = "%{count} συσκευές"
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index 97afb6bd..54c0850e 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "No devices connected"
+ devices = "Devices"
+ device_count_plural = "%{count} devices"
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index 71fa4920..415b35ac 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Ningún dispositivo conectado"
+ devices = "Dispositivos"
+ device_count_plural = "%{count} dispositivos"
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index f7ea614c..5c7349f4 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Ei yhdistettyä laitetta"
+ devices = "Laitteet"
+ device_count_plural = "%{count} laitetta"
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index cfa49268..7266dc95 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Aucun appareil connecté"
+ devices = "Appareils"
+ device_count_plural = "%{count} appareils"
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index 8fc4aae6..b7e6f7d6 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Nessun dispositivo connesso"
+ devices = "Dispositivi"
+ device_count_plural = "%{count} dispositivi"
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index e1c1585d..1a5972b5 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "デバイスが接続されていません"
+ devices = "デバイス"
+ device_count_plural = "%{count} 台のデバイス"
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index ca7a77c7..cc8a3ba2 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "연결된 기기가 없습니다"
+ devices = "기기"
+ device_count_plural = "%{count}개 기기"
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index aec6fab6..7369b66b 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Ingen enhet tilkoblet"
+ devices = "Enheter"
+ device_count_plural = "%{count} enheter"
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index c76f685d..6521f6a4 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Geen apparaat verbonden"
+ devices = "Apparaten"
+ device_count_plural = "%{count} apparaten"
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index 50bbe3cb..d0207cad 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Brak podłączonego urządzenia"
+ devices = "Urządzenia"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index ad5d1d16..52ed98f9 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Nenhum dispositivo conectado"
+ devices = "Dispositivos"
+ device_count_plural = "%{count} dispositivos"
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index 69b19054..39e1cdb6 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Nenhum dispositivo ligado"
+ devices = "Dispositivos"
+ device_count_plural = "%{count} dispositivos"
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index b7dfe357..1c273a8c 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Устройство не подключено"
+ devices = "Устройства"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index f247c0b0..04657aa1 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Ingen enhet ansluten"
+ devices = "Enheter"
+ device_count_plural = "%{count} enheter"
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index d1b876f5..a0b65bd7 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Bağlı cihaz yok"
+ devices = "Cihazlar"
+ device_count_plural = "%{count} cihaz"
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index 2e8a6369..a9c2086c 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "Пристрої не підключено"
+ devices = "Пристрої"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index 5310b337..fd46fa19 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "未连接设备"
+ devices = "设备"
+ device_count_plural = "%{count} 台设备"
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index 12bc1d49..09d57f7d 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
+ no_devices_connected = "未連接裝置"
+ devices = "裝置"
+ device_count_plural = "%{count} 部裝置"
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index 9292d963..21afce49 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -100,6 +100,7 @@ openlogi = "OpenLogi"
+ 
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
++charged_short = "Charged to %{percent}% on %{date}"
  no_devices_connected = "沒有已連線的裝置"
  devices = "裝置"
  device_count_plural = "%{count} 個裝置"
