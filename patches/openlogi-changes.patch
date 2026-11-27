@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/23] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/24] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/23] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/24] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/23] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/24] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/23] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/24] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/23] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/24] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/23] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/24] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/23] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/24] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/23] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/24] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/23] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/24] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/23] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/24] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/23] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/24] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/23] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/24] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/23] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/24] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/23] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/24] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/23] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/24] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11632,7 +11632,7 @@ index 105720f2..3d7d27f8 100644
 From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 19:47:10 +0000
-Subject: [PATCH 16/23] feat: user-set levels for the low-battery notice
+Subject: [PATCH 16/24] feat: user-set levels for the low-battery notice
 
 Settings > General gets "Warn at" and "Warn again after" under the
 low-battery notifications switch (number fields, 20 % and 30 % by
@@ -12380,7 +12380,7 @@ index 9a73472c..d79ceb75 100644
 From c22b3b199f3baf5cb1cbd943460bcd762c710866 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:17:44 +0000
-Subject: [PATCH 17/23] feat: user-set time on screen for the low-battery
+Subject: [PATCH 17/24] feat: user-set time on screen for the low-battery
  notice
 
 Settings > General gets "Show the warning for (seconds)" under the
@@ -12923,7 +12923,7 @@ index d79ceb75..edbc6d5f 100644
 From 0d452ce5b32ac1cff0f543e07a8bbb5a32239ad0 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:50:38 +0000
-Subject: [PATCH 18/23] feat: choose the display the low-battery notice appears
+Subject: [PATCH 18/24] feat: choose the display the low-battery notice appears
  on
 
 Settings > General gets "Show notices on": the display with the
@@ -13890,7 +13890,7 @@ index edbc6d5f..489b5b84 100644
 From 8eb9887b864a64d0c27a48dd1cb290cb8a9f35a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 22:06:04 +0000
-Subject: [PATCH 19/23] feat(agent): the Windows tray keeps a device's last
+Subject: [PATCH 19/24] feat(agent): the Windows tray keeps a device's last
  battery when it is offline
 
 An offline device read "Name: Offline". It now reads "Name: 56%
@@ -14034,7 +14034,7 @@ index 696b0a39..b2f2a318 100644
 From 76e5d21f5757ccb9f484024ec40e8ee5a8de2562 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Thu, 26 Nov 2026 23:49:57 +0000
-Subject: [PATCH 20/23] perf: a stored-profile save costs a fifth of the round
+Subject: [PATCH 20/24] perf: a stored-profile save costs a fifth of the round
  trips
 
 Every read is 16 round trips for a 255-byte sector over the wireless
@@ -14533,7 +14533,7 @@ index 9cccae68..237b293e 100644
 From 0d8c06d482116720ac27f293e5af9a8df18e8a00 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 10:00:56 +0000
-Subject: [PATCH 21/23] feat: remember when each device was last charged
+Subject: [PATCH 21/24] feat: remember when each device was last charged
 
 The agent records, per device, the highest charge of its last charge
 and the day (local time): a charge is seen when the device reports
@@ -15229,7 +15229,7 @@ index 489b5b84..9292d963 100644
 From dc362172516966b7d423f7c70a6430b27fd24d99 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 10:29:53 +0000
-Subject: [PATCH 22/23] feat(desktop): the device list shows when a device was
+Subject: [PATCH 22/24] feat(desktop): the device list shows when a device was
  last charged
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15656,7 +15656,7 @@ index 9292d963..21afce49 100644
 From 2f6d6d33dbe4c5956306cfb8551b19fd5d19970e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 11:04:41 +0000
-Subject: [PATCH 23/23] fix: record the level a charge settles at, not its
+Subject: [PATCH 23/24] fix: record the level a charge settles at, not its
  reading under the charger
 
 A battery measured by its voltage (a G903) reads near full while it
@@ -15953,6 +15953,618 @@ index 671f18ba..cce3cb27 100644
      }
  
      #[test]
+-- 
+2.43.0
+
+From bb9300b5aacdef299dea0a1020257e4e1b85dfd3 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Fri, 27 Nov 2026 12:13:26 +0000
+Subject: [PATCH 24/24] feat: a preliminary charge level after 20 s, the final
+ one after 10 minutes
+
+After charging stops, the first reading at least 20 seconds later is
+recorded as preliminary (shown with "(preliminary)"), and the first at
+least 10 minutes later replaces it as final. Charging again restarts
+both timers, and each charge takes its own preliminary level, also on
+the same day.
+---
+ crates/openlogi-core/src/charges.rs        | 149 +++++++++++++--------
+ crates/openlogi-desktop/src/app/widgets.rs |  11 +-
+ crates/openlogi-ui/locales/be.toml         |   1 +
+ crates/openlogi-ui/locales/cs.toml         |   1 +
+ crates/openlogi-ui/locales/da.toml         |   1 +
+ crates/openlogi-ui/locales/de.toml         |   1 +
+ crates/openlogi-ui/locales/el.toml         |   1 +
+ crates/openlogi-ui/locales/en.toml         |   1 +
+ crates/openlogi-ui/locales/es.toml         |   1 +
+ crates/openlogi-ui/locales/fi.toml         |   1 +
+ crates/openlogi-ui/locales/fr.toml         |   1 +
+ crates/openlogi-ui/locales/it.toml         |   1 +
+ crates/openlogi-ui/locales/ja.toml         |   1 +
+ crates/openlogi-ui/locales/ko.toml         |   1 +
+ crates/openlogi-ui/locales/nb.toml         |   1 +
+ crates/openlogi-ui/locales/nl.toml         |   1 +
+ crates/openlogi-ui/locales/pl.toml         |   1 +
+ crates/openlogi-ui/locales/pt-BR.toml      |   1 +
+ crates/openlogi-ui/locales/pt-PT.toml      |   1 +
+ crates/openlogi-ui/locales/ru.toml         |   1 +
+ crates/openlogi-ui/locales/sv.toml         |   1 +
+ crates/openlogi-ui/locales/tr.toml         |   1 +
+ crates/openlogi-ui/locales/uk.toml         |   1 +
+ crates/openlogi-ui/locales/zh-CN.toml      |   1 +
+ crates/openlogi-ui/locales/zh-HK.toml      |   1 +
+ crates/openlogi-ui/locales/zh-TW.toml      |   1 +
+ 26 files changed, 122 insertions(+), 62 deletions(-)
+
+diff --git a/crates/openlogi-core/src/charges.rs b/crates/openlogi-core/src/charges.rs
+index cce3cb27..efc0ccf4 100644
+--- a/crates/openlogi-core/src/charges.rs
++++ b/crates/openlogi-core/src/charges.rs
+@@ -5,10 +5,11 @@
+ //! A charge is seen when the device reports charging, or when a reading is at
+ //! least [`RISE`] points above the lowest since the last charge (so the
+ //! one-point wobble of a battery gauge isn't a charge). Readings taken while
+-//! charging, and in the [`SETTLE_SECS`] after, are not the level: a battery
+-//! measured by its voltage (a G903) reads high under the charger and for a
+-//! little while after. The first reading once that time has passed is
+-//! recorded. A charge to less than full counts; the next charge replaces it.
++//! charging are not the level: a battery measured by its voltage (a G903)
++//! reads high under the charger and settles after. The first reading at least
++//! [`PRELIMINARY_SECS`] after charging stopped is recorded as preliminary; the
++//! first at least [`FINAL_SECS`] after replaces it as final. A charge to less
++//! than full counts; the next charge replaces it.
+ 
+ use std::collections::BTreeMap;
+ use std::path::PathBuf;
+@@ -18,8 +19,10 @@ use serde::{Deserialize, Serialize};
+ const FILE: &str = "battery-charges.toml";
+ /// Points above the low a reading must be to count as charged meanwhile.
+ pub const RISE: u8 = 3;
+-/// How long after charging the level is left to settle before it is recorded.
+-pub const SETTLE_SECS: u64 = 5 * 60;
++/// How long after charging the first, preliminary level is taken.
++pub const PRELIMINARY_SECS: u64 = 20;
++/// How long after charging the final level is taken.
++pub const FINAL_SECS: u64 = 10 * 60;
+ 
+ /// One device's charge record.
+ #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+@@ -29,6 +32,10 @@ pub struct Charge {
+     /// The day of the last charge, `YYYY-MM-DD` in local time; `None` before
+     /// the first one recorded.
+     pub date: Option<String>,
++    /// Whether the level is the preliminary one, taken shortly after
++    /// charging, before the final one.
++    #[serde(default)]
++    pub preliminary: bool,
+     /// The lowest reading since the last charge.
+     #[serde(default)]
+     low: u8,
+@@ -42,6 +49,9 @@ pub struct Charge {
+     /// it charges or when nothing is settling.
+     #[serde(default)]
+     settling_since: Option<u64>,
++    /// Whether this charge's preliminary level has been taken.
++    #[serde(default)]
++    preliminary_taken: bool,
+ }
+ 
+ impl Charge {
+@@ -56,18 +66,27 @@ impl Charge {
+         if charging {
+             // Under the charger: a charge is happening, its level isn't known yet.
+             self.pending = Some(today.to_owned());
++            self.preliminary_taken = false;
+             self.settling_since = None;
+         } else if self.pending.is_none() && percent >= self.low.saturating_add(RISE) {
+             // Charged without saying so: settle from now.
+             self.pending = Some(today.to_owned());
++            self.preliminary_taken = false;
+             self.settling_since = Some(now);
+         } else if self.pending.is_some() {
+             let since = *self.settling_since.get_or_insert(now);
+-            if now.saturating_sub(since) >= SETTLE_SECS {
++            let waited = now.saturating_sub(since);
++            if waited >= FINAL_SECS {
+                 self.percent = percent;
+                 self.date = self.pending.take();
++                self.preliminary = false;
+                 self.settling_since = None;
+                 self.low = percent;
++            } else if waited >= PRELIMINARY_SECS && !self.preliminary_taken {
++                self.percent = percent;
++                self.date.clone_from(&self.pending);
++                self.preliminary = true;
++                self.preliminary_taken = true;
+             }
+         } else if percent < self.low {
+             self.low = percent;
+@@ -127,11 +146,12 @@ impl ChargeLog {
+             .observe(percent, charging, today, now)
+     }
+ 
+-    /// `device`'s last charge: its highest charge and its day.
++    /// `device`'s last charge: its level, its day, and whether the level is
++    /// still the preliminary one.
+     #[must_use]
+-    pub fn last(&self, device: &str) -> Option<(u8, &str)> {
++    pub fn last(&self, device: &str) -> Option<(u8, &str, bool)> {
+         let charge = self.devices.get(device)?;
+-        Some((charge.percent, charge.date.as_deref()?))
++        Some((charge.percent, charge.date.as_deref()?, charge.preliminary))
+     }
+ }
+ 
+@@ -196,82 +216,93 @@ fn civil_from_days(days: i64) -> (u16, u16, u16) {
+ mod tests {
+     use super::*;
+ 
+-    const MIN: u64 = 60;
+-
+-    /// (percent, charging, day, minute)
++    /// (percent, charging, day, seconds)
+     fn run(steps: &[(u8, bool, &str, u64)]) -> Charge {
+         let mut charge = Charge::default();
+-        for &(percent, charging, day, minute) in steps {
+-            charge.observe(percent, charging, day, minute * MIN);
++        for &(percent, charging, day, at) in steps {
++            charge.observe(percent, charging, day, at);
+         }
+         charge
+     }
+ 
++    fn record(charge: &Charge) -> (u8, Option<&str>, bool) {
++        (charge.percent, charge.date.as_deref(), charge.preliminary)
++    }
++
+     #[test]
+     fn a_wobbling_gauge_is_not_a_charge() {
+         let charge = run(&[
+             (40, false, "a", 0),
+-            (39, false, "a", 1),
+-            (41, false, "a", 2),
+-            (38, false, "a", 3),
++            (39, false, "a", 60),
++            (41, false, "a", 120),
++            (38, false, "a", 180),
+         ]);
+         assert_eq!(charge.date, None);
+     }
+ 
+     #[test]
+-    fn the_level_is_taken_once_it_has_settled_not_under_the_charger() {
++    fn a_preliminary_level_after_twenty_seconds_then_the_final_after_ten_minutes() {
+         // A G903: reads near full while charging, then falls back to its level.
+-        let charge = run(&[
++        let mut charge = run(&[
+             (38, false, "d1", 0),
+-            (95, true, "d2", 10),
+-            (98, true, "d2", 40),
+-            (90, false, "d2", 41), // just unplugged: still high
+-            (79, false, "d2", 43),
+-            (78, false, "d2", 46), // five minutes after: settled
+-            (77, false, "d3", 600),
++            (95, true, "d2", 600),
++            (98, true, "d2", 2400),
++            (90, false, "d2", 2405), // just unplugged: still high, too soon
+         ]);
+-        assert_eq!((charge.percent, charge.date.as_deref()), (78, Some("d2")));
++        assert_eq!(charge.date, None, "nothing before twenty seconds");
++        charge.observe(82, false, "d2", 2430);
++        assert_eq!(record(&charge), (82, Some("d2"), true), "preliminary");
++        charge.observe(80, false, "d2", 2700);
++        assert_eq!(
++            record(&charge),
++            (82, Some("d2"), true),
++            "kept until ten minutes"
++        );
++        charge.observe(78, false, "d2", 2405 + FINAL_SECS);
++        assert_eq!(record(&charge), (78, Some("d2"), false), "final");
++        charge.observe(70, false, "d3", 90_000);
++        assert_eq!(
++            record(&charge),
++            (78, Some("d2"), false),
++            "running down changes nothing"
++        );
+     }
+ 
+     #[test]
+-    fn charging_again_while_settling_starts_the_wait_over() {
+-        let charge = run(&[
++    fn charging_again_restarts_both_timers() {
++        let mut charge = run(&[
+             (40, false, "d1", 0),
+-            (90, true, "d1", 10),
+-            (85, false, "d1", 11),
+-            (92, true, "d1", 13), // back on the charger
+-            (88, false, "d1", 20),
+-            (84, false, "d1", 24), // only four minutes since it stopped again
++            (90, true, "d1", 600),
++            (85, false, "d1", 610),
++            (84, false, "d1", 640), // preliminary 84
++            (92, true, "d1", 700),  // back on the charger
++            (88, false, "d1", 900),
+         ]);
+-        assert_eq!(charge.date, None);
+-        let mut charge = charge;
+-        charge.observe(83, false, "d1", 26 * MIN);
+-        assert_eq!((charge.percent, charge.date.as_deref()), (83, Some("d1")));
++        assert_eq!(record(&charge), (84, Some("d1"), true));
++        charge.observe(86, false, "d1", 930);
++        assert_eq!(
++            record(&charge),
++            (86, Some("d1"), true),
++            "a new preliminary for the new charge"
++        );
++        charge.observe(85, false, "d1", 900 + FINAL_SECS - 1);
++        assert!(
++            charge.preliminary,
++            "not yet ten minutes since it stopped again"
++        );
++        charge.observe(84, false, "d1", 900 + FINAL_SECS);
++        assert_eq!(record(&charge), (84, Some("d1"), false));
+     }
+ 
+     #[test]
+-    fn a_rise_seen_without_a_charging_flag_settles_too() {
++    fn a_rise_seen_without_a_charging_flag_uses_the_same_timers() {
+         let charge = run(&[
+             (40, false, "d1", 0),
+-            (60, false, "d2", 100),
+-            (56, false, "d2", 106),
+-        ]);
+-        assert_eq!((charge.percent, charge.date.as_deref()), (56, Some("d2")));
+-    }
+-
+-    #[test]
+-    fn the_next_charge_replaces_it_even_when_lower() {
+-        let charge = run(&[
+-            (38, false, "d1", 0),
+-            (98, true, "d2", 10),
+-            (90, false, "d2", 20),
+-            (88, false, "d2", 26),
+-            (50, false, "d4", 3000),
+-            (70, true, "d5", 4000),
+-            (66, false, "d5", 4001),
+-            (64, false, "d5", 4007),
++            (60, false, "d2", 6000),
++            (58, false, "d2", 6030),
++            (56, false, "d2", 6000 + FINAL_SECS),
+         ]);
+-        assert_eq!((charge.percent, charge.date.as_deref()), (64, Some("d5")));
++        assert_eq!(record(&charge), (56, Some("d2"), false));
+     }
+ 
+     #[test]
+@@ -280,9 +311,9 @@ mod tests {
+         log.observe("mouse", 40, false, "2026-11-20", 0);
+         log.observe("mouse", 95, true, "2026-11-25", 60);
+         log.observe("mouse", 90, false, "2026-11-25", 120);
+-        log.observe("mouse", 85, false, "2026-11-25", 120 + SETTLE_SECS);
++        log.observe("mouse", 88, false, "2026-11-25", 150);
+         let back: ChargeLog = toml::from_str(&toml::to_string(&log).unwrap()).unwrap();
+-        assert_eq!(back.last("mouse"), Some((85, "2026-11-25")));
++        assert_eq!(back.last("mouse"), Some((88, "2026-11-25", true)));
+     }
+ 
+     #[test]
+diff --git a/crates/openlogi-desktop/src/app/widgets.rs b/crates/openlogi-desktop/src/app/widgets.rs
+index b68cc651..93078497 100644
+--- a/crates/openlogi-desktop/src/app/widgets.rs
++++ b/crates/openlogi-desktop/src/app/widgets.rs
+@@ -270,16 +270,21 @@ pub(super) fn last_charged(record: &DeviceRecord, key: &str) -> Option<SharedStr
+         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+     ];
+     let log = openlogi_core::charges::ChargeLog::load();
+-    let (percent, date) = log.last(&record.config_key)?;
++    let (percent, date, preliminary) = log.last(&record.config_key)?;
+     let mut parts = date.split('-');
+     let (year, month, day) = (parts.next()?, parts.next()?, parts.next()?);
+     let month = MONTHS.get(month.parse::<usize>().ok()?.checked_sub(1)?)?;
+     let day = day.trim_start_matches('0');
+-    Some(tr!(
++    let text = tr!(
+         key,
+         percent => percent.to_string(),
+         date => format!("{day} {month} {year}")
+-    ))
++    );
++    Some(if preliminary {
++        tr!("device.charge_preliminary", text => text).into()
++    } else {
++        text
++    })
+ }
+ 
+ pub(super) fn kind_label(kind: DeviceKind) -> String {
+diff --git a/crates/openlogi-ui/locales/be.toml b/crates/openlogi-ui/locales/be.toml
+index 06173ffc..6ca16967 100644
+--- a/crates/openlogi-ui/locales/be.toml
++++ b/crates/openlogi-ui/locales/be.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Прылады не падключаны"
+ devices = "Прылады"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/cs.toml b/crates/openlogi-ui/locales/cs.toml
+index bab64df0..a2aaaf89 100644
+--- a/crates/openlogi-ui/locales/cs.toml
++++ b/crates/openlogi-ui/locales/cs.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Žádná připojená zařízení"
+ devices = "Zařízení"
+ device_count_plural = "Počet zařízení: %{count}"
+diff --git a/crates/openlogi-ui/locales/da.toml b/crates/openlogi-ui/locales/da.toml
+index bba63183..2d746ab0 100644
+--- a/crates/openlogi-ui/locales/da.toml
++++ b/crates/openlogi-ui/locales/da.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Ingen enhed tilsluttet"
+ devices = "Enheder"
+ device_count_plural = "%{count} enheder"
+diff --git a/crates/openlogi-ui/locales/de.toml b/crates/openlogi-ui/locales/de.toml
+index a59b71de..5b31716b 100644
+--- a/crates/openlogi-ui/locales/de.toml
++++ b/crates/openlogi-ui/locales/de.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Kein Gerät verbunden"
+ devices = "Geräte"
+ device_count_plural = "%{count} Geräte"
+diff --git a/crates/openlogi-ui/locales/el.toml b/crates/openlogi-ui/locales/el.toml
+index 7f217a9e..d739fda2 100644
+--- a/crates/openlogi-ui/locales/el.toml
++++ b/crates/openlogi-ui/locales/el.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Καμία συσκευή δεν είναι συνδεδεμένη"
+ devices = "Συσκευές"
+ device_count_plural = "%{count} συσκευές"
+diff --git a/crates/openlogi-ui/locales/en.toml b/crates/openlogi-ui/locales/en.toml
+index 54c0850e..bfcfb7c3 100644
+--- a/crates/openlogi-ui/locales/en.toml
++++ b/crates/openlogi-ui/locales/en.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "No devices connected"
+ devices = "Devices"
+ device_count_plural = "%{count} devices"
+diff --git a/crates/openlogi-ui/locales/es.toml b/crates/openlogi-ui/locales/es.toml
+index 415b35ac..9ade94e0 100644
+--- a/crates/openlogi-ui/locales/es.toml
++++ b/crates/openlogi-ui/locales/es.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Ningún dispositivo conectado"
+ devices = "Dispositivos"
+ device_count_plural = "%{count} dispositivos"
+diff --git a/crates/openlogi-ui/locales/fi.toml b/crates/openlogi-ui/locales/fi.toml
+index 5c7349f4..282a26e3 100644
+--- a/crates/openlogi-ui/locales/fi.toml
++++ b/crates/openlogi-ui/locales/fi.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Ei yhdistettyä laitetta"
+ devices = "Laitteet"
+ device_count_plural = "%{count} laitetta"
+diff --git a/crates/openlogi-ui/locales/fr.toml b/crates/openlogi-ui/locales/fr.toml
+index 7266dc95..918421a2 100644
+--- a/crates/openlogi-ui/locales/fr.toml
++++ b/crates/openlogi-ui/locales/fr.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Aucun appareil connecté"
+ devices = "Appareils"
+ device_count_plural = "%{count} appareils"
+diff --git a/crates/openlogi-ui/locales/it.toml b/crates/openlogi-ui/locales/it.toml
+index b7e6f7d6..dc935abe 100644
+--- a/crates/openlogi-ui/locales/it.toml
++++ b/crates/openlogi-ui/locales/it.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Nessun dispositivo connesso"
+ devices = "Dispositivi"
+ device_count_plural = "%{count} dispositivi"
+diff --git a/crates/openlogi-ui/locales/ja.toml b/crates/openlogi-ui/locales/ja.toml
+index 1a5972b5..5b06221e 100644
+--- a/crates/openlogi-ui/locales/ja.toml
++++ b/crates/openlogi-ui/locales/ja.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "デバイスが接続されていません"
+ devices = "デバイス"
+ device_count_plural = "%{count} 台のデバイス"
+diff --git a/crates/openlogi-ui/locales/ko.toml b/crates/openlogi-ui/locales/ko.toml
+index cc8a3ba2..96fc240c 100644
+--- a/crates/openlogi-ui/locales/ko.toml
++++ b/crates/openlogi-ui/locales/ko.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "연결된 기기가 없습니다"
+ devices = "기기"
+ device_count_plural = "%{count}개 기기"
+diff --git a/crates/openlogi-ui/locales/nb.toml b/crates/openlogi-ui/locales/nb.toml
+index 7369b66b..6c5bcf92 100644
+--- a/crates/openlogi-ui/locales/nb.toml
++++ b/crates/openlogi-ui/locales/nb.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Ingen enhet tilkoblet"
+ devices = "Enheter"
+ device_count_plural = "%{count} enheter"
+diff --git a/crates/openlogi-ui/locales/nl.toml b/crates/openlogi-ui/locales/nl.toml
+index 6521f6a4..6e6ae22b 100644
+--- a/crates/openlogi-ui/locales/nl.toml
++++ b/crates/openlogi-ui/locales/nl.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Geen apparaat verbonden"
+ devices = "Apparaten"
+ device_count_plural = "%{count} apparaten"
+diff --git a/crates/openlogi-ui/locales/pl.toml b/crates/openlogi-ui/locales/pl.toml
+index d0207cad..f1990589 100644
+--- a/crates/openlogi-ui/locales/pl.toml
++++ b/crates/openlogi-ui/locales/pl.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Brak podłączonego urządzenia"
+ devices = "Urządzenia"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/pt-BR.toml b/crates/openlogi-ui/locales/pt-BR.toml
+index 52ed98f9..52a9c161 100644
+--- a/crates/openlogi-ui/locales/pt-BR.toml
++++ b/crates/openlogi-ui/locales/pt-BR.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Nenhum dispositivo conectado"
+ devices = "Dispositivos"
+ device_count_plural = "%{count} dispositivos"
+diff --git a/crates/openlogi-ui/locales/pt-PT.toml b/crates/openlogi-ui/locales/pt-PT.toml
+index 39e1cdb6..e6aab11a 100644
+--- a/crates/openlogi-ui/locales/pt-PT.toml
++++ b/crates/openlogi-ui/locales/pt-PT.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Nenhum dispositivo ligado"
+ devices = "Dispositivos"
+ device_count_plural = "%{count} dispositivos"
+diff --git a/crates/openlogi-ui/locales/ru.toml b/crates/openlogi-ui/locales/ru.toml
+index 1c273a8c..f3b1ef0d 100644
+--- a/crates/openlogi-ui/locales/ru.toml
++++ b/crates/openlogi-ui/locales/ru.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Устройство не подключено"
+ devices = "Устройства"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/sv.toml b/crates/openlogi-ui/locales/sv.toml
+index 04657aa1..89a51c77 100644
+--- a/crates/openlogi-ui/locales/sv.toml
++++ b/crates/openlogi-ui/locales/sv.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Ingen enhet ansluten"
+ devices = "Enheter"
+ device_count_plural = "%{count} enheter"
+diff --git a/crates/openlogi-ui/locales/tr.toml b/crates/openlogi-ui/locales/tr.toml
+index a0b65bd7..b2cf4763 100644
+--- a/crates/openlogi-ui/locales/tr.toml
++++ b/crates/openlogi-ui/locales/tr.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Bağlı cihaz yok"
+ devices = "Cihazlar"
+ device_count_plural = "%{count} cihaz"
+diff --git a/crates/openlogi-ui/locales/uk.toml b/crates/openlogi-ui/locales/uk.toml
+index a9c2086c..339ffaa4 100644
+--- a/crates/openlogi-ui/locales/uk.toml
++++ b/crates/openlogi-ui/locales/uk.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "Пристрої не підключено"
+ devices = "Пристрої"
+ device_count_plural = "%{count}"
+diff --git a/crates/openlogi-ui/locales/zh-CN.toml b/crates/openlogi-ui/locales/zh-CN.toml
+index fd46fa19..44cd1e49 100644
+--- a/crates/openlogi-ui/locales/zh-CN.toml
++++ b/crates/openlogi-ui/locales/zh-CN.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "未连接设备"
+ devices = "设备"
+ device_count_plural = "%{count} 台设备"
+diff --git a/crates/openlogi-ui/locales/zh-HK.toml b/crates/openlogi-ui/locales/zh-HK.toml
+index 09d57f7d..a1179952 100644
+--- a/crates/openlogi-ui/locales/zh-HK.toml
++++ b/crates/openlogi-ui/locales/zh-HK.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "未連接裝置"
+ devices = "裝置"
+ device_count_plural = "%{count} 部裝置"
+diff --git a/crates/openlogi-ui/locales/zh-TW.toml b/crates/openlogi-ui/locales/zh-TW.toml
+index 21afce49..2805dffb 100644
+--- a/crates/openlogi-ui/locales/zh-TW.toml
++++ b/crates/openlogi-ui/locales/zh-TW.toml
+@@ -101,6 +101,7 @@ openlogi = "OpenLogi"
+ [device]
+ last_charged = "Last charged to %{percent}% on %{date}"
+ charged_short = "Charged to %{percent}% on %{date}"
++charge_preliminary = "%{text} (preliminary)"
+ no_devices_connected = "沒有已連線的裝置"
+ devices = "裝置"
+ device_count_plural = "%{count} 個裝置"
 -- 
 2.43.0
 
