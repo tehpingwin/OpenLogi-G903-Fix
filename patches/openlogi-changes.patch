@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/22] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/23] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/22] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/23] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/22] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/23] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/22] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/23] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/22] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/23] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/22] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/23] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/22] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/23] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/22] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/23] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/22] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/23] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/22] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/23] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/22] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/23] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/22] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/23] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/22] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/23] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/22] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/23] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/22] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/23] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11632,7 +11632,7 @@ index 105720f2..3d7d27f8 100644
 From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 19:47:10 +0000
-Subject: [PATCH 16/22] feat: user-set levels for the low-battery notice
+Subject: [PATCH 16/23] feat: user-set levels for the low-battery notice
 
 Settings > General gets "Warn at" and "Warn again after" under the
 low-battery notifications switch (number fields, 20 % and 30 % by
@@ -12380,7 +12380,7 @@ index 9a73472c..d79ceb75 100644
 From c22b3b199f3baf5cb1cbd943460bcd762c710866 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:17:44 +0000
-Subject: [PATCH 17/22] feat: user-set time on screen for the low-battery
+Subject: [PATCH 17/23] feat: user-set time on screen for the low-battery
  notice
 
 Settings > General gets "Show the warning for (seconds)" under the
@@ -12923,7 +12923,7 @@ index d79ceb75..edbc6d5f 100644
 From 0d452ce5b32ac1cff0f543e07a8bbb5a32239ad0 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:50:38 +0000
-Subject: [PATCH 18/22] feat: choose the display the low-battery notice appears
+Subject: [PATCH 18/23] feat: choose the display the low-battery notice appears
  on
 
 Settings > General gets "Show notices on": the display with the
@@ -13890,7 +13890,7 @@ index edbc6d5f..489b5b84 100644
 From 8eb9887b864a64d0c27a48dd1cb290cb8a9f35a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 22:06:04 +0000
-Subject: [PATCH 19/22] feat(agent): the Windows tray keeps a device's last
+Subject: [PATCH 19/23] feat(agent): the Windows tray keeps a device's last
  battery when it is offline
 
 An offline device read "Name: Offline". It now reads "Name: 56%
@@ -14034,7 +14034,7 @@ index 696b0a39..b2f2a318 100644
 From 76e5d21f5757ccb9f484024ec40e8ee5a8de2562 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Thu, 26 Nov 2026 23:49:57 +0000
-Subject: [PATCH 20/22] perf: a stored-profile save costs a fifth of the round
+Subject: [PATCH 20/23] perf: a stored-profile save costs a fifth of the round
  trips
 
 Every read is 16 round trips for a 255-byte sector over the wireless
@@ -14533,7 +14533,7 @@ index 9cccae68..237b293e 100644
 From 0d8c06d482116720ac27f293e5af9a8df18e8a00 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 10:00:56 +0000
-Subject: [PATCH 21/22] feat: remember when each device was last charged
+Subject: [PATCH 21/23] feat: remember when each device was last charged
 
 The agent records, per device, the highest charge of its last charge
 and the day (local time): a charge is seen when the device reports
@@ -15229,7 +15229,7 @@ index 489b5b84..9292d963 100644
 From dc362172516966b7d423f7c70a6430b27fd24d99 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 10:29:53 +0000
-Subject: [PATCH 22/22] feat(desktop): the device list shows when a device was
+Subject: [PATCH 22/23] feat(desktop): the device list shows when a device was
  last charged
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15650,6 +15650,309 @@ index 9292d963..21afce49 100644
  no_devices_connected = "沒有已連線的裝置"
  devices = "裝置"
  device_count_plural = "%{count} 個裝置"
+-- 
+2.43.0
+
+From 2f6d6d33dbe4c5956306cfb8551b19fd5d19970e Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Fri, 27 Nov 2026 11:04:41 +0000
+Subject: [PATCH 23/23] fix: record the level a charge settles at, not its
+ reading under the charger
+
+A battery measured by its voltage (a G903) reads near full while it
+charges and for a short while after, then falls back to its level, so
+"the highest charge" recorded that false reading. Readings while
+charging are no longer the level: the first reading at least five
+minutes after charging stopped is (charging again restarts the wait). A
+rise seen without a charging flag waits the same five minutes.
+---
+ .../openlogi-agent-core/src/orchestrator.rs   |   3 +-
+ crates/openlogi-core/src/charges.rs           | 173 ++++++++++++------
+ 2 files changed, 117 insertions(+), 59 deletions(-)
+
+diff --git a/crates/openlogi-agent-core/src/orchestrator.rs b/crates/openlogi-agent-core/src/orchestrator.rs
+index 702896d7..ccb1267b 100644
+--- a/crates/openlogi-agent-core/src/orchestrator.rs
++++ b/crates/openlogi-agent-core/src/orchestrator.rs
+@@ -1827,9 +1827,10 @@ impl Orchestrator {
+                     BatteryStatus::Charging | BatteryStatus::ChargingSlow | BatteryStatus::Full
+                 );
+                 let today = openlogi_core::charges::today();
++                let now = openlogi_core::charges::now_secs();
+                 if self
+                     .charges
+-                    .observe(&device.config_key, percent, charging, &today)
++                    .observe(&device.config_key, percent, charging, &today, now)
+                     && !cfg!(test)
+                 {
+                     self.charges.save();
+diff --git a/crates/openlogi-core/src/charges.rs b/crates/openlogi-core/src/charges.rs
+index 671f18ba..cce3cb27 100644
+--- a/crates/openlogi-core/src/charges.rs
++++ b/crates/openlogi-core/src/charges.rs
+@@ -1,11 +1,14 @@
+-//! When each device was last charged: the highest charge it reached while
+-//! charging, and the day. Kept by the agent, which sees every battery reading,
+-//! in `state_dir()/battery-charges.toml`; read by the GUI's device page.
++//! When each device was last charged: the level it settled at after its last
++//! charge, and the day. Kept by the agent, which sees every battery reading,
++//! in `state_dir()/battery-charges.toml`; read by the GUI.
+ //!
+ //! A charge is seen when the device reports charging, or when a reading is at
+ //! least [`RISE`] points above the lowest since the last charge (so the
+-//! one-point wobble of a battery gauge isn't a charge). A charge to less than
+-//! full counts; the next charge replaces the record, whatever it reaches.
++//! one-point wobble of a battery gauge isn't a charge). Readings taken while
++//! charging, and in the [`SETTLE_SECS`] after, are not the level: a battery
++//! measured by its voltage (a G903) reads high under the charger and for a
++//! little while after. The first reading once that time has passed is
++//! recorded. A charge to less than full counts; the next charge replaces it.
+ 
+ use std::collections::BTreeMap;
+ use std::path::PathBuf;
+@@ -15,52 +18,59 @@ use serde::{Deserialize, Serialize};
+ const FILE: &str = "battery-charges.toml";
+ /// Points above the low a reading must be to count as charged meanwhile.
+ pub const RISE: u8 = 3;
++/// How long after charging the level is left to settle before it is recorded.
++pub const SETTLE_SECS: u64 = 5 * 60;
+ 
+ /// One device's charge record.
+ #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct Charge {
+-    /// The highest charge, in percent, of the last charge.
++    /// The level, in percent, the last charge settled at.
+     pub percent: u8,
+     /// The day of the last charge, `YYYY-MM-DD` in local time; `None` before
+-    /// the first one seen.
++    /// the first one recorded.
+     pub date: Option<String>,
+     /// The lowest reading since the last charge.
+     #[serde(default)]
+     low: u8,
+-    /// Whether it has run down since the last charge, so the next charge
+-    /// starts a new record rather than raising the old one.
+-    #[serde(default)]
+-    dropped: bool,
+     /// Whether any reading has been seen.
+     #[serde(default)]
+     seen: bool,
++    /// The day of a charge whose level is still settling.
++    #[serde(default)]
++    pending: Option<String>,
++    /// When it stopped charging (seconds since the Unix epoch); `None` while
++    /// it charges or when nothing is settling.
++    #[serde(default)]
++    settling_since: Option<u64>,
+ }
+ 
+ impl Charge {
+-    /// Takes a reading of `percent`; returns whether the record changed.
+-    pub fn observe(&mut self, percent: u8, charging: bool, today: &str) -> bool {
++    /// Takes a reading of `percent` at `now` (seconds since the Unix epoch);
++    /// returns whether the record changed.
++    pub fn observe(&mut self, percent: u8, charging: bool, today: &str, now: u64) -> bool {
+         let before = self.clone();
+         if !self.seen {
+             self.seen = true;
+             self.low = percent;
+-            if !charging {
+-                return true;
+-            }
+         }
+-        if charging || percent >= self.low.saturating_add(RISE) {
+-            self.percent = if self.dropped || self.date.is_none() {
+-                percent
+-            } else {
+-                self.percent.max(percent)
+-            };
+-            self.dropped = false;
+-            self.date = Some(today.to_owned());
+-            self.low = percent;
++        if charging {
++            // Under the charger: a charge is happening, its level isn't known yet.
++            self.pending = Some(today.to_owned());
++            self.settling_since = None;
++        } else if self.pending.is_none() && percent >= self.low.saturating_add(RISE) {
++            // Charged without saying so: settle from now.
++            self.pending = Some(today.to_owned());
++            self.settling_since = Some(now);
++        } else if self.pending.is_some() {
++            let since = *self.settling_since.get_or_insert(now);
++            if now.saturating_sub(since) >= SETTLE_SECS {
++                self.percent = percent;
++                self.date = self.pending.take();
++                self.settling_since = None;
++                self.low = percent;
++            }
+         } else if percent < self.low {
+             self.low = percent;
+-            if self.date.is_some() && percent < self.percent {
+-                self.dropped = true;
+-            }
+         }
+         *self != before
+     }
+@@ -101,12 +111,20 @@ impl ChargeLog {
+         }
+     }
+ 
+-    /// Takes `device`'s reading; returns whether its record changed.
+-    pub fn observe(&mut self, device: &str, percent: u8, charging: bool, today: &str) -> bool {
++    /// Takes `device`'s reading at `now` (seconds since the Unix epoch);
++    /// returns whether its record changed.
++    pub fn observe(
++        &mut self,
++        device: &str,
++        percent: u8,
++        charging: bool,
++        today: &str,
++        now: u64,
++    ) -> bool {
+         self.devices
+             .entry(device.to_owned())
+             .or_default()
+-            .observe(percent, charging, today)
++            .observe(percent, charging, today, now)
+     }
+ 
+     /// `device`'s last charge: its highest charge and its day.
+@@ -121,6 +139,14 @@ fn path() -> Option<PathBuf> {
+     crate::paths::state_dir().ok().map(|dir| dir.join(FILE))
+ }
+ 
++/// Now, in seconds since the Unix epoch.
++#[must_use]
++pub fn now_secs() -> u64 {
++    std::time::SystemTime::now()
++        .duration_since(std::time::UNIX_EPOCH)
++        .map_or(0, |since| since.as_secs())
++}
++
+ /// Today in local time, `YYYY-MM-DD`.
+ #[must_use]
+ pub fn today() -> String {
+@@ -170,10 +196,13 @@ fn civil_from_days(days: i64) -> (u16, u16, u16) {
+ mod tests {
+     use super::*;
+ 
+-    fn run(steps: &[(u8, bool, &str)]) -> Charge {
++    const MIN: u64 = 60;
++
++    /// (percent, charging, day, minute)
++    fn run(steps: &[(u8, bool, &str, u64)]) -> Charge {
+         let mut charge = Charge::default();
+-        for &(percent, charging, day) in steps {
+-            charge.observe(percent, charging, day);
++        for &(percent, charging, day, minute) in steps {
++            charge.observe(percent, charging, day, minute * MIN);
+         }
+         charge
+     }
+@@ -181,51 +210,79 @@ mod tests {
+     #[test]
+     fn a_wobbling_gauge_is_not_a_charge() {
+         let charge = run(&[
+-            (40, false, "a"),
+-            (39, false, "a"),
+-            (41, false, "a"),
+-            (38, false, "a"),
++            (40, false, "a", 0),
++            (39, false, "a", 1),
++            (41, false, "a", 2),
++            (38, false, "a", 3),
+         ]);
+         assert_eq!(charge.date, None);
+     }
+ 
+     #[test]
+-    fn a_charge_keeps_its_highest_level_and_day() {
++    fn the_level_is_taken_once_it_has_settled_not_under_the_charger() {
++        // A G903: reads near full while charging, then falls back to its level.
+         let charge = run(&[
+-            (38, false, "d1"),
+-            (45, true, "d2"),
+-            (70, true, "d2"),
+-            (98, false, "d2"),
+-            (60, false, "d4"),
++            (38, false, "d1", 0),
++            (95, true, "d2", 10),
++            (98, true, "d2", 40),
++            (90, false, "d2", 41), // just unplugged: still high
++            (79, false, "d2", 43),
++            (78, false, "d2", 46), // five minutes after: settled
++            (77, false, "d3", 600),
+         ]);
+-        assert_eq!((charge.percent, charge.date.as_deref()), (98, Some("d2")));
++        assert_eq!((charge.percent, charge.date.as_deref()), (78, Some("d2")));
+     }
+ 
+     #[test]
+-    fn the_next_charge_replaces_it_even_when_lower() {
++    fn charging_again_while_settling_starts_the_wait_over() {
+         let charge = run(&[
+-            (38, false, "d1"),
+-            (98, true, "d2"),
+-            (60, false, "d4"),
+-            (60, true, "d5"),
+-            (80, false, "d5"),
++            (40, false, "d1", 0),
++            (90, true, "d1", 10),
++            (85, false, "d1", 11),
++            (92, true, "d1", 13), // back on the charger
++            (88, false, "d1", 20),
++            (84, false, "d1", 24), // only four minutes since it stopped again
+         ]);
+-        assert_eq!((charge.percent, charge.date.as_deref()), (80, Some("d5")));
++        assert_eq!(charge.date, None);
++        let mut charge = charge;
++        charge.observe(83, false, "d1", 26 * MIN);
++        assert_eq!((charge.percent, charge.date.as_deref()), (83, Some("d1")));
+     }
+ 
+     #[test]
+-    fn a_rise_seen_without_a_charging_flag_counts() {
+-        let charge = run(&[(40, false, "d1"), (55, false, "d2")]);
+-        assert_eq!((charge.percent, charge.date.as_deref()), (55, Some("d2")));
++    fn a_rise_seen_without_a_charging_flag_settles_too() {
++        let charge = run(&[
++            (40, false, "d1", 0),
++            (60, false, "d2", 100),
++            (56, false, "d2", 106),
++        ]);
++        assert_eq!((charge.percent, charge.date.as_deref()), (56, Some("d2")));
++    }
++
++    #[test]
++    fn the_next_charge_replaces_it_even_when_lower() {
++        let charge = run(&[
++            (38, false, "d1", 0),
++            (98, true, "d2", 10),
++            (90, false, "d2", 20),
++            (88, false, "d2", 26),
++            (50, false, "d4", 3000),
++            (70, true, "d5", 4000),
++            (66, false, "d5", 4001),
++            (64, false, "d5", 4007),
++        ]);
++        assert_eq!((charge.percent, charge.date.as_deref()), (64, Some("d5")));
+     }
+ 
+     #[test]
+     fn records_survive_toml() {
+         let mut log = ChargeLog::default();
+-        log.observe("mouse", 40, false, "2026-11-20");
+-        log.observe("mouse", 90, true, "2026-11-25");
++        log.observe("mouse", 40, false, "2026-11-20", 0);
++        log.observe("mouse", 95, true, "2026-11-25", 60);
++        log.observe("mouse", 90, false, "2026-11-25", 120);
++        log.observe("mouse", 85, false, "2026-11-25", 120 + SETTLE_SECS);
+         let back: ChargeLog = toml::from_str(&toml::to_string(&log).unwrap()).unwrap();
+-        assert_eq!(back.last("mouse"), Some((90, "2026-11-25")));
++        assert_eq!(back.last("mouse"), Some((85, "2026-11-25")));
+     }
+ 
+     #[test]
 -- 
 2.43.0
 
