@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/25] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/26] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/25] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/26] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/25] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/26] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/25] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/26] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/25] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/26] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/25] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/26] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/25] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/26] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/25] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/26] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/25] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/26] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/25] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/26] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/25] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/26] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/25] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/26] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/25] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/26] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/25] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/26] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/25] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/26] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11632,7 +11632,7 @@ index 105720f2..3d7d27f8 100644
 From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 19:47:10 +0000
-Subject: [PATCH 16/25] feat: user-set levels for the low-battery notice
+Subject: [PATCH 16/26] feat: user-set levels for the low-battery notice
 
 Settings > General gets "Warn at" and "Warn again after" under the
 low-battery notifications switch (number fields, 20 % and 30 % by
@@ -12380,7 +12380,7 @@ index 9a73472c..d79ceb75 100644
 From c22b3b199f3baf5cb1cbd943460bcd762c710866 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:17:44 +0000
-Subject: [PATCH 17/25] feat: user-set time on screen for the low-battery
+Subject: [PATCH 17/26] feat: user-set time on screen for the low-battery
  notice
 
 Settings > General gets "Show the warning for (seconds)" under the
@@ -12923,7 +12923,7 @@ index d79ceb75..edbc6d5f 100644
 From 0d452ce5b32ac1cff0f543e07a8bbb5a32239ad0 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:50:38 +0000
-Subject: [PATCH 18/25] feat: choose the display the low-battery notice appears
+Subject: [PATCH 18/26] feat: choose the display the low-battery notice appears
  on
 
 Settings > General gets "Show notices on": the display with the
@@ -13890,7 +13890,7 @@ index edbc6d5f..489b5b84 100644
 From 8eb9887b864a64d0c27a48dd1cb290cb8a9f35a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 22:06:04 +0000
-Subject: [PATCH 19/25] feat(agent): the Windows tray keeps a device's last
+Subject: [PATCH 19/26] feat(agent): the Windows tray keeps a device's last
  battery when it is offline
 
 An offline device read "Name: Offline". It now reads "Name: 56%
@@ -14034,7 +14034,7 @@ index 696b0a39..b2f2a318 100644
 From 76e5d21f5757ccb9f484024ec40e8ee5a8de2562 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Thu, 26 Nov 2026 23:49:57 +0000
-Subject: [PATCH 20/25] perf: a stored-profile save costs a fifth of the round
+Subject: [PATCH 20/26] perf: a stored-profile save costs a fifth of the round
  trips
 
 Every read is 16 round trips for a 255-byte sector over the wireless
@@ -14533,7 +14533,7 @@ index 9cccae68..237b293e 100644
 From 0d8c06d482116720ac27f293e5af9a8df18e8a00 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 10:00:56 +0000
-Subject: [PATCH 21/25] feat: remember when each device was last charged
+Subject: [PATCH 21/26] feat: remember when each device was last charged
 
 The agent records, per device, the highest charge of its last charge
 and the day (local time): a charge is seen when the device reports
@@ -15229,7 +15229,7 @@ index 489b5b84..9292d963 100644
 From dc362172516966b7d423f7c70a6430b27fd24d99 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 10:29:53 +0000
-Subject: [PATCH 22/25] feat(desktop): the device list shows when a device was
+Subject: [PATCH 22/26] feat(desktop): the device list shows when a device was
  last charged
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15656,7 +15656,7 @@ index 9292d963..21afce49 100644
 From 2f6d6d33dbe4c5956306cfb8551b19fd5d19970e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 11:04:41 +0000
-Subject: [PATCH 23/25] fix: record the level a charge settles at, not its
+Subject: [PATCH 23/26] fix: record the level a charge settles at, not its
  reading under the charger
 
 A battery measured by its voltage (a G903) reads near full while it
@@ -15959,7 +15959,7 @@ index 671f18ba..cce3cb27 100644
 From bb9300b5aacdef299dea0a1020257e4e1b85dfd3 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 12:13:26 +0000
-Subject: [PATCH 24/25] feat: a preliminary charge level after 20 s, the final
+Subject: [PATCH 24/26] feat: a preliminary charge level after 20 s, the final
  one after 10 minutes
 
 After charging stops, the first reading at least 20 seconds later is
@@ -16571,7 +16571,7 @@ index 21afce49..2805dffb 100644
 From 37e8285d117ba3faa508d8f5800868a735098315 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Fri, 27 Nov 2026 16:11:23 +0000
-Subject: [PATCH 25/25] feat(desktop): the main window opens where it was last
+Subject: [PATCH 25/26] feat(desktop): the main window opens where it was last
 
 The main window always opened centred on the primary display. Its place
 (restore bounds, and whether it was maximized) is now kept in
@@ -16810,6 +16810,99 @@ index 00000000..9e7272e7
 +    );
 +    Some((Bounds::new(origin, size), display.id(), saved.maximized))
 +}
+-- 
+2.43.0
+
+From edf442cb54edb8ec27daede1154d93a469274a77 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Fri, 27 Nov 2026 16:38:14 +0000
+Subject: [PATCH 26/26] feat(agent): a click on the Windows tray icon also
+ sends the GUI back
+
+A left click on the tray icon always opened or focused the GUI; closing
+it took the window's X. Now, when one of the GUI's windows is showing
+(visible, not minimized), the click asks each to close, as its X would
+(the GUI keeps its usual close handling, the window's place included);
+otherwise it opens or focuses the GUI as before.
+---
+ crates/openlogi-agent/src/tray_windows.rs | 50 +++++++++++++++++++++--
+ 1 file changed, 47 insertions(+), 3 deletions(-)
+
+diff --git a/crates/openlogi-agent/src/tray_windows.rs b/crates/openlogi-agent/src/tray_windows.rs
+index b2f2a318..e42a3f48 100644
+--- a/crates/openlogi-agent/src/tray_windows.rs
++++ b/crates/openlogi-agent/src/tray_windows.rs
+@@ -50,8 +50,8 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
+     GetWindowThreadProcessId, HICON, IDI_APPLICATION, IsIconic, IsWindowVisible, LR_DEFAULTCOLOR,
+     LoadIconW, MF_GRAYED, MF_SEPARATOR, MF_STRING, MSG, PostMessageW, RegisterClassW,
+     RegisterWindowMessageW, SW_RESTORE, SetForegroundWindow, ShowWindow, TPM_NONOTIFY,
+-    TPM_RETURNCMD, TPM_RIGHTBUTTON, TrackPopupMenu, TranslateMessage, WM_APP, WM_CONTEXTMENU,
+-    WM_LBUTTONUP, WM_NULL, WM_RBUTTONUP, WNDCLASSW, WS_OVERLAPPED,
++    TPM_RETURNCMD, TPM_RIGHTBUTTON, TrackPopupMenu, TranslateMessage, WM_APP, WM_CLOSE,
++    WM_CONTEXTMENU, WM_LBUTTONUP, WM_NULL, WM_RBUTTONUP, WNDCLASSW, WS_OVERLAPPED,
+ };
+ 
+ use crate::shutdown::{self, ShutdownRequestSender};
+@@ -191,7 +191,7 @@ unsafe extern "system" fn wnd_proc(
+         }
+         WM_TRAY => {
+             match lparam as u32 {
+-                WM_LBUTTONUP => open_or_focus_gui(),
++                WM_LBUTTONUP => toggle_gui(),
+                 // SAFETY: win32 dispatches this callback on the tray thread —
+                 // the one that created `hwnd` and pumps its messages — so the
+                 // handle is live for the whole call, and `TrackPopupMenu` gets
+@@ -557,6 +557,50 @@ fn tooltip_text() -> String {
+     tip
+ }
+ 
++/// A click on the tray icon: back to the tray when the GUI is showing (any of
++/// its windows visible and not minimized: each is asked to close, as its X
++/// would), opened or focused otherwise.
++fn toggle_gui() {
++    let pids = gui_pids();
++    if !pids.is_empty() && close_showing_windows_of(&pids) {
++        return;
++    }
++    open_or_focus_gui();
++}
++
++/// Ask every visible, not minimized top-level window owned by one of `pids`
++/// to close. Returns whether there was one.
++fn close_showing_windows_of(pids: &[u32]) -> bool {
++    struct Search<'a> {
++        pids: &'a [u32],
++        closed: bool,
++    }
++    unsafe extern "system" fn enum_proc(hwnd: HWND, lparam: LPARAM) -> i32 {
++        // SAFETY: lparam is the &mut Search passed to EnumWindows below and
++        // outlives the enumeration; the win32 queries take a valid hwnd.
++        unsafe {
++            let search = &mut *(lparam as *mut Search<'_>);
++            let mut pid = 0u32;
++            GetWindowThreadProcessId(hwnd, &raw mut pid);
++            if search.pids.contains(&pid) && IsWindowVisible(hwnd) != 0 && IsIconic(hwnd) == 0 {
++                PostMessageW(hwnd, WM_CLOSE, 0, 0);
++                search.closed = true;
++            }
++        }
++        1
++    }
++    let mut search = Search {
++        pids,
++        closed: false,
++    };
++    // SAFETY: the callback only dereferences the &mut Search for the duration
++    // of this call.
++    unsafe {
++        EnumWindows(Some(enum_proc), std::ptr::addr_of_mut!(search) as LPARAM);
++    }
++    search.closed
++}
++
+ /// Focus the running GUI's window, or launch the sibling GUI binary when no
+ /// GUI is running (a second launch would just exit on the `openlogi.lock`
+ /// singleton, so spawning blindly does nothing visible).
 -- 
 2.43.0
 
