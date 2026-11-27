@@ -1,7 +1,7 @@
 From 90e8cf1c9c398b8885060d386240fc68eb34b898 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:12:39 +0000
-Subject: [PATCH 01/19] feat(hidpp): decode and write stored G-series mouse
+Subject: [PATCH 01/20] feat(hidpp): decode and write stored G-series mouse
  profiles
 
 Adds sector reads and writes (memoryAddrWrite / memoryWrite /
@@ -1181,7 +1181,7 @@ index 00000000..55b0e5e0
 From 8cbc8efca89993584a269f8182542343502055eb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 15:50:16 +0000
-Subject: [PATCH 02/19] feat(device): edit stored G-series profiles through a
+Subject: [PATCH 02/20] feat(device): edit stored G-series profiles through a
  guarded write
 
 Reads a mouse's user profiles whole (with the factory bindings and the
@@ -2249,7 +2249,7 @@ index 644af8d4..fed9c1de 100644
 From 18313d702f9b2ad0df98763e61d205dfce559eb4 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 19:47:31 +0000
-Subject: [PATCH 03/19] feat(agent): read, save and select stored G-series
+Subject: [PATCH 03/20] feat(agent): read, save and select stored G-series
  profiles over IPC
 
 Agent::{read_stored_profiles, save_stored_profile,
@@ -3282,7 +3282,7 @@ index 2b2b62e0..e4951993 100644
 From 8218696cf7d664f7af5743342e6252c089fffea9 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Tue, 24 Nov 2026 20:26:54 +0000
-Subject: [PATCH 04/19] feat(desktop): state for editing stored G-series
+Subject: [PATCH 04/20] feat(desktop): state for editing stored G-series
  profiles
 
 Reads a mouse's stored profiles through the agent, keeps one edit per
@@ -4229,7 +4229,7 @@ index 00000000..d68ee5a7
 From aeb6f5ca9e57c143ad0cc6a4eb9ac260716139f7 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 01:04:17 +0000
-Subject: [PATCH 05/19] feat(desktop): edit a G-series mouse's stored button
+Subject: [PATCH 05/20] feat(desktop): edit a G-series mouse's stored button
  bindings
 
 A "Stored in the mouse" panel under the binding inspector, shown while
@@ -5854,7 +5854,7 @@ index c08a6671..17399b00 100644
 From c5dc8aa1828b628be4cebf08e3bf249ef5aab37d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 09:40:50 +0000
-Subject: [PATCH 06/19] feat(desktop): edit stored bindings from the Buttons
+Subject: [PATCH 06/20] feat(desktop): edit stored bindings from the Buttons
  panel itself
 
 Replaces the separate stored-profile panel. While a stored profile is in
@@ -8124,7 +8124,7 @@ index 17399b00..5a7b69fa 100644
 From e4d6c8d4344c3dfca6cd02af954945d73c1e2807 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:28:50 +0000
-Subject: [PATCH 07/19] feat: stored report rate, and switching stored profiles
+Subject: [PATCH 07/20] feat: stored report rate, and switching stored profiles
  on and off
 
 While a stored profile is in control, the Pointer tab's report rate shows
@@ -9337,7 +9337,7 @@ index 5a7b69fa..3ebe6097 100644
 From 2c7b750651c122314d24321f870e619be7668c56 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 14:55:16 +0000
-Subject: [PATCH 08/19] fix(desktop): show a stored-profile change at once, and
+Subject: [PATCH 08/20] fix(desktop): show a stored-profile change at once, and
  keep quick ones
 
 After a save the editor dropped the edit and showed the read from
@@ -9670,7 +9670,7 @@ index 66ca1003..150624c9 100644
 From dc672ad24bddc82b80ef15076942828f61cda7f6 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 15:31:59 +0000
-Subject: [PATCH 09/19] feat(desktop): stored DPI levels and starting DPI
+Subject: [PATCH 09/20] feat(desktop): stored DPI levels and starting DPI
 
 While a stored profile is in control, the Pointer tab's DPI presets are
 the profile's DPI levels and the DPI value is the level it starts at;
@@ -9908,7 +9908,7 @@ index 150624c9..70b2effc 100644
 From ae359ecba1f6c5fbd95c1357828d2960cd287a07 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 16:21:43 +0000
-Subject: [PATCH 10/19] feat(desktop): any RGB color, and a mouse's lighting in
+Subject: [PATCH 10/20] feat(desktop): any RGB color, and a mouse's lighting in
  its stored profile
 
 The Lighting tab gets a Custom Color picker beside the swatches (the
@@ -10526,7 +10526,7 @@ index 3ebe6097..69a88428 100644
 From e90f9ac6c9a1a4d4ae32da28406c731b695ceeeb Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:01:15 +0000
-Subject: [PATCH 11/19] fix(desktop): stored mouse lighting only; read stored
+Subject: [PATCH 11/20] fix(desktop): stored mouse lighting only; read stored
  profiles once onboard is known
 
 A lighting change on a mouse running a stored profile was also written
@@ -10690,7 +10690,7 @@ index 7aad3f11..57c65a4c 100644
 From 695aeb302bea08582d46a972d952a5c0f3bc53a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 17:27:25 +0000
-Subject: [PATCH 12/19] fix(desktop): tell a stored color's pick and brightness
+Subject: [PATCH 12/20] fix(desktop): tell a stored color's pick and brightness
  apart without config
 
 With OpenLogi's remembered mouse color cleared, the Lighting tab had
@@ -10774,7 +10774,7 @@ index 57c65a4c..45527357 100644
 From 85bfe896e4ca0f854ccd5a1046c86a424ea3745e Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:05:19 +0000
-Subject: [PATCH 13/19] revert(desktop): mouse lighting back to OpenLogi's live
+Subject: [PATCH 13/20] revert(desktop): mouse lighting back to OpenLogi's live
  path
 
 Writing a mouse's lighting into its stored profile didn't behave on a
@@ -11038,7 +11038,7 @@ index 45527357..70b2effc 100644
 From 7c76e55c7520017bcb5eb725e02e577455ca910d Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:34:36 +0000
-Subject: [PATCH 14/19] feat(agent): devices and batteries in the Windows tray
+Subject: [PATCH 14/20] feat(agent): devices and batteries in the Windows tray
 
 The Windows notification-area icon said only "OpenLogi" and its menu
 offered Open and Quit. Its tooltip now lists each device on its own
@@ -11602,7 +11602,7 @@ index 69a88428..9a73472c 100644
 From d1c051fec91ed2f030460e18f5d70d6f56fad947 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 18:56:57 +0000
-Subject: [PATCH 15/19] fix(desktop): a device rename reaches the agent's tray
+Subject: [PATCH 15/20] fix(desktop): a device rename reaches the agent's tray
  at once
 
 Renaming a device saved config.toml without asking the agent to reload
@@ -11632,7 +11632,7 @@ index 105720f2..3d7d27f8 100644
 From 23ee4031f6c4606d66f20f7011bc790cff80b33f Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 19:47:10 +0000
-Subject: [PATCH 16/19] feat: user-set levels for the low-battery notice
+Subject: [PATCH 16/20] feat: user-set levels for the low-battery notice
 
 Settings > General gets "Warn at" and "Warn again after" under the
 low-battery notifications switch (number fields, 20 % and 30 % by
@@ -12380,7 +12380,7 @@ index 9a73472c..d79ceb75 100644
 From c22b3b199f3baf5cb1cbd943460bcd762c710866 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:17:44 +0000
-Subject: [PATCH 17/19] feat: user-set time on screen for the low-battery
+Subject: [PATCH 17/20] feat: user-set time on screen for the low-battery
  notice
 
 Settings > General gets "Show the warning for (seconds)" under the
@@ -12923,7 +12923,7 @@ index d79ceb75..edbc6d5f 100644
 From 0d452ce5b32ac1cff0f543e07a8bbb5a32239ad0 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 20:50:38 +0000
-Subject: [PATCH 18/19] feat: choose the display the low-battery notice appears
+Subject: [PATCH 18/20] feat: choose the display the low-battery notice appears
  on
 
 Settings > General gets "Show notices on": the display with the
@@ -13890,7 +13890,7 @@ index edbc6d5f..489b5b84 100644
 From 8eb9887b864a64d0c27a48dd1cb290cb8a9f35a2 Mon Sep 17 00:00:00 2001
 From: OpenLogi contributor <contributor@localhost>
 Date: Wed, 25 Nov 2026 22:06:04 +0000
-Subject: [PATCH 19/19] feat(agent): the Windows tray keeps a device's last
+Subject: [PATCH 19/20] feat(agent): the Windows tray keeps a device's last
  battery when it is offline
 
 An offline device read "Name: Offline". It now reads "Name: 56%
@@ -14028,6 +14028,505 @@ index 696b0a39..b2f2a318 100644
  }
  
  /// "OpenLogi", then each device on its own line.
+-- 
+2.43.0
+
+From 76e5d21f5757ccb9f484024ec40e8ee5a8de2562 Mon Sep 17 00:00:00 2001
+From: OpenLogi contributor <contributor@localhost>
+Date: Thu, 26 Nov 2026 23:49:57 +0000
+Subject: [PATCH 20/20] perf: a stored-profile save costs a fifth of the round
+ trips
+
+Every read is 16 round trips for a 255-byte sector over the wireless
+link. A save read the sector twice before writing and twice after, and
+the GUI then read all five profiles again (each twice), the factory
+profile and the macros: some 295 round trips per click, seconds on a
+LIGHTSPEED receiver.
+
+Now a read is repeated only when it doesn't match, so a save reads the
+sector once before and once after; the save answers with the bytes it
+wrote and read back (StoredProfileSave::Saved { base }), and the GUI
+updates the profile from them instead of reading the mouse again. An
+edit made during a save is saved at once on those bytes. A full read
+(at start, after a profile switch) reads each sector once. About 56
+round trips per save instead of 295.
+
+Wire: StoredProfileSave::Saved carries base (part of PROTOCOL_VERSION
+47, still unreleased).
+---
+ .../openlogi-core/src/hid/stored_profile.rs   | 10 ++-
+ .../src/state/stored_profiles.rs              | 45 +++++++++--
+ .../src/state/tests/stored_profiles.rs        | 48 +++++------
+ .../openlogi-device/src/write/onboard/edit.rs | 81 +++++++++++--------
+ .../src/write/onboard/edit/tests.rs           | 48 +++++++++--
+ 5 files changed, 157 insertions(+), 75 deletions(-)
+
+diff --git a/crates/openlogi-core/src/hid/stored_profile.rs b/crates/openlogi-core/src/hid/stored_profile.rs
+index 83d73727..07f59299 100644
+--- a/crates/openlogi-core/src/hid/stored_profile.rs
++++ b/crates/openlogi-core/src/hid/stored_profile.rs
+@@ -149,10 +149,14 @@ pub struct StoredProfiles {
+ }
+ 
+ /// What a save did.
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
++#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+ pub enum StoredProfileSave {
+-    /// Written and read back intact.
+-    Saved,
++    /// Written and read back intact: `base` is what the mouse holds now, the
++    /// base of the next edit (no need to read the profiles again).
++    Saved {
++        /// The sector as written and read back.
++        base: Vec<u8>,
++    },
+     /// The edit changed nothing; nothing was written.
+     Unchanged,
+ }
+diff --git a/crates/openlogi-desktop/src/state/stored_profiles.rs b/crates/openlogi-desktop/src/state/stored_profiles.rs
+index 7162ad63..340a76f7 100644
+--- a/crates/openlogi-desktop/src/state/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/stored_profiles.rs
+@@ -624,9 +624,12 @@ impl AppState {
+         events
+     }
+ 
+-    /// The agent's answer to a save: on success the edit is done and the
+-    /// mouse is read again; on a refusal the edit stays, so nothing typed is
+-    /// lost, and the mouse is read again in case it changed.
++    /// The agent's answer to a save. On success it carries the bytes the
++    /// mouse now holds: the profile is updated from them with no new read
++    /// (a full read is some 120 round trips over the wireless link), and an
++    /// edit made meanwhile is saved at once on those bytes. On a refusal the
++    /// edit stays, so nothing typed is lost, and the mouse is read again in
++    /// case it changed.
+     pub fn apply_stored_profile_saved(
+         &mut self,
+         key: &DeviceKey,
+@@ -640,22 +643,39 @@ impl AppState {
+         }
+         entry.saving = None;
+         let sent = entry.in_flight.take();
++        let mut read_again = false;
+         entry.notice = Some(match result {
+             Ok(outcome) => {
+                 if let Some((index, settings)) = sent {
++                    if let StoredProfileSave::Saved { base } = &outcome
++                        && let Load::Ready(profiles) = &mut entry.load
++                    {
++                        let profiles = Arc::make_mut(profiles);
++                        if let Some(slot) = profiles
++                            .profiles
++                            .iter_mut()
++                            .find(|slot| slot.index == index)
++                        {
++                            slot.base.clone_from(base);
++                            slot.settings = Ok(settings.clone());
++                        }
++                    }
++                    entry.applied = None;
+                     // Edited further while saving: keep that, measured against
+-                    // what is in the mouse now, and save it after the read.
++                    // what is in the mouse now, and save it next.
+                     match entry.edit.as_mut() {
+                         Some(edit) if edit.index == index && edit.settings != settings => {
+-                            edit.original = settings.clone();
++                            if let StoredProfileSave::Saved { base } = &outcome {
++                                edit.base.clone_from(base);
++                            }
++                            edit.original = settings;
+                             entry.resave = true;
+                         }
+                         _ => entry.edit = None,
+                     }
+-                    entry.applied = Some((index, settings));
+                 }
+                 match outcome {
+-                    StoredProfileSave::Saved => StoredProfileNotice::Saved,
++                    StoredProfileSave::Saved { .. } => StoredProfileNotice::Saved,
+                     StoredProfileSave::Unchanged => StoredProfileNotice::NothingToSave,
+                 }
+             }
+@@ -665,9 +685,11 @@ impl AppState {
+                 if matches!(error, WriteError::OnboardMemoryChanged) {
+                     entry.edit = None; // its base is stale: the next read starts fresh
+                 }
++                read_again = true;
+                 StoredProfileNotice::Failed(error)
+             }
+         });
++        let resave = std::mem::take(&mut entry.resave);
+         for event in [
+             StateEvent::OnboardChanged,
+             StateEvent::BindingsChanged,
+@@ -677,7 +699,14 @@ impl AppState {
+             cx.emit(event(key.clone()));
+         }
+         if self.is_current_device(key) {
+-            self.read_stored_profiles(cx);
++            if read_again {
++                self.read_stored_profiles(cx);
++            } else {
++                self.sync_stored_dpi();
++                if resave {
++                    let _ = self.save_stored_profile_edit();
++                }
++            }
+         }
+     }
+ 
+diff --git a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+index 70b2effc..ff1e5ceb 100644
+--- a/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
++++ b/crates/openlogi-desktop/src/state/tests/stored_profiles.rs
+@@ -190,12 +190,27 @@ fn an_edit_saves_with_the_bytes_it_started_from(cx: &mut gpui::TestAppContext) {
+ 
+     cx.update(|cx| {
+         AppState::update(cx, |state, cx| {
+-            state.apply_stored_profile_saved(&key, save.request, Ok(StoredProfileSave::Saved), cx);
++            let saved = StoredProfileSave::Saved { base: vec![7; 255] };
++            state.apply_stored_profile_saved(&key, save.request, Ok(saved), cx);
+         });
+     });
+     assert_eq!(notice(cx), Some(StoredProfileNotice::Saved));
+     assert_eq!(dirty(cx), None, "the edit is done");
+-    answer_read(&mut receiver, Ok(profiles(1))); // read again after the save
++    assert!(
++        !drain(&mut receiver)
++            .iter()
++            .any(|command| matches!(command, Command::ReadStoredProfiles(_))),
++        "a save answers with the stored bytes: no read after it"
++    );
++    // The next edit is based on the bytes the save returned.
++    edit_enter_to_play(cx);
++    let _ = cx.update(|cx| {
++        AppState::update(cx, |state, _| {
++            let _ = state.edit_stored_profile(index(1), |s| s.buttons[2] = StoredBinding::Disabled);
++            state.save_stored_profile_edit()
++        })
++    });
++    assert_eq!(take_save(&mut receiver).base, vec![7; 255]);
+ }
+ 
+ #[gpui::test]
+@@ -267,7 +282,7 @@ fn a_late_answer_to_another_save_is_ignored(cx: &mut gpui::TestAppContext) {
+             state.apply_stored_profile_saved(
+                 &key,
+                 save.request + 99,
+-                Ok(StoredProfileSave::Saved),
++                Ok(StoredProfileSave::Saved { base: vec![7; 255] }),
+                 cx,
+             );
+         });
+@@ -317,21 +332,11 @@ fn a_saved_rate_shows_at_once_not_after_the_next_click(cx: &mut gpui::TestAppCon
+     let save = take_save(&mut receiver);
+     cx.update(|cx| {
+         AppState::update(cx, |state, cx| {
+-            state.apply_stored_profile_saved(&key, save.request, Ok(StoredProfileSave::Saved), cx);
++            let saved = StoredProfileSave::Saved { base: vec![7; 255] };
++            state.apply_stored_profile_saved(&key, save.request, Ok(saved), cx);
+         });
+     });
+-    assert_eq!(
+-        rate(cx),
+-        Some(1000),
+-        "shown after the save, before the read confirms it"
+-    );
+-    let mut confirmed = profiles(1);
+-    if let Ok(settings) = &mut confirmed.profiles[0].settings {
+-        settings.report_interval_ms = 1;
+-    }
+-    answer_read(&mut receiver, Ok(confirmed));
+-    cx.run_until_parked();
+-    assert_eq!(rate(cx), Some(1000), "and after it");
++    assert_eq!(rate(cx), Some(1000), "shown after the save, with no read");
+ }
+ 
+ #[gpui::test]
+@@ -354,18 +359,13 @@ fn a_change_made_while_saving_is_saved_after_the_read(cx: &mut gpui::TestAppCont
+     assert_eq!(rate(cx), Some(500));
+     cx.update(|cx| {
+         AppState::update(cx, |state, cx| {
+-            state.apply_stored_profile_saved(&key, first.request, Ok(StoredProfileSave::Saved), cx);
++            let saved = StoredProfileSave::Saved { base: vec![9; 255] };
++            state.apply_stored_profile_saved(&key, first.request, Ok(saved), cx);
+         });
+     });
+     assert_eq!(rate(cx), Some(500), "the newer pick stays on screen");
+-    let mut after_first = profiles(1);
+     let fresh_base = vec![9; 255];
+-    after_first.profiles[0].base = fresh_base.clone();
+-    if let Ok(settings) = &mut after_first.profiles[0].settings {
+-        settings.report_interval_ms = 1;
+-    }
+-    answer_read(&mut receiver, Ok(after_first));
+-    cx.run_until_parked();
++    // Saved at once, on the bytes the first save returned: no read between.
+     let second = take_save(&mut receiver);
+     assert_eq!(second.settings.report_interval_ms, 2);
+     assert_eq!(
+diff --git a/crates/openlogi-device/src/write/onboard/edit.rs b/crates/openlogi-device/src/write/onboard/edit.rs
+index 492b4846..009ed015 100644
+--- a/crates/openlogi-device/src/write/onboard/edit.rs
++++ b/crates/openlogi-device/src/write/onboard/edit.rs
+@@ -1,11 +1,14 @@
+ //! Editing stored profiles: reading them whole, and the guarded write.
+ //!
+-//! Every write goes through [`guarded_write`]: re-read the sector until two
+-//! reads agree, require it to still equal what the edit was based on and to
+-//! carry a valid checksum, hand the original to the caller's backup, write,
+-//! read back and compare byte for byte, and on any mismatch write the original
+-//! back and check that too. Nothing is written when a step before the write
+-//! fails.
++//! Every write goes through [`guarded_write`]: read the sector and require it
++//! to still equal what the edit was based on and to carry a valid checksum,
++//! hand the original to the caller's backup, write, read back and compare byte
++//! for byte, and on any mismatch write the original back and check that too.
++//! Nothing is written when a step before the write fails. A read that doesn't
++//! match is repeated once before it counts, so a one-off misread over the
++//! wireless link can't fail a save; one that matches needs no second read.
++//! Every read is 16 round trips for a 255-byte sector, so reads are the cost
++//! of a save.
+ 
+ use std::collections::BTreeMap;
+ use std::num::NonZeroU8;
+@@ -32,7 +35,6 @@ const FEATURE: u16 = 0x8100;
+ const USER_DIRECTORY: u16 = 0x0000;
+ const FIRST_ROM_SECTOR: u16 = 0x0100;
+ const FACTORY_PROFILE: u16 = 0x0101;
+-const STABLE_READ_ATTEMPTS: usize = 3;
+ 
+ /// Saves a copy of `sector` before it is overwritten; `false` stops the write.
+ pub type Backup<'a> = &'a (dyn Fn(u16, &[u8]) -> bool + Send + Sync);
+@@ -68,10 +70,11 @@ pub struct StoredProfiles {
+ }
+ 
+ /// What a save did.
+-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++#[derive(Clone, Debug, PartialEq, Eq)]
+ pub enum SaveOutcome {
+-    /// The mouse holds the new bytes, checked by reading them back.
+-    Saved,
++    /// The mouse holds these bytes, checked by reading them back: the base of
++    /// the next edit, with no need to read the sector again.
++    Saved(Vec<u8>),
+     /// The edit changed nothing, so nothing was written.
+     Unchanged,
+ }
+@@ -105,7 +108,7 @@ pub async fn save_stored_profile_on(
+     )
+     .await
+     .map(|outcome| match outcome {
+-        SaveOutcome::Saved => wire::StoredProfileSave::Saved,
++        SaveOutcome::Saved(base) => wire::StoredProfileSave::Saved { base },
+         SaveOutcome::Unchanged => wire::StoredProfileSave::Unchanged,
+     })
+ }
+@@ -165,21 +168,27 @@ fn rejected(error: &ProfileError) -> WriteError {
+     }
+ }
+ 
+-/// Reads `sector` until two consecutive reads agree.
+-async fn read_stable(
++/// Reads `sector` once.
++async fn read_once(
+     onboard: &OnboardProfilesFeature,
+     info: &OnboardProfilesInfo,
+     sector: u16,
+ ) -> Result<Vec<u8>, WriteError> {
+-    let mut previous = onboard.read_sector(info, sector).await.map_err(read_err)?;
+-    for _ in 1..STABLE_READ_ATTEMPTS {
+-        let next = onboard.read_sector(info, sector).await.map_err(read_err)?;
+-        if next == previous {
+-            return Ok(next);
+-        }
+-        previous = next;
++    onboard.read_sector(info, sector).await.map_err(read_err)
++}
++
++/// Whether `sector` holds `expected`: one read, and a second only when the
++/// first differs (a one-off misread must not decide).
++async fn holds(
++    onboard: &OnboardProfilesFeature,
++    info: &OnboardProfilesInfo,
++    sector: u16,
++    expected: &[u8],
++) -> Result<bool, WriteError> {
++    if read_once(onboard, info, sector).await? == expected {
++        return Ok(true);
+     }
+-    Err(WriteError::OnboardMemoryChanged)
++    Ok(read_once(onboard, info, sector).await? == expected)
+ }
+ 
+ /// The one way onboard memory is written. See the module docs.
+@@ -199,28 +208,29 @@ async fn guarded_write(
+             reason: "the new sector has no valid checksum".into(),
+         });
+     }
+-    let now = read_stable(onboard, info, sector).await?;
+-    if now != original {
+-        return Err(WriteError::OnboardMemoryChanged);
+-    }
+-    if !sector_checksum_ok(&now) {
++    if !sector_checksum_ok(original) {
+         return Err(rejected(&ProfileError::Checksum));
+     }
++    if !holds(onboard, info, sector, original).await? {
++        return Err(WriteError::OnboardMemoryChanged);
++    }
+     if !backup(sector, original) {
+         return Err(WriteError::OnboardBackupFailed);
+     }
+     let stored = match onboard.write_sector(sector, updated).await {
+-        Ok(()) => read_stable(onboard, info, sector).await.ok(),
++        Ok(()) => holds(onboard, info, sector, updated).await.unwrap_or(false),
+         Err(error) => {
+             warn!(sector, error = ?write_err(error), "onboard write failed; restoring");
+-            None
++            false
+         }
+     };
+-    if stored.as_deref() == Some(updated) {
+-        return Ok(SaveOutcome::Saved);
++    if stored {
++        return Ok(SaveOutcome::Saved(updated.to_vec()));
+     }
+     let restored = match onboard.write_sector(sector, original).await {
+-        Ok(()) => read_stable(onboard, info, sector).await.ok().as_deref() == Some(original),
++        Ok(()) => holds(onboard, info, sector, original)
++            .await
++            .unwrap_or(false),
+         Err(_) => false,
+     };
+     Err(WriteError::OnboardWriteNotStored { restored })
+@@ -260,7 +270,8 @@ async fn read_stored_profiles_on_channel(
+         if entry.sector >= FIRST_ROM_SECTOR {
+             continue; // no user directory yet: the mouse runs its factory profiles
+         }
+-        let raw = read_stable(&onboard, &info, entry.sector).await?;
++        // One read each: a save checks the sector again before it writes.
++        let raw = read_once(&onboard, &info, entry.sector).await?;
+         let decoded =
+             StoredProfile::decode(&raw, info.profile_format, info.button_count, decode_range);
+         profiles.push(StoredProfileSlot {
+@@ -374,7 +385,7 @@ async fn save_stored_profile_on_channel(
+         .encode_onto(original, before)
+         .map_err(|e| rejected(&e))?;
+     let outcome = guarded_write(&onboard, &info, sector, original, &updated, backup).await?;
+-    if outcome == SaveOutcome::Saved
++    if matches!(outcome, SaveOutcome::Saved(_))
+         && onboard.get_current_profile().await.ok().flatten() == Some(profile)
+         && let Err(error) = onboard.set_current_profile(profile).await
+     {
+@@ -402,7 +413,7 @@ async fn select_stored_profile_on_channel(
+             reason: format!("the mouse has no profile {profile}"),
+         })?;
+     if !entry.enabled {
+-        let directory = read_stable(&onboard, &info, USER_DIRECTORY).await?;
++        let directory = read_once(&onboard, &info, USER_DIRECTORY).await?;
+         let updated =
+             directory_with_enabled(&directory, profile, entry.sector).map_err(|e| rejected(&e))?;
+         guarded_write(
+@@ -461,7 +472,7 @@ async fn set_stored_profiles_enabled_on_channel(
+             reason: "at least one profile has to stay on".into(),
+         });
+     }
+-    let directory = read_stable(&onboard, &info, USER_DIRECTORY).await?;
++    let directory = read_once(&onboard, &info, USER_DIRECTORY).await?;
+     let updated = directory_with_flags(&directory, changes).map_err(|e| rejected(&e))?;
+     guarded_write(
+         &onboard,
+diff --git a/crates/openlogi-device/src/write/onboard/edit/tests.rs b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+index 9cccae68..237b293e 100644
+--- a/crates/openlogi-device/src/write/onboard/edit/tests.rs
++++ b/crates/openlogi-device/src/write/onboard/edit/tests.rs
+@@ -1,5 +1,5 @@
+ use std::collections::HashMap;
+-use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
++use std::sync::atomic::{AtomicBool, AtomicU8, AtomicUsize, Ordering};
+ use std::sync::{Arc, Mutex};
+ 
+ use super::*;
+@@ -37,6 +37,8 @@ struct Mouse {
+     fail_end: Arc<AtomicBool>,
+     pending: PendingWrite,
+     writes: Arc<Mutex<Vec<u16>>>,
++    /// Memory reads answered (16 bytes each).
++    reads: Arc<AtomicUsize>,
+ }
+ 
+ impl Mouse {
+@@ -98,6 +100,7 @@ impl Mouse {
+                     self.current.store(wanted, Ordering::SeqCst);
+                 }
+                 (ONBOARD, READ) => {
++                    self.reads.fetch_add(1, Ordering::SeqCst);
+                     let sector = u16::from_be_bytes([args[0], args[1]]);
+                     let offset = usize::from(u16::from_be_bytes([args[2], args[3]]));
+                     let memory = self.memory.lock().unwrap();
+@@ -222,7 +225,7 @@ async fn a_saved_button_is_written_backed_up_and_read_back() {
+     let outcome = rig
+         .save(1, |p| p.buttons[9] = Binding::Consumer(0xcd))
+         .await;
+-    assert_eq!(outcome, Ok(SaveOutcome::Saved));
++    assert!(matches!(outcome, Ok(SaveOutcome::Saved(_))));
+     let stored = rig.mouse.sector(1);
+     assert_eq!(&stored[0x44..0x48], &[0x80, 0x03, 0x00, 0xcd]);
+     assert_eq!(rig.mouse.sector(6), MACROS, "macros untouched");
+@@ -362,10 +365,10 @@ async fn selecting_a_profile_that_is_off_switches_it_on_first() {
+ async fn saving_the_active_profile_reloads_it() {
+     let rig = Rig::new().await;
+     rig.mouse.current.store(1, Ordering::SeqCst);
+-    assert_eq!(
++    assert!(matches!(
+         rig.save(1, |p| p.buttons[10] = Binding::Disabled).await,
+-        Ok(SaveOutcome::Saved)
+-    );
++        Ok(SaveOutcome::Saved(_))
++    ));
+     assert_eq!(rig.mouse.current.load(Ordering::SeqCst), 1);
+ }
+ 
+@@ -417,3 +420,38 @@ async fn profiles_switch_on_and_off_but_the_active_one_stays_on() {
+     );
+     assert_eq!(rig.backups.lock().unwrap().len(), 2, "one backup per write");
+ }
++
++#[tokio::test]
++async fn a_save_reads_the_sector_once_before_and_once_after() {
++    let rig = Rig::new().await;
++    let read = rig.read().await;
++    let slot = &read.profiles[0];
++    let before = slot.decoded.clone().unwrap();
++    let mut after = before.clone();
++    after.buttons[10] = Binding::Disabled;
++    let backup = rig.backup();
++    let at_start = rig.mouse.reads.load(Ordering::SeqCst);
++    let outcome = save_stored_profile_on_channel(
++        &rig.channel,
++        0xff,
++        slot.index,
++        &slot.raw,
++        &convert::settings_to_wire(&after),
++        &backup,
++    )
++    .await;
++    let Ok(SaveOutcome::Saved(base)) = outcome else {
++        panic!("not saved: {outcome:?}");
++    };
++    assert_eq!(
++        base,
++        rig.mouse.sector(1),
++        "the bytes returned are the bytes stored"
++    );
++    let reads = rig.mouse.reads.load(Ordering::SeqCst) - at_start;
++    assert_eq!(
++        reads,
++        2 * 16 + 2,
++        "one sector read before, one after, and the profile list"
++    );
++}
 -- 
 2.43.0
 
